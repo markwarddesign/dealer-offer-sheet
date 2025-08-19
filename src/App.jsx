@@ -638,6 +638,17 @@ const SteppedForm = ({ dealData, setDealData, onGenerateOffer }) => {
                 helpText={field.helpText}
                 options={field.options}
               />
+              {/* VIN lookup button for main/trade vehicle, including on last step */}
+              {((field.name === 'vehicleVin' && (step === 1 || step === steps.length - 1)) || (field.name === 'tradeVehicleVin' && (steps[step].title === 'Customer Allowances & Trade' || step === steps.length - 1))) && (
+                <button
+                  type="button"
+                  className="absolute right-0 top-0 mt-1 mr-1 px-3 py-1 bg-gray-200 text-xs rounded hover:bg-gray-300"
+                  onClick={field.name === 'vehicleVin' ? handleVinLookup : handleTradeVinLookup}
+                  disabled={vinLoading}
+                >
+                  {vinLoading ? 'Looking up...' : 'Lookup by VIN'}
+                </button>
+              )}
             </div>
           ))}
         </FormSection>
