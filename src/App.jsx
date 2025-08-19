@@ -276,7 +276,7 @@ const OfferSheet = ({ dealData, onGoBack }) => {
                 </div>
             </div>
 
-            <div className="bg-red-50 p-8 rounded-xl border border-red-200 printable-section">
+            <div className="bg-red-50 p-8 rounded-xl border border-red-200 printable-section sunset-exclusives-section">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">The Sunset Exclusives</h3>
                 <p className="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
                     Buying at Sunset Chevrolet gets you more. A lot more.
