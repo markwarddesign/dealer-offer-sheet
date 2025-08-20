@@ -1,5 +1,16 @@
-import React, { useState } from 'react';
-import { ShieldCheck, Car, Wrench, Coins, User, FileText, DollarSign, PlusCircle, ClipboardList, Printer } from 'lucide-react';
+// ...existing code...
+import React, { useEffect, useState } from 'react';
+import { useAppStore } from './store';
+import { ShieldCheck, Car, Wrench, Coins, User, FileText, DollarSign, PlusCircle, ClipboardList, Printer, Settings as SettingsIcon } from 'lucide-react';
+import TradeVsPrivateSale from './components/TradeVsPrivateSale';
+import BuyerInfoStep from './steps/BuyerInfoStep';
+import VehicleInfoStep from './steps/VehicleInfoStep';
+import PricingStep from './steps/PricingStep';
+import TradeStep from './steps/TradeStep';
+import FeesStep from './steps/FeesStep';
+import AddonsStep from './steps/AddonsStep';
+import FinanceStep from './steps/FinanceStep';
+import FormSection from './components/FormSection';
 
 // --- Helper Functions & Initial State ---
 
@@ -20,227 +31,15 @@ const roundToHundredth = (num) => {
 // B&O Tax Rate constant
 const BO_TAX_RATE = 0.00471; // 0.471%
 
-// Initial state for the form data reflecting the new items
-const initialDealData = {
-  // Buyer Info
-  buyerFirstName: 'John',
-  buyerLastName: 'Appleseed',
-  buyerPhone: '555-123-4567',
-  buyerEmail: 'john.appleseed@email.com',
-  // Vehicle Info
-  vehicleYear: 2024,
-  vehicleMake: 'Chevrolet',
-  vehicleModel: 'Silverado 1500',
-  vehicleVin: 'VIN123456789XYZ',
-  vehicleStock: 'C12345',
-  vehicleColor: 'Summit White',
-  vehicleMileage: 12,
-  // Dealership Costs
-  marketValue: 45788.00,
-  acquisitionCost: 38244,
-  reconditioningCost: 2650,
-  advertisingCost: 675,
-  flooringCost: 382.63,
-  // Flexible inputs
-  sellingPrice: 43477, // Can be 0 to trigger auto-calc
-  roiPercentage: 5, // Used if sellingPrice is 0
-  // Customer-facing numbers
-  rebates: 0,
-  tradeValue: 12000,
-  tradePayoff: 6250,
-  // Fees
-  docFee: 200,
-  titleFee: 0,
-  tireFee: 0,
-  licenseEstimate: 675,
-  otherFee: 0,
-  // Add-ons
-  protectionPackage: 0,
-  gapInsurance: 0,
-  serviceContract: 0,
-  brakePlus: 499,
-  safeGuard: 249,
-  // Tax
-  taxRate: 9.8,
-  // MPG
-  vehicleMpg: 0,
-  tradeVehicleYear: null,
-  tradeVehicleMake: '',
-  tradeVehicleModel: '',
-  tradeVehicleVin: '',
-  tradeVehicleMpg: 0,
-  // Lease field for trade-in vehicle
-  tradeIsLease: false,
-  // Trade-in current monthly payment
-  tradeCurrentMonthlyPayment: '',
-  // Add new field to track if vehicle is new
-  isNewVehicle: false,
-  // --- New fields for finance options ---
-  downPayment: 0,
-  financeTerm: 72, // Default to 72 months
-};
 
-// --- VIN decode helper ---
-const fetchVinDetails = async (vin) => {
-  if (!vin || vin.length < 5) return {};
-  try {
-    const res = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/${vin}?format=json`);
-    const data = await res.json();
-    const results = data.Results || [];
-    const year = results.find(r => r.Variable === 'Model Year')?.Value;
-    const make = results.find(r => r.Variable === 'Make')?.Value;
-    const model = results.find(r => r.Variable === 'Model')?.Value;
-    const vehicleId = results.find(r => r.Variable === 'Vehicle ID')?.Value;
-    return { year, make, model, vehicleId };
-  } catch {
-    return {};
-  }
-};
-
-// --- FuelEconomy.gov MPG fetch helper ---
-const fetchVehicleMpgById = async (vehicleId) => {
-  if (!vehicleId) return null;
-  try {
-    const res = await fetch(`https://www.fueleconomy.gov/ws/rest/vehicle/${vehicleId}`);
-    const xml = await res.text();
-    const doc = new window.DOMParser().parseFromString(xml, 'text/xml');
-    const mpgNode = doc.querySelector('comb08');
-    return mpgNode ? Number(mpgNode.textContent) : null;
-  } catch {
-    return null;
-  }
-};
-
-// --- FuelEconomy.gov My MPG summary fetch helper ---
-const fetchVehicleId = async (year, make, model) => {
-  if (!year || !make || !model) return null;
-  try {
-    const searchUrl = `https://www.fueleconomy.gov/ws/rest/vehicle/menu/options?year=${year}&make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}`;
-    const res = await fetch(searchUrl);
-    const xml = await res.text();
-    const doc = new window.DOMParser().parseFromString(xml, 'text/xml');
-    const option = doc.querySelector('menuItem > value');
-    return option ? option.textContent : null;
-  } catch {
-    return null;
-  }
-};
-
-const fetchMyMpgSummary = async (vehicleId) => {
-  if (!vehicleId) return null;
-  try {
-    const res = await fetch(`https://www.fueleconomy.gov/ws/rest/ympg/vehicle/${vehicleId}`);
-    const xml = await res.text();
-    const doc = new window.DOMParser().parseFromString(xml, 'text/xml');
-    const avgMpg = doc.querySelector('avgMpg')?.textContent;
-    const numUsers = doc.querySelector('numUsers')?.textContent;
-    return avgMpg && numUsers ? { avgMpg: Number(avgMpg), numUsers: Number(numUsers) } : null;
-  } catch {
-    return null;
-  }
-};
-
-// --- FuelEconomy.gov Emissions fetch helper ---
-const fetchVehicleEmissionsById = async (vehicleId) => {
-  if (!vehicleId) return null;
-  try {
-    const res = await fetch(`https://www.fueleconomy.gov/ws/rest/vehicle/emissions/${vehicleId}`);
-    const xml = await res.text();
-    const doc = new window.DOMParser().parseFromString(xml, 'text/xml');
-    const co2 = doc.querySelector('co2TailpipeGpm')?.textContent;
-    const smog = doc.querySelector('smogRating')?.textContent;
-    // Add more fields as needed from the emissions endpoint
-    return {
-      co2: co2 ? Number(co2) : null,
-      smog: smog ? Number(smog) : null
-    };
-  } catch {
-    return null;
-  }
-};
-
-// --- NHTSA fallback MPG fetch helper ---
-const fetchNhtsaMpgFallback = async (year, make, model) => {
-  if (!year || !make || !model) return null;
-  try {
-    const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${encodeURIComponent(make)}/modelyear/${year}?format=json`;
-    console.debug('[nhtsa] Fetching:', url);
-    const res = await fetch(url);
-    if (!res.ok) {
-      console.error('[nhtsa] Bad response:', res.status, res.statusText);
-      return null;
-    }
-    const data = await res.json();
-    // NHTSA does not provide MPG, but we can at least confirm the model exists
-    if (data.Results && data.Results.length > 0) {
-      const found = data.Results.find(r => r.Model_Name.toLowerCase() === String(model).trim().toLowerCase());
-      if (found) {
-        // No MPG, but we can return a flag that the model exists
-        return { mpg: null, co2: null, smog: null, found: true };
-      }
-    }
-    return null;
-  } catch (err) {
-    console.error('[nhtsa] Fetch error:', err);
-    return null;
-  }
-};
-
-// --- ropengov mpg API fallback helper ---
-const fetchRopengovMpgAndEmissions = async (year, make, model) => {
-  if (!year || !make || !model) {
-    console.debug('[ropengov] Missing year/make/model:', { year, make, model });
-    return null;
-  }
-  // Normalize make/model (trim, toLowerCase, remove extra spaces)
-  const normMake = String(make).trim().toLowerCase();
-  const normModel = String(model).trim().toLowerCase();
-  const url = `https://mpg.ropengov.org/api/vehicles?year=${year}&make=${encodeURIComponent(normMake)}&model=${encodeURIComponent(normModel)}`;
-  console.debug('[ropengov] Fetching:', url);
-  try {
-    const res = await fetch(url);
-    console.debug('[ropengov] Response status:', res.status);
-    if (!res.ok) {
-      if (res.type === 'opaque') {
-        // Likely a CORS/network error
-        throw new Error('Network or CORS error');
-      }
-      console.error('[ropengov] Bad response:', res.status, res.statusText);
-      return null;
-    }
-    const data = await res.json();
-    console.debug('[ropengov] Raw data:', data);
-    if (!data || !data.vehicles || !data.vehicles.length) {
-      console.warn('[ropengov] No vehicles found for:', { year, normMake, normModel });
-      return null;
-    }
-    // Use the first matching vehicle
-    const v = data.vehicles[0];
-    console.debug('[ropengov] Using vehicle:', v);
-    return {
-      mpg: v.comb08 || null,
-      co2: v.co2TailpipeGpm || null,
-      smog: v.smogRating || null
-    };
-  } catch (err) {
-    console.error('[ropengov] Fetch error:', err);
-    return { error: err.message || 'Failed to fetch MPG from ropengov' };
-  }
-};
+// Helper function to get total trade devalue
+function getTotalTradeDevalue(dealData, settings) {
+  if (!dealData.tradeDevalueSelected || !settings || !settings.tradeDevalueItems) return 0;
+  return dealData.tradeDevalueSelected.reduce((sum, idx) => sum + (settings.tradeDevalueItems[idx]?.price || 0), 0);
+}
 
 // --- Reusable Components ---
 
-const FormSection = ({ title, icon, children }) => (
-    <div className="bg-white p-6 rounded-xl shadow-md">
-        <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center border-b pb-3">
-            {icon}
-            {title}
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-            {children}
-        </div>
-    </div>
-);
 
 const InputField = ({ label, name, value, onChange, placeholder, type = 'text', helpText, options }) => (
     <div>
@@ -331,8 +130,8 @@ const steps = [
     title: "Customer Allowances & Trade",
     icon: <DollarSign className="h-6 w-6 mr-3 text-red-600" />,
     fields: [
-      // Only show Rebates if new vehicle (mileage <= 500)
-      { label: "Trade Value", name: "tradeValue", type: "number" },
+      { label: "Market Value / Auction Value", name: "tradeMarketValue", type: "number", helpText: "The raw value before trade devalue deductions." },
+      { label: "Trade Value", name: "tradeValue", type: "number", helpText: "This is Market Value minus trade devalue items. Editing this will update Market Value." },
       { label: "Trade Payoff", name: "tradePayoff", type: "number" },
       { label: "Year", name: "tradeVehicleYear", type: "number" },
       { label: "Make", name: "tradeVehicleMake", type: "text" },
@@ -377,201 +176,85 @@ const steps = [
   },
 ];
 
+// --- Spinner for loading state ---
+const Spinner = () => (
+  <svg className="animate-spin h-4 w-4 text-gray-500 inline-block align-middle mr-1" viewBox="0 0 24 24">
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+  </svg>
+);
+
+// --- Trade Devalue Items UI Helper ---
+function TradeDevalueItemsSection({ items, selected, onChange }) {
+  if (!items || !items.length) return null;
+  return (
+    <div className="col-span-2 mb-2">
+      <label className="block text-sm font-semibold text-gray-700 mb-1">Trade Devalue Items</label>
+      <div className="flex flex-wrap gap-4">
+        {items.map((item, idx) => (
+          <label key={idx} className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded shadow-sm">
+            <input
+              type="checkbox"
+              checked={selected.includes(idx)}
+              onChange={e => {
+                if (e.target.checked) onChange([...selected, idx]);
+                else onChange(selected.filter(i => i !== idx));
+              }}
+            />
+            <span>{item.label} <span className="text-gray-500">({formatCurrency(item.price)})</span></span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // --- SteppedForm (no chained selects, only text fields + VIN lookup) ---
-const SteppedForm = ({ dealData, setDealData, onGenerateOffer }) => {
+const stepComponents = [
+  BuyerInfoStep,
+  VehicleInfoStep,
+  PricingStep,
+  TradeStep,
+  FeesStep,
+  AddonsStep,
+  FinanceStep
+];
+const SteppedForm = ({ dealData, setDealData, onGenerateOffer, settings, setSettings }) => {
   const [step, setStep] = useState(0);
   const totalSteps = steps.length;
-  const [loadingMpg, setLoadingMpg] = useState(false);
-  const [mpgError, setMpgError] = useState("");
-  const [vinLoading, setVinLoading] = useState(false);
-  const [vinError, setVinError] = useState("");
-  const [userMpgSummary, setUserMpgSummary] = useState(null);
-  const [vehicleId, setVehicleId] = useState(null);
-  const [emissions, setEmissions] = useState(null);
 
+  // Unified handleChange for all fields
   const handleChange = (e) => {
     const { name, value, type } = e.target;
-    setDealData(prevData => ({
-      ...prevData,
-      [name]: type === 'number' ? parseFloat(value) || 0 : type === 'checkbox' ? value : value
-    }));
-  };
-
-  // VIN lookup for main vehicle
-  const handleVinLookup = async () => {
-    setVinLoading(true);
-    setVinError("");
-    const details = await fetchVinDetails(dealData.vehicleVin);
-    if (details && (details.year || details.make || details.model)) {
-      setDealData(prev => ({
-        ...prev,
-        vehicleYear: details.year || prev.vehicleYear,
-        vehicleMake: details.make || prev.vehicleMake,
-        vehicleModel: details.model || prev.vehicleModel,
-      }));
-      setLoadingMpg(true);
-      setMpgError("");
-      const fegVehicleId = await fetchVehicleId(
-        details.year || dealData.vehicleYear,
-        details.make || dealData.vehicleMake,
-        details.model || dealData.vehicleModel
-      );
-      setVehicleId(fegVehicleId);
-      let mpg = null;
-      let summary = null;
-      let emissionsData = null;
-      if (fegVehicleId) {
-        mpg = await fetchVehicleMpgById(fegVehicleId);
-        summary = await fetchMyMpgSummary(fegVehicleId);
-        emissionsData = await fetchVehicleEmissionsById(fegVehicleId);
-      }
-      // If FuelEconomy.gov fails, try ropengov
-      if (!mpg || !emissionsData) {
-        const ropengov = await fetchRopengovMpgAndEmissions(
-          details.year || dealData.vehicleYear,
-          details.make || dealData.vehicleMake,
-          details.model || dealData.vehicleModel
-        );
-        if (ropengov && !ropengov.error) {
-          if (!mpg && ropengov.mpg) mpg = ropengov.mpg;
-          if (!emissionsData) emissionsData = { co2: ropengov.co2, smog: ropengov.smog };
-        } else if (ropengov && ropengov.error) {
-          // Try NHTSA fallback if ropengov failed due to network/CORS
-          const nhtsa = await fetchNhtsaMpgFallback(
-            details.year || dealData.vehicleYear,
-            details.make || dealData.vehicleMake,
-            details.model || dealData.vehicleModel
-          );
-          if (nhtsa && nhtsa.found) {
-            setMpgError('Could not fetch MPG (all services failed), but vehicle/model was found in NHTSA. Please enter MPG manually.');
-          } else {
-            setMpgError('Could not fetch MPG (all services failed, possibly due to network or CORS error). Please enter MPG manually.');
-          }
-        }
-      }
-      if (mpg) setDealData(prev => ({ ...prev, vehicleMpg: mpg }));
-      setUserMpgSummary(summary);
-      setEmissions(emissionsData);
-      setLoadingMpg(false);
-    } else {
-      setVinError("Could not decode VIN. Please check and try again.");
-    }
-    setVinLoading(false);
-  };
-  // VIN lookup for trade vehicle
-  const handleTradeVinLookup = async () => {
-    setVinLoading(true);
-    setVinError("");
-    const details = await fetchVinDetails(dealData.tradeVehicleVin);
-    if (details && (details.year || details.make || details.model)) {
-      setDealData(prev => ({
-        ...prev,
-        tradeVehicleYear: details.year || prev.tradeVehicleYear,
-        tradeVehicleMake: details.make || prev.tradeVehicleMake,
-        tradeVehicleModel: details.model || prev.tradeVehicleModel,
-      }));
-      // Fetch MPG using VehicleId if available
-      setLoadingMpg(true);
-      setMpgError("");
-      let mpg = null;
-      if (details.vehicleId) {
-        mpg = await fetchVehicleMpgById(details.vehicleId);
+    setDealData(prevData => {
+      let newData = { ...prevData };
+      if (name === 'tradeMarketValue') {
+        newData.tradeMarketValue = parseFloat(value) || 0;
+        const totalDevalue = getTotalTradeDevalue(newData, settings);
+        newData.tradeValue = roundToHundredth(newData.tradeMarketValue - totalDevalue);
+      } else if (name === 'tradeValue') {
+        newData.tradeValue = parseFloat(value) || 0;
+        const totalDevalue = getTotalTradeDevalue(newData, settings);
+        newData.tradeMarketValue = roundToHundredth(newData.tradeValue + totalDevalue);
       } else {
-        const fallbackId = await fetchVehicleId(details.year || dealData.tradeVehicleYear, details.make || dealData.tradeVehicleMake, details.model || dealData.tradeVehicleModel);
-        if (fallbackId) {
-          mpg = await fetchVehicleMpgById(fallbackId);
-        }
+        newData[name] = type === 'number' ? parseFloat(value) || '' : type === 'checkbox' ? value : value;
       }
-      setLoadingMpg(false);
-      if (mpg) setDealData(prev => ({ ...prev, tradeVehicleMpg: mpg }));
-    } else {
-      setVinError("Could not decode VIN. Please check and try again.");
-    }
-    setVinLoading(false);
+      return newData;
+    });
   };
 
-  const handleNext = async (e) => {
+  const handleNext = (e) => {
     e.preventDefault();
-    setMpgError("");
-    setVinError("");
     if (step < totalSteps - 1) setStep(step + 1);
     else onGenerateOffer();
   };
-
   const handleBack = (e) => {
     e.preventDefault();
     if (step > 0) setStep(step - 1);
   };
 
-  // For main vehicle MPG fetch (manual button)
-  const handleFetchMainMpg = async () => {
-    setLoadingMpg(true);
-    setMpgError("");
-    let mpg = null;
-    let summary = null;
-    let emissionsData = null;
-    let fegVehicleId = vehicleId;
-    if (!fegVehicleId) {
-      fegVehicleId = await fetchVehicleId(dealData.vehicleYear, dealData.vehicleMake, dealData.vehicleModel);
-      setVehicleId(fegVehicleId);
-    }
-    if (fegVehicleId) {
-      mpg = await fetchVehicleMpgById(fegVehicleId);
-      summary = await fetchMyMpgSummary(fegVehicleId);
-      emissionsData = await fetchVehicleEmissionsById(fegVehicleId);
-    }
-    // If FuelEconomy.gov fails, try ropengov
-    if (!mpg || !emissionsData) {
-      const ropengov = await fetchRopengovMpgAndEmissions(
-        dealData.vehicleYear,
-        dealData.vehicleMake,
-        dealData.vehicleModel
-      );
-      if (ropengov) {
-        if (!mpg && ropengov.mpg) mpg = ropengov.mpg;
-        if (!emissionsData) emissionsData = { co2: ropengov.co2, smog: ropengov.smog };
-      }
-    }
-    if (mpg) setDealData(prev => ({ ...prev, vehicleMpg: mpg }));
-    setUserMpgSummary(summary);
-    setEmissions(emissionsData);
-    setLoadingMpg(false);
-    if (!mpg) setMpgError("Could not fetch MPG. Please enter manually.");
-  };
-
-  // Move finance table helpers/vars above return so they're always in scope
-  const defaultDownPayments = [10000, 5000, 2500];
-  const financeTerms = [24, 30, 36, 42, 48, 60, 66, 72, 84];
-  const annualRate = 0.0599;
-  const monthlyRate = annualRate / 12;
-  // Use same calculation as OfferSheet
-  const baseInvestment = roundToHundredth(dealData.acquisitionCost + dealData.reconditioningCost + dealData.advertisingCost + dealData.flooringCost);
-  let sellingPrice;
-  if (dealData.sellingPrice > 0) {
-    sellingPrice = roundToHundredth(dealData.sellingPrice);
-  } else {
-    const roiPercentage = dealData.roiPercentage;
-    sellingPrice = roundToHundredth((baseInvestment * (1 + roiPercentage / 100)) / (1 - BO_TAX_RATE));
-  }
-  const netTrade = roundToHundredth(dealData.tradeValue - dealData.tradePayoff);
-  const totalAddons = roundToHundredth(dealData.protectionPackage + dealData.gapInsurance + dealData.serviceContract + dealData.brakePlus + dealData.safeGuard);
-  let taxableAmount;
-  if (dealData.tradeIsLease) {
-    taxableAmount = sellingPrice + totalAddons;
-  } else {
-    taxableAmount = sellingPrice + totalAddons - netTrade;
-  }
-  const difference = roundToHundredth(taxableAmount);
-  const salesTax = difference > 0 ? roundToHundredth(difference * (dealData.taxRate / 100)) : 0;
-  const totalFees = roundToHundredth(dealData.docFee + dealData.titleFee + dealData.tireFee + dealData.otherFee);
-  const amountFinanced = roundToHundredth(difference + salesTax + dealData.licenseEstimate + totalFees - dealData.rebates);
-  function calcMonthlyPayment(principal, n) {
-    if (principal <= 0 || n <= 0) return 0;
-    return (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -n));
-  }
-
   return (
-    <form className="relative max-w-2xl mx-auto">
+    <form className="relative max-w-2xl mx-auto" onSubmit={handleNext}>
       {/* Progress Bar */}
       <div className="flex items-center mb-8">
         {steps.map((s, i) => (
@@ -580,97 +263,19 @@ const SteppedForm = ({ dealData, setDealData, onGenerateOffer }) => {
       </div>
       {/* Step Content */}
       <div className="transition-all duration-500 ease-in-out transform" style={{ opacity: 1, translate: 'none' }}>
-        {/* Show Down Payment Options Table and Finance Options fields together on last step */}
-        {step === steps.length - 1 && (
-          <div className="col-span-2 mb-8">
-            <h4 className="font-semibold mb-4 text-lg text-gray-900 flex items-center"><Coins className="h-5 w-5 mr-2 text-red-600" />Down Payment Options & Monthly Payments</h4>
-            <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm bg-white">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-100 text-gray-700">
-                    <th className="px-4 py-3 border-b text-center font-semibold">Down Payment</th>
-                    <th className="px-4 py-3 border-b text-center font-semibold">Term</th>
-                    <th className="px-4 py-3 border-b text-right font-semibold">Payment</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {defaultDownPayments.map(dp => financeTerms.map((term, idx) => {
-                    const principal = amountFinanced - dp;
-                    return (
-                      <tr key={dp + '-' + term} className={idx === 0 ? 'border-t' : ''}>
-                        {idx === 0 && (
-                          <td rowSpan={financeTerms.length} className="font-bold align-middle text-center bg-gray-50 border-r border-gray-200 text-gray-900">{formatCurrency(dp)}</td>
-                        )}
-                        <td className="text-center text-gray-700">{term}</td>
-                        <td className="text-right font-mono text-gray-800">{formatCurrency(calcMonthlyPayment(principal, term))}</td>
-                      </tr>
-                    );
-                  }))}
-                  {/* Custom down payment if not in default list and > 0 */}
-                  {!defaultDownPayments.includes(Number(dealData.downPayment)) && Number(dealData.downPayment) > 0 && financeTerms.map((term, idx) => {
-                    const principal = amountFinanced - Number(dealData.downPayment);
-                    return (
-                      <tr key={'custom-' + term} className={idx === 0 ? 'border-t' : ''}>
-                        {idx === 0 && (
-                          <td rowSpan={financeTerms.length} className="font-bold align-middle text-center bg-yellow-100 border-r border-yellow-300 text-yellow-900">{formatCurrency(Number(dealData.downPayment))} <span className="text-xs font-normal">(Custom)</span></td>
-                        )}
-                        <td className="text-center text-gray-700">{term}</td>
-                        <td className="text-right font-mono text-gray-800">{formatCurrency(calcMonthlyPayment(principal, term))}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <div className="text-xs text-gray-500 mt-2">Payments based on {formatCurrency(amountFinanced)} financed, 5.99% APR. Actual rates may vary.</div>
-          </div>
-        )}
-        {/* Finance Options fields on last step */}
-        <FormSection title={steps[step].title} icon={steps[step].icon}>
-          {steps[step].fields.filter(field => !field.showIf || field.showIf(dealData)).map(field => (
-            <div key={field.name} className="relative">
-              <InputField
-                label={field.label}
-                name={field.name}
-                value={dealData[field.name] || ''}
-                onChange={handleChange}
-                type={field.type}
-                helpText={field.helpText}
-                options={field.options}
-              />
-              {/* VIN lookup button for main/trade vehicle, including on last step */}
-              {((field.name === 'vehicleVin' && (step === 1 || step === steps.length - 1)) || (field.name === 'tradeVehicleVin' && (steps[step].title === 'Customer Allowances & Trade' || step === steps.length - 1))) && (
-                <button
-                  type="button"
-                  className="absolute right-0 top-0 mt-1 mr-1 px-3 py-1 bg-gray-200 text-xs rounded hover:bg-gray-300"
-                  onClick={field.name === 'vehicleVin' ? handleVinLookup : handleTradeVinLookup}
-                  disabled={vinLoading}
-                >
-                  {vinLoading ? 'Looking up...' : 'Lookup by VIN'}
-                </button>
-              )}
-            </div>
-          ))}
-        </FormSection>
-        {/* Show My MPG summary for main vehicle */}
-        {step === 1 && userMpgSummary && (
-          <div className="col-span-2 mt-2 text-sm text-gray-700 bg-gray-50 rounded p-3 border border-gray-200">
-            <strong>User Reported MPG:</strong> {userMpgSummary.avgMpg} MPG (from {userMpgSummary.numUsers} drivers)
-          </div>
-        )}
-        {/* Show Emissions for main vehicle */}
-        {step === 1 && emissions && (
-          <div className="col-span-2 mt-2 text-sm text-gray-700 bg-gray-50 rounded p-3 border border-gray-200">
-            <strong>Emissions:</strong> {emissions.co2 ? `${emissions.co2} g CO₂/mile` : 'N/A'}{emissions.smog ? `, Smog Rating: ${emissions.smog}/10` : ''}
-          </div>
-        )}
-        {(mpgError || vinError) && <p className="text-xs text-red-600 mt-2">{mpgError || vinError}</p>}
+        {React.createElement(stepComponents[step], {
+          dealData,
+          setDealData,
+          handleChange,
+          settings,
+          setSettings
+        })}
       </div>
       {/* Navigation Buttons */}
       <div className="flex justify-between pt-8">
         <button type="button" onClick={handleBack} disabled={step === 0} className={`px-6 py-3 rounded-lg font-bold shadow transition-all duration-300 ${step === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-600 text-white hover:bg-gray-700'}`}>Back</button>
-        <button type="submit" onClick={handleNext} className="bg-red-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-300">
-          {step === totalSteps - 1 ? 'Review Offer' : 'Next'}
+        <button type="submit" className="bg-red-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-300">
+          {step === steps.length - 1 ? 'Review Offer' : 'Next'}
         </button>
       </div>
     </form>
@@ -680,8 +285,7 @@ const SteppedForm = ({ dealData, setDealData, onGenerateOffer }) => {
 
 // --- Page 2: Offer Sheet ---
 
-const OfferSheet = ({ dealData, onGoBack }) => {
-
+const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
     // --- DYNAMIC CALCULATIONS ---
     let sellingPrice, roiPercentage, profit;
     const baseInvestment = roundToHundredth(dealData.acquisitionCost + dealData.reconditioningCost + dealData.advertisingCost + dealData.flooringCost);
@@ -702,7 +306,12 @@ const OfferSheet = ({ dealData, onGoBack }) => {
         profit = roundToHundredth(sellingPrice - dealershipInvestment);
     }
 
-    const netTrade = roundToHundredth(dealData.tradeValue - dealData.tradePayoff);
+    // --- Trade Devalue Calculation ---
+    let totalTradeDevalue = 0;
+    if (dealData.tradeDevalueSelected && settings && settings.tradeDevalueItems) {
+      totalTradeDevalue = dealData.tradeDevalueSelected.reduce((sum, idx) => sum + (settings.tradeDevalueItems[idx]?.price || 0), 0);
+    }
+    const netTrade = roundToHundredth(dealData.tradeValue - dealData.tradePayoff - totalTradeDevalue);
     const totalAddons = roundToHundredth(dealData.protectionPackage + dealData.gapInsurance + dealData.serviceContract + dealData.brakePlus + dealData.safeGuard);
     
     // If trade-in is a lease, tax is on full selling price + add-ons (no trade deduction)
@@ -721,109 +330,182 @@ const OfferSheet = ({ dealData, onGoBack }) => {
     // Remove tax credit from calculations
     const amountFinanced = roundToHundredth(difference + salesTax + dealData.licenseEstimate + totalFees - dealData.rebates);
 
-    // Finance options
-    const defaultDownPayments = [10000, 5000, 2500];
-    const financeTerms = [24, 30, 36, 42, 48, 60, 66, 72, 84];
-    const annualRate = 0.0599; // 5.99% APR
-    const monthlyRate = annualRate / 12;
-    // Helper to calc monthly payment
-    function calcMonthlyPayment(principal, n) {
-      if (principal <= 0 || n <= 0) return 0;
-      return (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -n));
-    }
-    // Helper to format row
-    function renderFinanceRows(downPayment) {
-      const principal = amountFinanced - downPayment;
-      return financeTerms.map((term, idx) => (
-        <tr key={term} className={idx === 0 ? 'border-t' : ''}>
-          {idx === 0 && (
-            <td rowSpan={financeTerms.length} className="font-bold align-middle text-center bg-gray-50">{formatCurrency(downPayment)}</td>
-          )}
-          <td className="text-center">{term}</td>
-          <td className="text-right font-mono">{formatCurrency(calcMonthlyPayment(principal, term))}</td>
-        </tr>
-      ));
-    }
-    // Custom down payment
-    const customDown = dealData.downPayment;
-    const showCustom = !defaultDownPayments.includes(Number(customDown)) && Number(customDown) > 0;
-
+    // Restore sunsetExclusives
     const sunsetExclusives = [
         { icon: <ShieldCheck className="h-8 w-8 text-red-600" />, title: 'Warranty Protection for Life', description: 'A lifetime limited powertrain warranty honored at any ASE certified facility in the US and Canada.' },
         { icon: <Wrench className="h-8 w-8 text-red-600" />, title: 'Oil Changes for Life', description: 'Save thousands over the lifetime of your vehicle with complimentary oil changes.' }
     ];
 
+    // --- Finance Options Section ---
+    // Support both array and single value for financeTerm and downPayment
+    const selectedTerms = Array.isArray(dealData.financeTerm)
+      ? dealData.financeTerm.filter(t => !isNaN(Number(t))).map(Number)
+      : [Number(dealData.financeTerm)].filter(t => !isNaN(t));
+    const selectedDowns = Array.isArray(dealData.downPayment)
+      ? dealData.downPayment.filter(d => !isNaN(Number(d))).map(Number)
+      : [Number(dealData.downPayment)].filter(d => !isNaN(d));
+    const financeRate = 6.99;
+    const financeTableRows = [];
+    const docFee = dealData.docFee || 0;
+    const otherFee = dealData.otherFee || 0;
+    const sellingPriceForFinance = dealData.sellingPrice || 0;
+    const calculateMonthlyPayment = (amount, rate, termMonths) => {
+      if (!amount || !rate || !termMonths) return 0;
+      const monthlyRate = rate / 12 / 100;
+      return (amount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -termMonths));
+    };
+    // Grouped by down payment
+    const sortedTerms = [...selectedTerms].sort((a, b) => a - b);
+    const sortedDowns = [...selectedDowns].sort((a, b) => a - b);
+    sortedDowns.forEach((down) => {
+      sortedTerms.forEach((term) => {
+        const amountFinanced = sellingPriceForFinance - down + docFee + otherFee;
+        const payment = calculateMonthlyPayment(amountFinanced, financeRate, term);
+        financeTableRows.push({
+          down,
+          term,
+          amountFinanced,
+          payment
+        });
+      });
+    });
+
+
     return (
-        <div className="space-y-8">
-            <div className="bg-white rounded-xl shadow-lg p-8 printable-section">
-                 <div className="flex justify-between items-start">
-                    <div>
-                        <div className="uppercase tracking-wide text-sm text-red-600 font-semibold">{dealData.vehicleYear} {dealData.vehicleMake}</div>
-                        <h2 className="block mt-1 text-3xl leading-tight font-extrabold text-black">{dealData.vehicleModel}</h2>
-                        <p className="mt-2 text-gray-500">VIN: {dealData.vehicleVin} | Stock: {dealData.vehicleStock}</p>
-                    </div>
-                    <div className="text-right">
-                       <p className="text-lg text-gray-700">Prepared for:</p>
-                       <p className="text-xl font-bold">{dealData.buyerFirstName} {dealData.buyerLastName}</p>
-                    </div>
-                </div>
+      <div className="space-y-8">
+        {/* Price display in top right */}
+        <div className="flex justify-end mb-2">
+          <div className="bg-white rounded-lg shadow px-6 py-3 text-right border border-gray-200">
+            <div className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Final Price</div>
+            <div className="text-2xl font-extrabold text-red-600">{formatCurrency(sellingPrice)}</div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-lg p-8 printable-section">
+          <div className="flex flex-row flex-wrap justify-between items-start mb-8 gap-6 mx-4">
+            <div>
+              <div className="uppercase tracking-wide text-sm text-red-600 font-semibold">{dealData.vehicleYear} {dealData.vehicleMake}</div>
+              <h2 className="block mt-1 text-3xl leading-tight font-extrabold text-black">{dealData.vehicleModel}</h2>
+              <div className="mt-2 text-gray-700 text-sm grid grid-cols-2 gap-x-8 gap-y-1">
+                <span className="font-semibold">VIN:</span> <span>{dealData.vehicleVin}</span>
+                <span className="font-semibold">Stock #:</span> <span>{dealData.vehicleStock}</span>
+                <span className="font-semibold">Color:</span> <span>{dealData.vehicleColor}</span>
+                <span className="font-semibold">Mileage:</span> <span>{dealData.vehicleMileage?.toLocaleString()} mi</span>
+              </div>
             </div>
-
-            <div className="bg-gray-50 border-2 border-gray-200 p-8 rounded-xl shadow-lg printable-section">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Pricing Transparency</h3>
-                <div className="space-y-3 text-gray-700 max-w-2xl mx-auto">
-                    <div className="flex justify-between text-lg"><p>Market Value</p><p className="font-semibold">{formatCurrency(dealData.marketValue)}</p></div>
-                    <hr className="my-2 border-gray-200"/>
-                    <div className="flex justify-between text-sm"><p>Acquisition & Reconditioning</p><p>{formatCurrency(dealData.acquisitionCost + dealData.reconditioningCost)}</p></div>
-                    <div className="flex justify-between text-sm"><p>Advertising & Flooring</p><p>{formatCurrency(dealData.advertisingCost + dealData.flooringCost)}</p></div>
-                    <div className="flex justify-between text-sm"><p>B&O Tax (Calculated)</p><p>{formatCurrency(roundToHundredth(sellingPrice * BO_TAX_RATE))}</p></div>
-                    <div className="flex justify-between border-t border-gray-300 pt-3 mt-3"><p className="font-semibold">Total Dealership Investment</p><p className="font-bold">{formatCurrency(roundToHundredth(baseInvestment + (sellingPrice * BO_TAX_RATE)))}</p></div>
-                    <div className="flex justify-between"><p>Dealership ROI ({roiPercentage}%)</p><p className="font-medium">{formatCurrency(profit)}</p></div>
-                    <div className="flex justify-between items-center bg-white p-3 rounded-lg shadow-inner mt-3">
-                        <p className="text-lg font-bold text-gray-900">Final Selling Price</p>
-                        <p className="text-xl font-bold text-red-600">{formatCurrency(sellingPrice)}</p>
-                    </div>
-                </div>
+            <div className="text-right mt-6 md:mt-0">
+              <p className="text-lg text-gray-700">Prepared for:</p>
+              <p className="text-xl font-bold">{dealData.buyerFirstName} {dealData.buyerLastName}</p>
             </div>
-
-            <div className="bg-gray-50 p-8 rounded-xl shadow-lg printable-section">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center"><Coins className="h-6 w-6 mr-3 text-red-600" />Final Offer Calculation</h3>
-                <div className="space-y-3 text-gray-700">
-                    <div className="flex justify-between"><p>Final Selling Price</p><p className="font-medium">{formatCurrency(sellingPrice)}</p></div>
-                    <div className="flex justify-between text-sm"><p>Brake Plus</p><p>{formatCurrency(dealData.brakePlus)}</p></div>
-                    <div className="flex justify-between text-sm"><p>Safe Guard</p><p>{formatCurrency(dealData.safeGuard)}</p></div>
-                    <div className="flex justify-between text-sm"><p>Other Add-ons</p><p>{formatCurrency(dealData.protectionPackage + dealData.gapInsurance + dealData.serviceContract)}</p></div>
-                    <hr className="my-2"/>
-                    <div className="flex justify-between"><p>Trade Value</p><p>{formatCurrency(dealData.tradeValue)}</p></div>
-                    <div className="flex justify-between text-sm"><p>Trade Payoff</p><p>({formatCurrency(dealData.tradePayoff)})</p></div>
-                    <div className="flex justify-between text-sm font-semibold"><p>Net Trade</p><p>{formatCurrency(netTrade)}</p></div>
-                    <div className="flex justify-between items-center border-t-2 border-gray-300 pt-4 mt-4">
-                        <p className="text-lg font-bold text-gray-900">Difference</p>
-                        <p className="text-xl font-bold text-gray-800">{formatCurrency(difference)}</p>
-                    </div>
-                    <hr className="my-2"/>
-                    <div className="flex justify-between text-sm text-red-600">
-                      {dealData.isNewVehicle && <><p>Rebates</p><p>({formatCurrency(dealData.rebates)})</p></>}
-                    </div>
-                    <div className="flex justify-between"><p>Sales Tax ({dealData.taxRate}%)</p><p className="font-medium">{formatCurrency(salesTax)}</p></div>
-                    <div className="flex justify-between"><p>License Estimate</p><p className="font-medium">{formatCurrency(dealData.licenseEstimate)}</p></div>
-                    <div className="flex justify-between"><p>Doc Fee</p><p className="font-medium">{formatCurrency(dealData.docFee)}</p></div>
-                    <div className="flex justify-between"><p>Other Fees (Title, Tire, etc.)</p><p className="font-medium">{formatCurrency(dealData.titleFee + dealData.tireFee + dealData.otherFee)}</p></div>
-                    <div className="flex justify-between items-center border-t-2 border-red-500 pt-4 mt-4">
-                        <p className="text-xl font-bold text-gray-900">Amount Financed</p>
-                        <p className="text-2xl font-bold text-red-600">{formatCurrency(amountFinanced)}</p>
-                    </div>
-                    <hr className="my-4" />
-                    <div className="flex justify-between items-center bg-white p-3 rounded-lg shadow-inner mt-3">
-                        <p className="text-lg font-bold text-gray-900">Finance Options</p>
-                        <p className="text-sm text-gray-700">{dealData.financeTerm} months @ 5.99% APR</p>
-                    </div>
-                    <div className="flex justify-between"><p>Down Payment</p><p>{formatCurrency(dealData.downPayment)}</p></div>
-                    {/* Remove old single finance summary (principal/monthlyPayment) since table is now shown above */}
-                    {/* <div className="flex justify-between"><p>Amount Financed</p><p>{formatCurrency(principal)}</p></div> */}
-                    {/* <div className="flex justify-between"><p>Estimated Monthly Payment</p><p className="font-bold text-red-600">{formatCurrency(monthlyPayment)}</p></div> */}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6">
+            {/* Pricing Transparency */}
+            <div className="bg-gray-50 border-2 border-gray-200 p-6 rounded-xl shadow-sm flex flex-col md:col-span-1 w-full md:w-auto print:col-span-1">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">Pricing Transparency</h3>
+              <div className="space-y-2 text-gray-700">
+                <div className="flex justify-between text-base"><p>Market Value</p><p className="font-semibold">{formatCurrency(dealData.marketValue)}</p></div>
+                <div className="flex justify-between text-sm"><p>Acquisition & Reconditioning</p><p>{formatCurrency(dealData.acquisitionCost + dealData.reconditioningCost)}</p></div>
+                <div className="flex justify-between text-sm"><p>Advertising & Flooring</p><p>{formatCurrency(dealData.advertisingCost + dealData.flooringCost)}</p></div>
+                <div className="flex justify-between text-sm"><p>B&O Tax (Calculated)</p><p>{formatCurrency(roundToHundredth(sellingPrice * BO_TAX_RATE))}</p></div>
+                <div className="flex justify-between border-t border-gray-300 pt-2 mt-2"><p className="font-semibold">Total Investment</p><p className="font-bold">{formatCurrency(roundToHundredth(baseInvestment + (sellingPrice * BO_TAX_RATE)))}</p></div>
+                <div className="flex justify-between"><p>ROI ({roiPercentage}%)</p><p className="font-medium">{formatCurrency(profit)}</p></div>
+                <div className="flex justify-between items-center bg-white p-2 rounded-lg shadow-inner mt-2">
+                  <p className="text-base font-bold text-gray-900">Final Price</p>
+                  <p className="text-lg font-bold text-red-600">{formatCurrency(sellingPrice)}</p>
                 </div>
+                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Final Price</p><p>{formatCurrency(sellingPrice)}</p></div>
+                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Add-ons</p><p>{formatCurrency(dealData.brakePlus + dealData.safeGuard + dealData.protectionPackage + dealData.gapInsurance + dealData.serviceContract)}</p></div>
+                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Trade Market Value</p><p className="font-semibold">{formatCurrency(dealData.tradeMarketValue)}</p></div>
+                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p className="text-yellow-900">Reconditioning</p><p className="text-yellow-900">({formatCurrency(totalTradeDevalue)})</p></div>
+                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Trade Value</p><p>{formatCurrency(dealData.tradeValue)}</p></div>
+                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Doc Fee</p><p>{formatCurrency(dealData.docFee)}</p></div>
+                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>License Estimate</p><p>{formatCurrency(dealData.licenseEstimate)}</p></div>
+                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Other Fees</p><p>{formatCurrency(dealData.titleFee + dealData.tireFee + dealData.otherFee)}</p></div>
+                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Sales Tax ({dealData.taxRate}%)</p><p>{formatCurrency(salesTax)}</p></div>
+                {dealData.isNewVehicle && <div className="flex justify-between text-sm text-red-600"><p>Rebates</p><p>({formatCurrency(dealData.rebates)})</p></div>}
+                <div className="flex justify-between text-base font-bold border-t border-gray-300 pt-2 mt-2"><p>Amount Financed</p><p>{formatCurrency(amountFinanced)}</p></div>
+              </div>
             </div>
+            {/* Finance Table + Trade Breakdown stacked */}
+            <div className="flex flex-col gap-6 w-full md:w-auto print:col-span-1">
+              <div className="bg-green-50 border border-green-200 p-6 rounded-xl shadow-sm flex flex-col">
+                <h3 className="text-xl font-bold text-green-900 mb-4 text-center">Trade Breakdown</h3>
+                {/* Prominent Trade Vehicle Card */}
+                <div className="mb-4 p-4 rounded-lg bg-white border border-green-300 shadow flex flex-col gap-1">
+                  <div className="text-lg font-bold text-green-900 flex flex-wrap items-center gap-2">
+                    {dealData.tradeVehicleYear} {dealData.tradeVehicleMake} {dealData.tradeVehicleModel}
+                    {dealData.tradeVehicleTrim && <span className="ml-1 text-base font-semibold text-green-700">{dealData.tradeVehicleTrim}</span>}
+                  </div>
+                  <div className="text-sm text-gray-700 flex flex-wrap gap-x-6 gap-y-1 mt-1">
+                    <span><span className="font-semibold">VIN:</span> {dealData.tradeVehicleVin || '-'}</span>
+                    <span><span className="font-semibold">MPG:</span> {dealData.tradeVehicleMpg ? dealData.tradeVehicleMpg : '-'}{dealData.tradeVehicleMpg ? ' mpg' : ''}</span>
+                    <span><span className="font-semibold">Lease:</span> {dealData.tradeIsLease ? 'Yes' : 'No'}</span>
+                    <span><span className="font-semibold">Current Payment:</span> {dealData.tradeCurrentMonthlyPayment ? formatCurrency(dealData.tradeCurrentMonthlyPayment) : '-'}</span>
+                  </div>
+                </div>
+                <div className="space-y-1 text-gray-800">
+                  <div className="flex justify-between text-sm"><span>Market Value</span><span>{formatCurrency(dealData.tradeMarketValue)}</span></div>
+                  <div className="flex justify-between text-sm"><span>Reconditioning</span><span>({formatCurrency(totalTradeDevalue)})</span></div>
+                  <div className="flex justify-between text-sm"><span>Trade Value</span><span>{formatCurrency(dealData.tradeValue)}</span></div>
+                  <div className="flex justify-between text-sm"><span>Payoff</span><span>({formatCurrency(dealData.tradePayoff)})</span></div>
+                  <div className="flex justify-between text-sm font-bold border-t border-gray-300 pt-2 mt-2"><span>Net Trade</span><span>{formatCurrency(netTrade)}</span></div>
+                </div>
+              </div>
+              <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-sm flex flex-col mb-0">
+                <h3 className="text-xl font-bold text-blue-900 mb-4 text-center">Financing Options</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-full text-xs text-center rounded-xl shadow border border-gray-200 bg-white overflow-hidden">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="px-2 py-2 border-b border-gray-200 font-semibold text-gray-700 rounded-tl-xl">Down</th>
+                        <th className="px-2 py-2 border-b border-gray-200 font-semibold text-gray-700">Term</th>
+                        <th className="px-2 py-2 border-b border-gray-200 font-semibold text-gray-700">Financed</th>
+                        <th className="px-2 py-2 border-b border-gray-200 font-semibold text-gray-700 rounded-tr-xl">Payment</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(() => {
+                        const grouped = {};
+                        financeTableRows.forEach(row => {
+                          if (!grouped[row.down]) grouped[row.down] = [];
+                          grouped[row.down].push(row);
+                        });
+                        const downs = Object.keys(grouped).map(Number).sort((a, b) => a - b);
+                        let rowIdx = 0;
+                        return downs.flatMap(down => {
+                          const rows = grouped[down];
+                          return rows.map((row, tIdx) => {
+                            const isGroupFirst = tIdx === 0;
+                            const isGroupLast = tIdx === rows.length - 1;
+                            const groupBg = rowIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                            const tr = (
+                              <tr
+                                key={row.down + '-' + row.term}
+                                className={groupBg + ' transition hover:bg-blue-50'}
+                              >
+                                {isGroupFirst ? (
+                                  <td
+                                    rowSpan={rows.length}
+                                    className={'px-2 py-2 font-semibold text-gray-700 align-middle whitespace-nowrap border-r border-gray-100 bg-gray-50 rounded-l-xl ' + (rows.length > 1 ? 'border-t-2 border-b-2 border-gray-200' : '')}
+                                  >
+                                    {row.down === 0 ? 'Financed' : `$${row.down.toLocaleString()}`}
+                                  </td>
+                                ) : null}
+                                <td className={'px-2 py-2 text-gray-600 border-r border-gray-100' + (isGroupFirst ? ' border-t-2 border-gray-200' : '') + (isGroupLast ? ' border-b-2 border-gray-200' : '')}>{row.term}</td>
+                                <td className={'px-2 py-2 text-gray-600 border-r border-gray-100' + (isGroupFirst ? ' border-t-2 border-gray-200' : '') + (isGroupLast ? ' border-b-2 border-gray-200' : '')}>${row.amountFinanced.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                <td className={'px-2 py-2 font-bold text-blue-900 bg-blue-50 rounded-r-xl' + (isGroupFirst ? ' border-t-2 border-gray-200' : '') + (isGroupLast ? ' border-b-2 border-gray-200' : '')}>${row.payment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                              </tr>
+                            );
+                            return tr;
+                          });
+                        });
+                      })()}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
             <div className="bg-red-50 p-8 rounded-xl border border-red-200 printable-section sunset-exclusives-section">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">The Sunset Exclusives</h3>
@@ -845,96 +527,311 @@ const OfferSheet = ({ dealData, onGoBack }) => {
                 </div>
             </div>
 
-            <div className="flex justify-center pt-4 space-x-4 no-print">
-                <button onClick={onGoBack} className="bg-gray-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-gray-700 transition-colors duration-300">
-                    Go Back & Edit
-                </button>
-                <button onClick={() => window.print()} className="bg-red-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-300 flex items-center">
-                    <Printer className="h-5 w-5 mr-2" />
-                    Print Offer
-                </button>
+            <div className="flex flex-col items-center pt-4 space-y-2 no-print mb-9">
+                <div className="bg-yellow-100 border border-yellow-300 text-yellow-900 rounded px-4 py-2 text-sm max-w-xl mb-2">
+                  <strong>Print Tip:</strong> For best results, select <b>Landscape</b> orientation in your print dialog if prompted.
+                </div>
+                <div className="flex space-x-4">
+                  <button onClick={onGoBack} className="bg-gray-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-gray-700 transition-colors duration-300">
+                      Go Back & Edit
+                  </button>
+                  {/* <button onClick={() => window.print()} className="bg-red-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-300 flex items-center">
+                      <Printer className="h-5 w-5 mr-2" />
+                      Print Offer
+                  </button> */}
+                  <button
+                    className="px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 font-semibold"
+                    onClick={onShowTradeVsPrivate}
+                  >
+                    Show Trade vs Private Sale
+                  </button>
+                </div>
             </div>
         </div>
     );
 };
 
+// --- Settings Modal Component ---
+function SettingsModal({ open, onClose, settings, setSettings }) {
+  const [layout, setLayout] = useState(settings.layout || 'steps');
+  const [tradeDevalueItems, setTradeDevalueItems] = useState(settings.tradeDevalueItems || []);
+  const [newItemLabel, setNewItemLabel] = useState('');
+  const [newItemPrice, setNewItemPrice] = useState('');
+
+  useEffect(() => {
+    if (open) {
+      setLayout(settings.layout || 'steps');
+      setTradeDevalueItems(settings.tradeDevalueItems || []);
+    }
+  }, [open, settings]);
+
+  const handleAddItem = () => {
+    if (!newItemLabel.trim() || isNaN(Number(newItemPrice))) return;
+    setTradeDevalueItems([...tradeDevalueItems, { label: newItemLabel.trim(), price: Number(newItemPrice) }]);
+    setNewItemLabel('');
+    setNewItemPrice('');
+  };
+  const handleRemoveItem = idx => {
+    setTradeDevalueItems(tradeDevalueItems.filter((_, i) => i !== idx));
+  };
+  const handleSave = () => {
+    setSettings({ layout, tradeDevalueItems });
+    localStorage.setItem('offerSheetSettings', JSON.stringify({ layout, tradeDevalueItems }));
+    onClose();
+  };
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-lg relative">
+        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-xl">×</button>
+        <h2 className="text-2xl font-bold mb-6">Settings</h2>
+        <div className="mb-6">
+          <label className="block font-semibold mb-2">Form Layout</label>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2">
+              <input type="radio" name="layout" value="steps" checked={layout === 'steps'} onChange={() => setLayout('steps')} /> Steps
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="radio" name="layout" value="tabs" checked={layout === 'tabs'} onChange={() => setLayout('tabs')} /> Tabs
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="radio" name="layout" value="single" checked={layout === 'single'} onChange={() => setLayout('single')} /> Single Page
+            </label>
+          </div>
+        </div>
+        <div>
+          <label className="block font-semibold mb-2">Trade Devalue Items</label>
+          <ul className="mb-2">
+            {tradeDevalueItems.map((item, idx) => (
+              <li key={idx} className="flex items-center gap-2 mb-1">
+                <span className="flex-1">{item.label} <span className="text-gray-500">({formatCurrency(item.price)})</span></span>
+                <button onClick={() => handleRemoveItem(idx)} className="text-red-500 hover:underline text-xs">Remove</button>
+              </li>
+            ))}
+          </ul>
+          <div className="flex gap-2 mb-2">
+            <input type="text" placeholder="Item label" className="border rounded p-2 flex-1" value={newItemLabel} onChange={e => setNewItemLabel(e.target.value)} />
+            <input type="number" placeholder="Price" className="border rounded p-2 w-24" value={newItemPrice} onChange={e => setNewItemPrice(e.target.value)} />
+            <button type="button" className="bg-red-600 text-white px-3 py-2 rounded" onClick={handleAddItem}>Add</button>
+          </div>
+        </div>
+        <div className="flex justify-end mt-6 gap-2">
+          <button onClick={onClose} className="px-4 py-2 rounded bg-gray-200 text-gray-700 font-semibold">Cancel</button>
+          <button onClick={handleSave} className="px-4 py-2 rounded bg-red-600 text-white font-semibold">Save</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- TabbedForm Component ---
+function TabbedForm({ dealData, setDealData, onGenerateOffer, settings, setSettings }) {
+  const [tab, setTab] = useState(0);
+  const totalTabs = steps.length;
+  const handleChange = (e) => {
+    const { name, value, type } = e.target;
+    setDealData(prevData => {
+      let newData = { ...prevData };
+      if (name === 'tradeMarketValue') {
+        newData.tradeMarketValue = parseFloat(value) || 0;
+        const totalDevalue = getTotalTradeDevalue(newData, settings);
+        newData.tradeValue = roundToHundredth(newData.tradeMarketValue - totalDevalue);
+      } else if (name === 'tradeValue') {
+        newData.tradeValue = parseFloat(value) || 0;
+        const totalDevalue = getTotalTradeDevalue(newData, settings);
+        newData.tradeMarketValue = roundToHundredth(newData.tradeValue + totalDevalue);
+      } else {
+        newData[name] = type === 'number' ? parseFloat(value) || 0 : type === 'checkbox' ? value : value;
+      }
+      return newData;
+    });
+  };
+  return (
+    <form className="relative max-w-4xl mx-auto bg-white rounded-xl shadow-md p-0 flex flex-col min-h-[600px]">
+      {/* Responsive Tabs: horizontal scroll on mobile, sidebar on desktop */}
+      <div className="block md:hidden sticky top-[64px] z-10 bg-white border-b overflow-x-auto no-scrollbar">
+        <div className="flex flex-row gap-1 px-2 py-2">
+          {steps.map((s, i) => (
+            <button
+              key={s.title}
+              type="button"
+              className={`flex-1 min-w-[120px] whitespace-nowrap px-3 py-2 text-xs font-semibold rounded transition-colors duration-200 ${i === tab ? 'bg-red-600 text-white shadow' : 'bg-gray-100 text-gray-700 hover:bg-red-100'}`}
+              onClick={() => setTab(i)}
+              style={{ flex: '0 0 auto' }}
+            >
+              <span className="flex items-center gap-1 justify-center">{s.icon}{s.title}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="hidden md:flex w-56 border-r bg-gray-50 rounded-l-xl flex-col py-8 pr-0 absolute h-full left-0 top-0 z-0">
+        {steps.map((s, i) => (
+          <button
+            key={s.title}
+            type="button"
+            className={`text-left px-6 py-3 font-semibold border-l-4 transition-colors duration-200 mb-1 ${i === tab ? 'border-red-600 bg-white text-red-600 shadow' : 'border-transparent text-gray-600 hover:text-red-600 hover:bg-gray-100'}`}
+            onClick={() => setTab(i)}
+          >
+            <span className="flex items-center gap-2">{s.icon}{s.title}</span>
+          </button>
+        ))}
+      </div>
+      {/* Form Content */}
+      <div className="flex-1 p-4 md:p-10 md:ml-56">
+        {React.createElement(stepComponents[tab], {
+          dealData,
+          setDealData,
+          handleChange,
+          settings,
+          setSettings
+        })}
+        <div className="flex justify-between pt-8">
+          <button type="button" onClick={() => setTab(Math.max(0, tab - 1))} disabled={tab === 0} className={`px-6 py-3 rounded-lg font-bold shadow transition-all duration-300 ${tab === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-600 text-white hover:bg-gray-700'}`}>Back</button>
+          <button type="button" onClick={() => tab === totalTabs - 1 ? onGenerateOffer() : setTab(tab + 1)} className="bg-red-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-300">
+            {tab === totalTabs - 1 ? 'Review Offer' : 'Next'}
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+}
+// --- SinglePageForm Component ---
+function SinglePageForm({ dealData, setDealData, onGenerateOffer, settings, setSettings }) {
+  const handleChange = (e) => {
+    const { name, value, type } = e.target;
+    setDealData(prevData => {
+      let newData = { ...prevData };
+      if (name === 'tradeMarketValue') {
+        newData.tradeMarketValue = parseFloat(value) || 0;
+        const totalDevalue = getTotalTradeDevalue(newData, settings);
+        newData.tradeValue = roundToHundredth(newData.tradeMarketValue - totalDevalue);
+      } else if (name === 'tradeValue') {
+        newData.tradeValue = parseFloat(value) || 0;
+        const totalDevalue = getTotalTradeDevalue(newData, settings);
+        newData.tradeMarketValue = roundToHundredth(newData.tradeValue + totalDevalue);
+      } else {
+        newData[name] = type === 'number' ? parseFloat(value) || 0 : type === 'checkbox' ? value : value;
+      }
+      return newData;
+    });
+  };
+  return (
+    <form className="relative max-w-2xl mx-auto" onSubmit={e => { e.preventDefault(); onGenerateOffer(); }}>
+      {stepComponents.map((StepComponent, idx) => (
+        <div key={steps[idx].title} className="mb-8">
+          {React.createElement(StepComponent, {
+            dealData,
+            setDealData,
+            handleChange,
+            settings,
+            setSettings
+          })}
+        </div>
+      ))}
+      <div className="flex justify-end pt-4">
+        <button type="submit" className="bg-red-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-300">Review Offer</button>
+      </div>
+    </form>
+  );
+}
+
+// --- Shared VIN lookup logic for all forms ---
+
 // --- Main App Component ---
 
 export default function App() {
-    const [page, setPage] = useState('form'); // 'form' or 'offer'
-    const [dealData, setDealData] = useState(initialDealData);
+  const {
+    page,
+    setPage,
+    dealData,
+    setDealData,
+    settingsOpen,
+    setSettingsOpen,
+    settings,
+    setSettings,
+  } = useAppStore();
 
-    const logoUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRe20azLghiq6B4uoUgyV5A_j5zjglEyeNF9g&s";
+  // Ensure tradePayoff is initialized from tradePayOff in dealData if not already set
+  useEffect(() => {
+    if (dealData.tradePayOff !== undefined && (dealData.tradePayoff === undefined || dealData.tradePayoff === '')) {
+      setDealData({ ...dealData, tradePayoff: dealData.tradePayOff });
+    }
+  }, [dealData, setDealData]);
 
-    const printStyles = `
-        @media print {
-          body {
-            background-color: #fff !important;
-          }
-          .no-print {
-            display: none !important;
-          }
-          main.container {
-            padding: 0 !important;
-            margin: 0.5in !important;
-            width: 100% !important;
-            max-width: 100% !important;
-          }
-          .printable-section {
-            box-shadow: none !important;
-            border: 1px solid #ccc !important;
-            background-color: #fff !important;
-            page-break-inside: avoid;
-          }
-          .bg-red-50, .bg-gray-50 {
-             background-color: #fff !important;
-             -webkit-print-color-adjust: exact;
-             color-adjust: exact;
-          }
-          .text-red-600 {
-              color: #dc2626 !important;
-              -webkit-print-color-adjust: exact;
-              color-adjust: exact;
-          }
-        }
-    `;
+  useEffect(() => {
+    localStorage.setItem('offerSheetSettings', JSON.stringify(settings));
+  }, [settings]);
 
-    const handleGenerateOffer = () => {
-        setPage('offer');
-        window.scrollTo(0, 0); // Scroll to top when page changes
-    };
+  const logoUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRe20azLghiq6B4uoUgyV5A_j5zjglEyeNF9g&s";
 
-    const handleGoBack = () => {
-        setPage('form');
-        window.scrollTo(0, 0);
-    };
+  const handleGenerateOffer = () => {
+    setPage('offer');
+    window.scrollTo(0, 0);
+  };
 
-    return (
-        <div className="bg-gray-100 min-h-screen font-sans">
-            <style>{printStyles}</style>
-            <header className="bg-black text-white p-4 shadow-lg sticky top-0 z-10 no-print">
-                <div className="container mx-auto flex justify-between items-center">
-                    <div className="flex items-center">
-                        <img src={logoUrl} alt="Sunset Chevrolet Logo" className="h-12" />
-                    </div>
-                    <p className="text-sm text-gray-300">{page === 'form' ? 'Deal Configuration' : 'Customer Offer Sheet'}</p>
-                </div>
-            </header>
+  const handleGoBack = () => {
+    setPage('form');
+    window.scrollTo(0, 0);
+  };
 
-            <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-                {page === 'form' ? (
-                    <SteppedForm dealData={dealData} setDealData={setDealData} onGenerateOffer={handleGenerateOffer} />
-                ) : (
-                    <OfferSheet dealData={dealData} onGoBack={handleGoBack} />
-                )}
-            </main>
-
-            <footer className="bg-black text-white mt-12 py-8 no-print">
-                <div className="container mx-auto text-center">
-                    <p className="font-semibold">Sunset Chevrolet</p>
-                    <p className="text-sm text-gray-400 mt-1">910 Traffic Ave, Sumner, WA 98390 | Sales: (253) 299-2561</p>
-                </div>
-            </footer>
+  return (
+    <div className="bg-gray-100 min-h-screen font-sans">
+      <header className="bg-black text-white p-4 shadow-lg sticky top-0 z-10 no-print">
+        <div className="container mx-auto flex justify-between items-center">
+          <div className="flex items-center">
+            <img src={logoUrl} alt="Sunset Chevrolet Logo" className="h-12" />
+          </div>
+          <div className="flex items-center gap-4">
+            <p className="text-sm text-gray-300">{page === 'form' ? 'Deal Configuration' : 'Customer Offer Sheet'}</p>
+            <button
+              onClick={() => setSettingsOpen(true)}
+              className="ml-4 p-2 rounded-full bg-gray-800 text-white hover:bg-gray-700 flex items-center justify-center"
+              aria-label="Settings"
+            >
+              <SettingsIcon className="h-6 w-6" />
+            </button>
+          </div>
         </div>
-    );
+      </header>
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} settings={settings} setSettings={setSettings} />
+      <main className="container mx-auto p-4 sm:p-6 lg:p-8">
+  {/* Show Trade vs Private Sale button moved to OfferSheet */}
+        {page === 'form' ? (
+          settings.layout === 'tabs' ? (
+            <TabbedForm dealData={dealData} setDealData={setDealData} onGenerateOffer={handleGenerateOffer} settings={settings} setSettings={setSettings} />
+          ) : settings.layout === 'single' ? (
+            <SinglePageForm dealData={dealData} setDealData={setDealData} onGenerateOffer={handleGenerateOffer} settings={settings} setSettings={setSettings} />
+          ) : (
+            <SteppedForm dealData={dealData} setDealData={setDealData} onGenerateOffer={handleGenerateOffer} settings={settings} setSettings={setSettings} />
+          )
+        ) : page === 'offer' ? (
+          <>
+            {/* Price display in top right for offer page is handled in OfferSheet */}
+            <OfferSheet dealData={dealData} onGoBack={handleGoBack} settings={settings} onShowTradeVsPrivate={() => setPage('trade-vs-private')} />
+          </>
+        ) : (
+          <>
+            {/* Print both OfferSheet and TradeVsPrivateSale on trade-vs-private page */}
+            <div className="print-offer-trade-wrapper">
+              <OfferSheet
+                dealData={dealData}
+                onGoBack={() => setPage('offer')}
+                settings={settings}
+                onShowTradeVsPrivate={() => {}}
+              />
+              <div className="print:break-before-page">
+                <TradeVsPrivateSale dealData={dealData} onBack={() => setPage('offer')} />
+              </div>
+            </div>
+          </>
+        )}
+      </main>
+      <footer className="bg-black text-white mt-12 py-8 no-print">
+        <div className="container mx-auto text-center">
+          <p className="font-semibold">Sunset Chevrolet</p>
+          <p className="text-sm text-gray-400 mt-1">910 Traffic Ave, Sumner, WA 98390 | Sales: (253) 299-2561</p>
+        </div>
+      </footer>
+    </div>
+  );
 }
