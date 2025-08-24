@@ -439,7 +439,7 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                     <span><span className="font-semibold">VIN:</span> {dealData.tradeVehicleVin || '-'}</span>
                     <span><span className="font-semibold">MPG:</span> {dealData.tradeVehicleMpg ? dealData.tradeVehicleMpg : '-'}{dealData.tradeVehicleMpg ? ' mpg' : ''}</span>
                     <span><span className="font-semibold">Lease:</span> {dealData.tradeIsLease ? 'Yes' : 'No'}</span>
-                    <span><span className="font-semibold">Current Payment:</span> {dealData.tradeCurrentMonthlyPayment ? formatCurrency(dealData.tradeCurrentMonthlyPayment) : '-'}</span>
+                    <span><span className="font-semibold">Current Payment:</span> {dealData.tradePayment ? formatCurrency(dealData.tradePayment) : '-'}</span>
                   </div>
                 </div>
                 <div className="space-y-1 text-gray-800">
@@ -751,11 +751,19 @@ export default function App() {
     setSettings,
   } = useAppStore();
 
-  // Ensure tradePayoff is initialized from tradePayOff in dealData if not already set
+  // Ensure tradePayoff and tradePayment are initialized from store defaults if not already set
   useEffect(() => {
+    let needsUpdate = false;
+    const updated = { ...dealData };
     if (dealData.tradePayOff !== undefined && (dealData.tradePayoff === undefined || dealData.tradePayoff === '')) {
-      setDealData({ ...dealData, tradePayoff: dealData.tradePayOff });
+      updated.tradePayoff = dealData.tradePayOff;
+      needsUpdate = true;
     }
+    if (dealData.tradePayment !== undefined && (dealData.tradePayment === undefined || dealData.tradePayment === '')) {
+      updated.tradePayment = 620; // match store.js default
+      needsUpdate = true;
+    }
+    if (needsUpdate) setDealData(updated);
   }, [dealData, setDealData]);
 
   useEffect(() => {
