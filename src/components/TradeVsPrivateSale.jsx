@@ -150,7 +150,8 @@ function TradeVsPrivateSale({ dealData, onBack }) {
       {/* OCFL Savings Table */}
       <div className="mb-10 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
         <div className="text-lg font-bold mb-2">Oil Change for Life (OCFL) Savings</div>
-        <table className="w-full text-sm text-center mb-2">
+  <div className="overflow-x-auto w-full">
+  <table className="w-full min-w-[400px] text-xs text-center mb-2">
           <thead>
             <tr className="bg-yellow-100">
               <th className="px-2 py-1">Oil Change Cost</th>
@@ -167,13 +168,15 @@ function TradeVsPrivateSale({ dealData, onBack }) {
               <td className="px-2 py-1">{formatCurrency(OCFL_MONTHLY_SAVINGS)}</td>
             </tr>
           </tbody>
-        </table>
+  </table>
+  </div>
       </div>
 
       {/* WPFL Table */}
       <div className="mb-10 bg-gray-50 border border-gray-200 rounded-lg p-6">
         <div className="text-lg font-bold mb-2">Warranty Protection for Life (WPFL) Monthly Cost</div>
-        <table className="w-full text-sm text-center mb-2">
+  <div className="w-full">
+  <table className="w-full text-xs text-center mb-2">
           <thead>
             <tr className="bg-gray-100">
               <th className="px-2 py-1">Sunset Chevrolet</th>
@@ -190,20 +193,22 @@ function TradeVsPrivateSale({ dealData, onBack }) {
               <td className="px-2 py-1">{formatCurrency(WPFL_OPTIONAL)}</td>
             </tr>
           </tbody>
-        </table>
+  </table>
+  </div>
       </div>
 
       {/* Fuel Savings Table */}
       <div className="mb-10 bg-blue-50 border border-blue-200 rounded-lg p-6">
         <div className="text-lg font-bold mb-2">Fuel Savings</div>
-        <table className="w-full text-sm text-center mb-2">
+  <div className="w-full">
+  <table className="w-full text-xs text-center mb-2">
           <thead>
             <tr className="bg-blue-100">
-              <th className="px-2 py-1">Vehicle</th>
+              <th className="px-2 py-1">Type</th>
               <th className="px-2 py-1">MPG</th>
-              <th className="px-2 py-1">Miles/Month</th>
-              <th className="px-2 py-1">Gallons/Month</th>
-              <th className="px-2 py-1">Gas Price</th>
+              <th className="px-2 py-1">Miles</th>
+              <th className="px-2 py-1">Gal/mo</th>
+              <th className="px-2 py-1">$/Gal</th>
             </tr>
           </thead>
           <tbody>
@@ -222,8 +227,9 @@ function TradeVsPrivateSale({ dealData, onBack }) {
               <td className="px-2 py-1">{formatCurrency(GAS_PRICE)}</td>
             </tr>
           </tbody>
-        </table>
-        <div className="flex justify-between items-center mt-2 text-blue-900 font-semibold">
+  </table>
+  </div>
+        <div className="flex flex-col gap-1 sm:flex-row sm:gap-0 sm:justify-between sm:items-center mt-2 text-blue-900 font-semibold text-center sm:text-left">
           <span>Net Savings</span>
           <span>MPG: {NET_MPG > 0 ? '+' : ''}{NET_MPG}</span>
           <span>Gallons: {NET_GALLONS.toFixed(1)}</span>
@@ -234,7 +240,8 @@ function TradeVsPrivateSale({ dealData, onBack }) {
       {/* Cost of Ownership Adjustment Table */}
       <div className="mb-10 bg-green-50 border border-green-200 rounded-lg p-6">
         <div className="text-lg font-bold mb-2">Cost of Ownership Adjustment</div>
-        <table className="w-full text-sm text-center mb-2">
+  <div className="w-full">
+  <table className="w-full text-xs text-center mb-2">
           <thead>
             <tr className="bg-green-100">
               <th className="px-2 py-1">WPFL</th>
@@ -251,7 +258,8 @@ function TradeVsPrivateSale({ dealData, onBack }) {
               <td className="px-2 py-1 font-bold">{formatCurrency(COST_OF_OWNERSHIP_TOTAL)}</td>
             </tr>
           </tbody>
-        </table>
+  </table>
+  </div>
       </div>
 
       {/* Cost of Ownership Adjustment Summary Box */}

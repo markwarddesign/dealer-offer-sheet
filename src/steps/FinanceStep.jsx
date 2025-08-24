@@ -133,7 +133,8 @@ export default function FinanceStep() {
           </div>
 
           <div className="w-full mt-12">
-            <table className="w-full min-w-full text-base text-center rounded-xl shadow-lg border border-gray-200 bg-white">
+            <div className="w-full">
+            <table className="w-full text-xs text-center rounded-xl shadow-lg border border-gray-200 bg-white">
               <thead>
                 <tr className="bg-gray-100">
                   <th className="px-4 py-3 border-b border-gray-200 font-bold text-gray-700">Down Payment</th>
@@ -184,6 +185,7 @@ export default function FinanceStep() {
                 })()}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
     </FormSection>

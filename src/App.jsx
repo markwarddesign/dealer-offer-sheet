@@ -452,8 +452,8 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
               </div>
               <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-sm flex flex-col mb-0">
                 <h3 className="text-xl font-bold text-blue-900 mb-4 text-center">Financing Options</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-full text-xs text-center rounded-xl shadow border border-gray-200 bg-white overflow-hidden">
+                <div className="w-full">
+                  <table className="w-full text-xs text-center rounded-xl shadow border border-gray-200 bg-white overflow-hidden">
                     <thead>
                       <tr className="bg-gray-100">
                         <th className="px-2 py-2 border-b border-gray-200 font-semibold text-gray-700 rounded-tl-xl">Down</th>
@@ -647,7 +647,7 @@ function TabbedForm({ dealData, setDealData, onGenerateOffer, settings, setSetti
   return (
     <form className="relative max-w-4xl mx-auto bg-white rounded-xl shadow-md p-0 flex flex-col min-h-[600px]">
       {/* Responsive Tabs: horizontal scroll on mobile, sidebar on desktop */}
-      <div className="block md:hidden sticky top-[64px] z-10 bg-white border-b overflow-x-auto no-scrollbar">
+      <div className="block md:hidden sticky top-[64px] z-10 bg-white border-b no-scrollbar">
         <div className="flex flex-row gap-1 px-2 py-2">
           {steps.map((s, i) => (
             <button
