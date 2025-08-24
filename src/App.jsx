@@ -528,9 +528,7 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
             </div>
 
             <div className="flex flex-col items-center pt-4 space-y-2 no-print mb-9">
-                <div className="bg-yellow-100 border border-yellow-300 text-yellow-900 rounded px-4 py-2 text-sm max-w-xl mb-2">
-                  <strong>Print Tip:</strong> For best results, select <b>Landscape</b> orientation in your print dialog if prompted.
-                </div>
+              
                 <div className="flex space-x-4">
                   <button onClick={onGoBack} className="bg-gray-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-gray-700 transition-colors duration-300">
                       Go Back & Edit
