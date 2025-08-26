@@ -7,7 +7,8 @@ export default function AddonsStep() {
   const { dealData, updateDealData } = useAppStore();
   const handleChange = (e) => {
     const { name, value } = e.target;
-    updateDealData({ [name]: value });
+    // Always store as number (or 0 if blank)
+    updateDealData({ [name]: value === '' ? 0 : Number(value) });
   };
   return (
     <FormSection title="Value Add-ons" icon={null}>

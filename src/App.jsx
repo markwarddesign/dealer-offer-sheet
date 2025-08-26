@@ -120,6 +120,7 @@ const steps = [
       { label: "Reconditioning Cost", name: "reconditioningCost", type: "number" },
       { label: "Advertising Cost", name: "advertisingCost", type: "number" },
       { label: "Flooring Cost", name: "flooringCost", type: "number" },
+      { label: "Interest Rate (%)", name: "interestRate", type: "number", helpText: "Used for finance calculations." },
       // New Vehicle checkbox
       { label: "Is this a new vehicle?", name: "isNewVehicle", type: "checkbox", helpText: "Check if the vehicle being purchased is new." },
       // Rebates, only show if new vehicle
@@ -313,7 +314,18 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
     }
   // Net Trade should match TradeStep Net Trade Equity: tradeValue - tradePayoff
   const netTrade = roundToHundredth(dealData.tradeValue - dealData.tradePayoff);
-    const totalAddons = roundToHundredth(dealData.protectionPackage + dealData.gapInsurance + dealData.serviceContract + dealData.brakePlus + dealData.safeGuard);
+    // Use dealData value if set, else fallback to store default
+    const getAddon = (key, fallback = 0) => {
+      const val = dealData[key];
+      return val !== undefined && val !== '' ? Number(val) : fallback;
+    };
+    const totalAddons = roundToHundredth(
+      getAddon('protectionPackage', 0) +
+      getAddon('gapInsurance', 0) +
+      getAddon('serviceContract', 0) +
+      getAddon('brakePlus', 0) +
+      getAddon('safeGuard', 0)
+    );
     
     // If trade-in is a lease, tax is on full selling price + add-ons (no trade deduction)
     let taxableAmount;
@@ -448,7 +460,16 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                   <p className="text-lg font-bold text-red-600">{formatCurrency(sellingPrice)}</p>
                 </div>
                 <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Adjusted Price</p><p>{formatCurrency(sellingPrice)}</p></div>
-                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Add-ons</p><p>{formatCurrency(dealData.brakePlus + dealData.safeGuard + dealData.protectionPackage + dealData.gapInsurance + dealData.serviceContract)}</p></div>
+                {/* Value Add-ons itemized */}
+                <div className="flex justify-between text-sm py-1 border-b border-gray-100 font-semibold text-gray-700"><p>Value Add-ons</p><p></p></div>
+                <div className="pl-4">
+                  <div className="flex justify-between text-sm py-1 border-b border-gray-100"><span>Brake Plus</span><span>{formatCurrency(getAddon('brakePlus', 499))}</span></div>
+                  <div className="flex justify-between text-sm py-1 border-b border-gray-100"><span>Safe Guard</span><span>{formatCurrency(getAddon('safeGuard', 249))}</span></div>
+                  <div className="flex justify-between text-sm py-1 border-b border-gray-100"><span>Protection Package</span><span>{formatCurrency(getAddon('protectionPackage', 0))}</span></div>
+                  <div className="flex justify-between text-sm py-1 border-b border-gray-100"><span>GAP Insurance</span><span>{formatCurrency(getAddon('gapInsurance', 0))}</span></div>
+                  <div className="flex justify-between text-sm py-1 border-b border-gray-100"><span>Extended Service Contract</span><span>{formatCurrency(getAddon('serviceContract', 0))}</span></div>
+                  <div className="flex justify-between text-sm py-1 border-b border-gray-100 font-bold"><span>Total Add-ons</span><span>{formatCurrency(totalAddons)}</span></div>
+                </div>
                 {dealData.hasTrade && (
                   <>
                     <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Trade Market Value</p><p className="font-semibold">{formatCurrency(dealData.tradeMarketValue)}</p></div>
@@ -597,11 +618,32 @@ function SettingsModal({ open, onClose, settings, setSettings }) {
   const [tradeDevalueItems, setTradeDevalueItems] = useState(settings.tradeDevalueItems || []);
   const [newItemLabel, setNewItemLabel] = useState('');
   const [newItemPrice, setNewItemPrice] = useState('');
+  // WPFL/OCFL settings
+  const [wpflName, setWpflName] = useState(settings.wpflName || 'Warranty Protection for Life (WPFL)');
+  const [wpflOptions, setWpflOptions] = useState(settings.wpflOptions || [
+    { label: 'Sunset Chevrolet', price: 0 },
+    { label: 'CarShield', price: 149 },
+    { label: 'Endurance', price: 125 },
+    { label: 'Optional Plan', price: 100 },
+  ]);
+  const [defaultWPFLIndex, setDefaultWPFLIndex] = useState(settings.defaultWPFLIndex ?? 0);
+  const [oilChangeCost, setOilChangeCost] = useState(settings.oilChangeCost ?? 150);
+  const [ocflYears, setOcflYears] = useState(settings.ocflYears ?? 5);
 
   useEffect(() => {
     if (open) {
       setLayout(settings.layout || 'steps');
       setTradeDevalueItems(settings.tradeDevalueItems || []);
+      setWpflName(settings.wpflName || 'Warranty Protection for Life (WPFL)');
+      setWpflOptions(settings.wpflOptions || [
+        { label: 'Sunset Chevrolet', price: 0 },
+        { label: 'CarShield', price: 149 },
+        { label: 'Endurance', price: 125 },
+        { label: 'Optional Plan', price: 100 },
+      ]);
+      setDefaultWPFLIndex(settings.defaultWPFLIndex ?? 0);
+      setOilChangeCost(settings.oilChangeCost ?? 150);
+      setOcflYears(settings.ocflYears ?? 5);
     }
   }, [open, settings]);
 
@@ -615,8 +657,26 @@ function SettingsModal({ open, onClose, settings, setSettings }) {
     setTradeDevalueItems(tradeDevalueItems.filter((_, i) => i !== idx));
   };
   const handleSave = () => {
-    setSettings({ layout, tradeDevalueItems });
-    localStorage.setItem('offerSheetSettings', JSON.stringify({ layout, tradeDevalueItems }));
+    setSettings({
+      ...settings,
+      layout,
+      tradeDevalueItems,
+      wpflName,
+      wpflOptions,
+      defaultWPFLIndex,
+      oilChangeCost: Number(oilChangeCost) || 0,
+      ocflYears: Number(ocflYears) || 1,
+    });
+    localStorage.setItem('offerSheetSettings', JSON.stringify({
+      ...settings,
+      layout,
+      tradeDevalueItems,
+      wpflName,
+      wpflOptions,
+      defaultWPFLIndex,
+      oilChangeCost: Number(oilChangeCost) || 0,
+      ocflYears: Number(ocflYears) || 1,
+    }));
     onClose();
   };
   if (!open) return null;
@@ -653,6 +713,73 @@ function SettingsModal({ open, onClose, settings, setSettings }) {
             <input type="text" placeholder="Item label" className="border rounded p-2 flex-1" value={newItemLabel} onChange={e => setNewItemLabel(e.target.value)} />
             <input type="number" placeholder="Price" className="border rounded p-2 w-24" value={newItemPrice} onChange={e => setNewItemPrice(e.target.value)} />
             <button type="button" className="bg-red-600 text-white px-3 py-2 rounded" onClick={handleAddItem}>Add</button>
+          </div>
+        </div>
+        <div className="mt-8 border-t pt-6">
+          <label className="block font-semibold mb-2">WPFL & OCFL Settings</label>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
+              <input type="text" className="border rounded p-2 flex-1 mb-2" value={wpflName} onChange={e => setWpflName(e.target.value)} placeholder="WPFL Name" />
+              {wpflOptions.map((opt, idx) => (
+                <div key={idx} className="flex gap-2 items-center mb-1">
+                  <input
+                    type="text"
+                    className="border rounded p-2 flex-1"
+                    value={opt.label}
+                    onChange={e => {
+                      const newOpts = [...wpflOptions];
+                      newOpts[idx].label = e.target.value;
+                      setWpflOptions(newOpts);
+                    }}
+                    placeholder="Option Name"
+                  />
+                  <input
+                    type="number"
+                    className="border rounded p-2 w-24"
+                    value={opt.price}
+                    onChange={e => {
+                      const newOpts = [...wpflOptions];
+                      newOpts[idx].price = Number(e.target.value) || 0;
+                      setWpflOptions(newOpts);
+                    }}
+                    placeholder="Price"
+                  />
+                  <input
+                    type="radio"
+                    name="defaultWPFL"
+                    checked={defaultWPFLIndex === idx}
+                    onChange={() => setDefaultWPFLIndex(idx)}
+                    className="ml-2"
+                    title="Set as default"
+                  />
+                  <span className="text-xs text-gray-500">Default</span>
+                  <button type="button" className="text-gray-500 hover:text-gray-900" onClick={() => {
+                    if (idx > 0) {
+                      const newOpts = [...wpflOptions];
+                      [newOpts[idx-1], newOpts[idx]] = [newOpts[idx], newOpts[idx-1]];
+                      setWpflOptions(newOpts);
+                    }
+                  }}>↑</button>
+                  <button type="button" className="text-gray-500 hover:text-gray-900" onClick={() => {
+                    if (idx < wpflOptions.length - 1) {
+                      const newOpts = [...wpflOptions];
+                      [newOpts[idx+1], newOpts[idx]] = [newOpts[idx], newOpts[idx+1]];
+                      setWpflOptions(newOpts);
+                    }
+                  }}>↓</button>
+                  <button type="button" className="text-red-500 hover:text-red-700" onClick={() => {
+                    setWpflOptions(wpflOptions.filter((_, i) => i !== idx));
+                    if (defaultWPFLIndex === idx) setDefaultWPFLIndex(0);
+                  }}>✕</button>
+                </div>
+              ))}
+              <button type="button" className="bg-blue-600 text-white px-2 py-1 rounded text-xs mt-1 w-fit" onClick={() => setWpflOptions([...wpflOptions, { label: '', price: 0 }])}>Add Option</button>
+            </div>
+            <div className="flex gap-2 items-center">
+              <input type="number" className="border rounded p-2 w-32" value={oilChangeCost} onChange={e => setOilChangeCost(e.target.value)} placeholder="Oil Change Cost" />
+              <input type="number" className="border rounded p-2 w-32" value={ocflYears} onChange={e => setOcflYears(e.target.value)} placeholder="Years" min={1} />
+              <span className="text-xs text-gray-500">Oil Change for Life (OCFL)</span>
+            </div>
           </div>
         </div>
         <div className="flex justify-end mt-6 gap-2">

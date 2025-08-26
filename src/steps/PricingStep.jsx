@@ -41,8 +41,13 @@ export default function PricingStep() {
   }, [settings.roiPercentage, dealData.sellingPrice]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    updateDealData({ [name]: value });
+    const { name, value, type } = e.target;
+    // Always store as number for interestRate
+    if (name === 'interestRate') {
+      updateDealData({ [name]: value === '' ? '' : Number(value) });
+    } else {
+      updateDealData({ [name]: value });
+    }
   };
 
   return (
@@ -91,6 +96,19 @@ export default function PricingStep() {
           className="block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-100 font-bold"
         />
         <div className="text-xs text-gray-600 mt-1">6.67% × 1.5 of Adjusted Acquisition Cost</div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Interest Rate (%)</label>
+        <input
+          type="number"
+          name="interestRate"
+          value={dealData.interestRate ?? 6.99}
+          onChange={handleChange}
+          step="0.01"
+          min="0"
+          className="block w-full rounded-md border-gray-300 shadow-sm p-2"
+        />
+        <div className="text-xs text-gray-600 mt-1">Used for finance calculations.</div>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700">Is this a new vehicle?</label>

@@ -14,7 +14,8 @@ const financeTerms = [24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84];
 
 export default function FinanceStep() {
   const { dealData, updateDealData } = useAppStore();
-  const rate = 6.99;
+  // Use interest rate from dealData, fallback to store default
+  const rate = dealData.interestRate !== undefined && dealData.interestRate !== '' ? Number(dealData.interestRate) : 6.99;
   const initialTerms = Array.isArray(dealData.financeTerm)
     ? dealData.financeTerm.map(Number).filter(t => !isNaN(t) && isFinite(t))
     : [];
@@ -133,6 +134,9 @@ export default function FinanceStep() {
           </div>
 
           <div className="w-full mt-12">
+            <div className="mb-2 text-right text-sm text-gray-700 font-semibold">
+              Interest Rate: <span className="text-red-700">{rate.toFixed(2)}%</span>
+            </div>
             <div className="w-full">
             <table className="w-full text-xs text-center rounded-xl shadow-lg border border-gray-200 bg-white">
               <thead>

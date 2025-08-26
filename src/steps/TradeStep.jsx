@@ -255,7 +255,7 @@ export default function TradeStep() {
 
   return (
     <FormSection title="Customer Allowances & Trade">
-      <div className="col-span-full mb-4">
+      <div className="col-span-full mb-4 flex flex-wrap items-center gap-4">
         <label className="flex items-center gap-3 text-base font-semibold cursor-pointer select-none">
           <span>Is there a trade?</span>
           <span className="relative inline-block w-12 align-middle select-none transition duration-200 ease-in">
@@ -280,6 +280,31 @@ export default function TradeStep() {
             <span className="dot absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition peer-checked:translate-x-5 shadow" />
           </span>
         </label>
+        {/* Market Data Inputs */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-center ml-auto bg-yellow-50 border border-yellow-300 rounded-lg px-4 py-2 shadow font-semibold text-yellow-900">
+          <div className="flex flex-col items-center">
+            <label className="text-xs font-bold uppercase tracking-wide mb-1"># in Market</label>
+              <input
+                type="number"
+                name="vehiclesInMarket"
+                min="0"
+                value={dealData.vehiclesInMarket ?? ''}
+                onChange={e => updateDealData({ vehiclesInMarket: Number(e.target.value) })}
+              className="w-20 text-center font-bold rounded border border-yellow-400 bg-white p-1 focus:ring-2 focus:ring-yellow-400"
+            />
+          </div>
+          <div className="flex flex-col items-center">
+            <label className="text-xs font-bold uppercase tracking-wide mb-1">Avg Days to Sell</label>
+              <input
+                type="number"
+                name="avgDaysToSell"
+                min="0"
+                value={dealData.avgDaysToSell ?? ''}
+                onChange={e => updateDealData({ avgDaysToSell: Number(e.target.value) })}
+              className="w-20 text-center font-bold rounded border border-yellow-400 bg-white p-1 focus:ring-2 focus:ring-yellow-400"
+            />
+          </div>
+        </div>
       </div>
       {hasTrade && (
         <>

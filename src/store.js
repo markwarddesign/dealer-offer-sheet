@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 // --- Initial State ---
 const initialDealData = {
-  hasTrade: false,
+  hasTrade: true,
   buyerFirstName: 'John',
   buyerLastName: 'Appleseed',
   buyerPhone: '555-123-4567',
@@ -23,7 +23,7 @@ const initialDealData = {
   sellingPrice: 31869,
   roiPercentage: 5,
   rebates: 0,
-  tradeValue: 4500,
+  tradeValue: 26500,
   tradeMarketValue: 30500,
   tradePayOff: 26000,
   tradeVehicleVin: '1gnevkkw7pj207470',
@@ -41,6 +41,9 @@ const initialDealData = {
   licenseEstimate: 675,
   brakePlus: 499,
   safeGuard: 249,
+  protectionPackage: 0,
+  gapInsurance: 0,
+  serviceContract: 0,
   taxRate: 9.8,
   tradeIsLease: false,
   tradeCurrentMonthlyPayment: '',
@@ -51,6 +54,9 @@ const initialDealData = {
   tradeDevalueSelected: [0,1,2,3],
   wpfl: true,
   ocfl: true,
+  interestRate: 6.99,
+  vehiclesInMarket: 100,
+  avgDaysToSell: 75,
 };
 
 const defaultSettings = {
@@ -61,6 +67,17 @@ const defaultSettings = {
     { label: 'Tires', price: 900 },
     { label: 'Safety Inspection', price: 800 },
   ],
+  wpflName: 'Warranty Protection for Life (WPFL)',
+  wpflOptions: [
+    { label: 'Sunset Chevrolet', price: 0 },
+    { label: 'CarShield', price: 149 },
+    { label: 'Endurance', price: 125 },
+    { label: 'Optional Plan', price: 100 },
+  ],
+  defaultWPFLIndex: 0,
+  oilChangeCost: 150,
+  ocflYears: 5,
+  interestRate: 6.99,
 };
 
 export const useAppStore = create((set) => ({

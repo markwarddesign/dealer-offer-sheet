@@ -1,5 +1,7 @@
+
 // ...existing code...
 import React from "react";
+import { useAppStore } from '../store';
 
 // Helper function to format currency
 const formatCurrency = (amount) => {
@@ -12,6 +14,26 @@ const formatCurrency = (amount) => {
 };
 
 function TradeVsPrivateSale({ dealData, onBack }) {
+  // Market data values
+  const vehiclesInMarket = dealData.vehiclesInMarket ?? '';
+  const avgDaysToSell = dealData.avgDaysToSell ?? '';
+  // --- Add-ons Calculation ---
+  const totalAddons =
+    Number(dealData.brakePlus) +
+    Number(dealData.safeGuard) +
+    Number(dealData.protectionPackage) +
+    Number(dealData.gapInsurance) +
+    Number(dealData.serviceContract);
+  // Always use the latest settings from the global store for live updates
+  const settings = useAppStore(state => state.settings);
+  const WPFL_OPTIONS = settings.wpflOptions || [
+    { label: 'Sunset Chevrolet', price: 0 },
+    { label: 'CarShield', price: 149 },
+    { label: 'Endurance', price: 125 },
+    { label: 'Optional Plan', price: 100 },
+  ];
+  const defaultWPFLIndex = settings.defaultWPFLIndex ?? 0;
+  const WPFL_SELECTED = WPFL_OPTIONS[defaultWPFLIndex] || WPFL_OPTIONS[0];
   // Print styles are now in a separate CSS file
   // Helper to calculate monthly savings for selected months
   // Removed unused getMonthlySavings function and requiredSalePrice variable
@@ -41,20 +63,17 @@ function TradeVsPrivateSale({ dealData, onBack }) {
   // Removed unused savings variable
 
   // --- OCFL/WPFL/Fuel Savings Example Data ---
-  const OIL_CHANGE_COST = 150;
-  const OCFL_YEARS = 5;
+  const OIL_CHANGE_COST = settings.oilChangeCost ?? 150;
+  const OCFL_YEARS = settings.ocflYears ?? 5;
   const OCFL_YEARLY_SAVINGS = OIL_CHANGE_COST;
   const OCFL_TOTAL_SAVINGS = OIL_CHANGE_COST * OCFL_YEARS;
   const OCFL_MONTHLY_SAVINGS = OCFL_TOTAL_SAVINGS / 12;
 
-  const WPFL_SUNSET = 0;
-  const WPFL_CARSHIELD = 149;
-  const WPFL_ENDURANCE = 125;
-  const WPFL_OPTIONAL = 100;
+  const WPFL_NAME = settings.wpflName || 'Warranty Protection for Life (WPFL)';
 
   // Fuel savings
   const NEW_MPG = Number(dealData.vehicleMpg) || 28;
-  const TRADE_MPG = Number(dealData.tradeMPG) || 19;
+  const TRADE_MPG = Number(dealData.tradeVehicleMpg) || 19;
   const MILES_PER_MONTH = 1500;
   const GAS_PRICE = 4.80;
   const NEW_GALLONS = NEW_MPG > 0 ? MILES_PER_MONTH / NEW_MPG : 0;
@@ -64,7 +83,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
   const FUEL_SAVINGS = (TRADE_MPG > 0 && NEW_MPG > 0) ? (TRADE_GALLONS - NEW_GALLONS) * GAS_PRICE : 0;
 
   // Cost of Ownership Adjustment
-  const COST_OF_OWNERSHIP_TOTAL = WPFL_ENDURANCE + OCFL_MONTHLY_SAVINGS + FUEL_SAVINGS;
+  const COST_OF_OWNERSHIP_TOTAL = (WPFL_SELECTED?.price ?? 0) + OCFL_MONTHLY_SAVINGS + FUEL_SAVINGS;
 
   if (!dealData.hasTrade) {
     return null;
@@ -116,34 +135,46 @@ function TradeVsPrivateSale({ dealData, onBack }) {
 
             </div>
             <div className="mt-4">
-            <div className="font-semibold text-blue-800 mb-2">Cons:</div>
-            <ul className="list-disc pl-5 text-blue-900 text-sm space-y-1">
-              <li>No tax credit ({formatCurrency(tradeValue * TAX_RATE)})</li>
-              <li>Must market and advertise yourself</li>
-              <div className="my-2">
-                <div className="font-semibold text-blue-800 mb-1">Payments While Selling:</div>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  {[1,2,3].map((mo) => (
-                    <button
-                      type="button"
-                      key={mo}
-                      onClick={() => setSelectedMonths(mo)}
-                      className={
-                        selectedMonths === mo
-                          ? 'bg-blue-900 text-white rounded p-2 ring-2 ring-blue-700'
-                          : 'bg-blue-100 text-blue-900 rounded p-2 hover:bg-blue-200'
-                      }
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <div className="font-bold">{mo} mo</div>
-                      <div>{formatCurrency(MONTHLY_PAYMENT * mo)}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <li>Potential for more hassle and risk</li>
-            </ul>
-          </div>
+              <div className="font-semibold text-blue-800 mb-2">Cons:</div>
+              <ul className="list-disc pl-5 text-blue-900 text-sm space-y-1">
+                <li>No tax credit ({formatCurrency(tradeValue * TAX_RATE)})</li>
+                <li>Must market and advertise yourself</li>
+                <li className="!list-none !pl-0">
+                  <div className="my-2">
+                    <div className="font-semibold text-blue-800 mb-1">Payments While Selling:</div>
+                    <div className="grid grid-cols-3 gap-2 text-center mb-2">
+                      {[1,2,3].map((mo) => (
+                        <button
+                          type="button"
+                          key={mo}
+                          onClick={() => setSelectedMonths(mo)}
+                          className={
+                            selectedMonths === mo
+                              ? 'bg-blue-900 text-white rounded p-2 ring-2 ring-blue-700'
+                              : 'bg-blue-100 text-blue-900 rounded p-2 hover:bg-blue-200'
+                          }
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <div className="font-bold">{mo} mo</div>
+                          <div>{formatCurrency(MONTHLY_PAYMENT * mo)}</div>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full">
+                      <div className="bg-yellow-50 border border-yellow-300 rounded-lg px-6 py-2 shadow font-semibold text-yellow-900 flex flex-col items-center">
+                        <span className="text-xs font-bold uppercase tracking-wide"># in Market</span>
+                        <span className="text-lg">{vehiclesInMarket}</span>
+                      </div>
+                      <div className="bg-yellow-50 border border-yellow-300 rounded-lg px-6 py-2 shadow font-semibold text-yellow-900 flex flex-col items-center">
+                        <span className="text-xs font-bold uppercase tracking-wide">Avg Days to Sell</span>
+                        <span className="text-lg">{avgDaysToSell}</span>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li>Potential for more hassle and risk</li>
+              </ul>
+            </div>
            
         </div>
     </div>
@@ -176,25 +207,23 @@ function TradeVsPrivateSale({ dealData, onBack }) {
       )}
 
       {/* WPFL Table */}
-      {dealData.wpfl && (
+      {dealData.wpfl && WPFL_OPTIONS.length > 0 && (
         <div className="mb-10 bg-gray-50 border border-gray-200 rounded-lg p-6">
-          <div className="text-lg font-bold mb-2">Warranty Protection for Life (WPFL) Monthly Cost</div>
+          <div className="text-lg font-bold mb-2">{WPFL_NAME} Monthly Cost</div>
           <div className="w-full">
             <table className="w-full text-xs text-center mb-2">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="px-2 py-1">Sunset Chevrolet</th>
-                  <th className="px-2 py-1">CarShield</th>
-                  <th className="px-2 py-1">Endurance</th>
-                  <th className="px-2 py-1">Optional Plan</th>
+                  {WPFL_OPTIONS.map((opt, idx) => (
+                    <th key={idx} className="px-2 py-1">{opt.label}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="px-2 py-1">{formatCurrency(WPFL_SUNSET)}</td>
-                  <td className="px-2 py-1">{formatCurrency(WPFL_CARSHIELD)}</td>
-                  <td className="px-2 py-1">{formatCurrency(WPFL_ENDURANCE)}</td>
-                  <td className="px-2 py-1">{formatCurrency(WPFL_OPTIONAL)}</td>
+                  {WPFL_OPTIONS.map((opt, idx) => (
+                    <td key={idx} className="px-2 py-1">{formatCurrency(opt.price)}</td>
+                  ))}
                 </tr>
               </tbody>
             </table>
@@ -226,7 +255,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
             </tr>
             <tr>
               <td className="px-2 py-1 font-semibold">Trade-In</td>
-              <td className="px-2 py-1">{Number(dealData.tradeMPG) || 19}</td>
+              <td className="px-2 py-1">{Number(dealData.tradeVehicleMpg) || 19}</td>
               <td className="px-2 py-1">{MILES_PER_MONTH}</td>
               <td className="px-2 py-1">{TRADE_GALLONS.toFixed(1)}</td>
               <td className="px-2 py-1">{formatCurrency(GAS_PRICE)}</td>
@@ -234,37 +263,68 @@ function TradeVsPrivateSale({ dealData, onBack }) {
           </tbody>
   </table>
   </div>
-        <div className="flex flex-col gap-1 sm:flex-row sm:gap-0 sm:justify-between sm:items-center mt-2 text-blue-900 font-semibold text-center sm:text-left">
-          <span>Net Savings</span>
-          <span>MPG: {NET_MPG > 0 ? '+' : ''}{NET_MPG}</span>
-          <span>Gallons: {NET_GALLONS.toFixed(1)}</span>
-          <span>Monthly: {formatCurrency(FUEL_SAVINGS)}</span>
+        {NET_MPG >= 0 && (
+          <div className="flex flex-col gap-1 sm:flex-row sm:gap-0 sm:justify-between sm:items-center mt-2 text-blue-900 font-semibold text-center sm:text-left">
+            <span>Net Savings</span>
+            <span>MPG: {NET_MPG > 0 ? '+' : ''}{NET_MPG}</span>
+            <span>Gallons: {NET_GALLONS.toFixed(1)}</span>
+            <span>Monthly: {formatCurrency(FUEL_SAVINGS)}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Add-ons Table */}
+      <div className="mb-10 bg-gray-50 border border-gray-200 rounded-lg p-6">
+        <div className="text-lg font-bold mb-2">Value Add-ons</div>
+        <div className="w-full">
+          <table className="w-full text-xs text-center mb-2">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="px-2 py-1">Brake Plus</th>
+                <th className="px-2 py-1">Safe Guard</th>
+                <th className="px-2 py-1">Protection Package</th>
+                <th className="px-2 py-1">GAP Insurance</th>
+                <th className="px-2 py-1">Service Contract</th>
+                <th className="px-2 py-1">Total Add-ons</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="px-2 py-1">{formatCurrency(Number(dealData.brakePlus))}</td>
+                <td className="px-2 py-1">{formatCurrency(Number(dealData.safeGuard))}</td>
+                <td className="px-2 py-1">{formatCurrency(Number(dealData.protectionPackage))}</td>
+                <td className="px-2 py-1">{formatCurrency(Number(dealData.gapInsurance))}</td>
+                <td className="px-2 py-1">{formatCurrency(Number(dealData.serviceContract))}</td>
+                <td className="px-2 py-1 font-bold">{formatCurrency(totalAddons)}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
       {/* Cost of Ownership Adjustment Table */}
       <div className="mb-10 bg-green-50 border border-green-200 rounded-lg p-6">
         <div className="text-lg font-bold mb-2">Cost of Ownership Adjustment</div>
-  <div className="w-full">
-  <table className="w-full text-xs text-center mb-2">
-          <thead>
-            <tr className="bg-green-100">
-              <th className="px-2 py-1">WPFL</th>
-              <th className="px-2 py-1">OCFL</th>
-              <th className="px-2 py-1">Fuel Savings</th>
-              <th className="px-2 py-1">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="px-2 py-1">{formatCurrency(WPFL_ENDURANCE)}</td>
-              <td className="px-2 py-1">{formatCurrency(OCFL_MONTHLY_SAVINGS)}</td>
-              <td className="px-2 py-1">{formatCurrency(FUEL_SAVINGS)}</td>
-              <td className="px-2 py-1 font-bold">{formatCurrency(COST_OF_OWNERSHIP_TOTAL)}</td>
-            </tr>
-          </tbody>
-  </table>
-  </div>
+        <div className="w-full">
+          <table className="w-full text-xs text-center mb-2">
+            <thead>
+              <tr className="bg-green-100">
+                <th className="px-2 py-1">WPFL</th>
+                <th className="px-2 py-1">OCFL</th>
+                <th className="px-2 py-1">Fuel Savings</th>
+                <th className="px-2 py-1">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="px-2 py-1">{formatCurrency(WPFL_SELECTED?.price ?? 0)}</td>
+                <td className="px-2 py-1">{formatCurrency(OCFL_MONTHLY_SAVINGS)}</td>
+                <td className="px-2 py-1">{formatCurrency(FUEL_SAVINGS)}</td>
+                <td className="px-2 py-1 font-bold">{formatCurrency((WPFL_SELECTED?.price ?? 0) + OCFL_MONTHLY_SAVINGS + FUEL_SAVINGS)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Cost of Ownership Adjustment Summary Box */}
