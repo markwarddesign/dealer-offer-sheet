@@ -150,7 +150,6 @@ const steps = [
       { label: "Doc Fee", name: "docFee", type: "number" },
       { label: "License Estimate", name: "licenseEstimate", type: "number" },
       { label: "Title Fee", name: "titleFee", type: "number" },
-      { label: "Tire Fee", name: "tireFee", type: "number" },
       { label: "Other Fees", name: "otherFee", type: "number" },
       { label: "Tax Rate (%)", name: "taxRate", type: "number" },
     ],
@@ -332,7 +331,7 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
     if (dealData.tradeIsLease) {
         taxableAmount = sellingPrice + totalAddons;
     } else {
-        taxableAmount = sellingPrice + totalAddons - netTrade;
+        taxableAmount = sellingPrice + totalAddons - dealData.tradeValue;
     }
     const difference = roundToHundredth(taxableAmount);
     
@@ -459,7 +458,6 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                   <p className="text-base font-bold text-gray-900">Adjusted Price</p>
                   <p className="text-lg font-bold text-red-600">{formatCurrency(sellingPrice)}</p>
                 </div>
-                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Adjusted Price</p><p>{formatCurrency(sellingPrice)}</p></div>
                 {/* Value Add-ons itemized */}
                 <div className="flex justify-between text-sm py-1 border-b border-gray-100 font-semibold text-gray-700"><p>Value Add-ons</p><p></p></div>
                 <div className="pl-4">
@@ -470,10 +468,14 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                   <div className="flex justify-between text-sm py-1 border-b border-gray-100"><span>Extended Service Contract</span><span>{formatCurrency(getAddon('serviceContract', 0))}</span></div>
                   <div className="flex justify-between text-sm py-1 border-b border-gray-100 font-bold"><span>Total Add-ons</span><span>{formatCurrency(totalAddons)}</span></div>
                 </div>
+
+                <div className="flex justify-between items-center bg-white p-2 rounded-lg shadow-inner mt-2">
+                  <p className="text-base font-bold text-gray-900">Subtotal</p>
+                  <p className="text-lg font-bold text-red-600">{formatCurrency(sellingPrice + totalAddons)}</p>
+                </div>
+
                 {dealData.hasTrade && (
                   <>
-                    <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Trade Market Value</p><p className="font-semibold">{formatCurrency(dealData.tradeMarketValue)}</p></div>
-                    <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p className="text-yellow-900">Reconditioning</p><p className="text-yellow-900">({formatCurrency(totalTradeDevalue)})</p></div>
                     <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Trade Value</p><p>{formatCurrency(dealData.tradeValue)}</p></div>
                   </>
                 )}

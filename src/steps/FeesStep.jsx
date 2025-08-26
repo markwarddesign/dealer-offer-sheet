@@ -24,10 +24,6 @@ export default function FeesStep() {
         <input type="number" name="titleFee" value={dealData.titleFee || ''} onChange={handleChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Tire Fee</label>
-        <input type="number" name="tireFee" value={dealData.tireFee || ''} onChange={handleChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
-      </div>
-      <div>
         <label className="block text-sm font-medium text-gray-700">Other Fees</label>
         <input type="number" name="otherFee" value={dealData.otherFee || ''} onChange={handleChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
       </div>
