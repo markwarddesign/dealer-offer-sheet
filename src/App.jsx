@@ -516,6 +516,11 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
               )}
               <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-sm flex flex-col mb-0">
                 <h3 className="text-xl font-bold text-blue-900 mb-4 text-center">Financing Options</h3>
+                {dealData.showInterestRateOnOfferSheet && (
+                  <div className="mb-2 text-right text-sm text-gray-700 font-semibold">
+                    Interest Rate: <span className="text-red-700">{(dealData.interestRate ?? 6.99).toFixed(2)}%</span>
+                  </div>
+                )}
                 <div className="w-full">
                   <table className="w-full text-xs text-center rounded-xl shadow border border-gray-200 bg-white overflow-hidden">
                     <thead>

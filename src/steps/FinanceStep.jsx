@@ -14,6 +14,11 @@ const financeTerms = [24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84];
 
 export default function FinanceStep() {
   const { dealData, updateDealData } = useAppStore();
+  // Toggle for showing interest rate on offer sheet
+  const showInterestRateOnOfferSheet = dealData.showInterestRateOnOfferSheet ?? false;
+  const handleToggleShowInterestRate = () => {
+    updateDealData({ showInterestRateOnOfferSheet: !showInterestRateOnOfferSheet });
+  };
   // Use interest rate from dealData, fallback to store default
   const rate = dealData.interestRate !== undefined && dealData.interestRate !== '' ? Number(dealData.interestRate) : 6.99;
   const initialTerms = Array.isArray(dealData.financeTerm)
@@ -43,6 +48,18 @@ export default function FinanceStep() {
   return (
     <FormSection title="Finance Options" icon={null} noGrid={true}>
       <div className='flex flex-col w-full'>
+        <div className="flex items-center gap-3 mb-6">
+          <input
+            id="toggleShowInterestRateOnOfferSheet"
+            type="checkbox"
+            checked={showInterestRateOnOfferSheet}
+            onChange={handleToggleShowInterestRate}
+            className="form-checkbox h-5 w-5 text-red-600 border-gray-300 rounded focus:ring-red-500"
+          />
+          <label htmlFor="toggleShowInterestRateOnOfferSheet" className="text-base font-medium text-gray-800 select-none">
+            Display interest rate on offer sheet
+          </label>
+        </div>
         <div className="mb-8 w-full">
           <div className="w-full">
             <label className="block text-base font-bold text-gray-800 mb-2">Finance Term (months)</label>
@@ -134,61 +151,63 @@ export default function FinanceStep() {
           </div>
 
           <div className="w-full mt-12">
-            <div className="mb-2 text-right text-sm text-gray-700 font-semibold">
-              Interest Rate: <span className="text-red-700">{rate.toFixed(2)}%</span>
-            </div>
+            {showInterestRateOnOfferSheet && (
+              <div className="mb-2 text-right text-sm text-gray-700 font-semibold">
+                Interest Rate: <span className="text-red-700">{rate.toFixed(2)}%</span>
+              </div>
+            )}
             <div className="w-full">
-            <table className="w-full text-xs text-center rounded-xl shadow-lg border border-gray-200 bg-white">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="px-4 py-3 border-b border-gray-200 font-bold text-gray-700">Down Payment</th>
-                  <th className="px-4 py-3 border-b border-gray-200 font-bold text-gray-700">Term (mo)</th>
-                  <th className="px-4 py-3 border-b border-gray-200 font-bold text-gray-700">Amount Financed</th>
-                  <th className="px-4 py-3 border-b border-gray-200 font-bold text-gray-700">Payment</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(() => {
-                  // If nothing selected, fallback to 72 months and $0 down
-                  const terms = selectedTerms.length ? selectedTerms : [72];
-                  const downs = selectedDowns.length ? selectedDowns : [0];
-                  // Sort for clarity
-                  const sortedTerms = [...terms]
-                    .map(t => Number(t))
-                    .filter(t => !isNaN(t) && isFinite(t))
-                    .sort((a, b) => a - b);
-                  const sortedDowns = [...downs].map(d => Number(d)).filter(d => !isNaN(d) && isFinite(d)).sort((a, b) => a - b);
-                  const rows = [];
-                  sortedDowns.forEach((down, dIdx) => {
-                    let amountFinanced;
-                    sortedTerms.forEach((term, tIdx) => {
-                      amountFinanced = sellingPrice - down + docFee + otherFee;
-                      const payment = calculateMonthlyPayment(amountFinanced, rate, term);
-                      rows.push(
-                        <tr
-                          key={down + '-' + term}
-                          className={
-                            'transition-all duration-150 ' +
-                            ((dIdx + tIdx) % 2 === 0 ? 'bg-white' : 'bg-gray-50')
-                          }
-                        >
-                          {/* Down payment cell only on first row of group, else empty cell for alignment */}
-                          {tIdx === 0 ? (
-                            <td rowSpan={sortedTerms.length} className="px-4 py-3 font-bold border-b border-gray-100 text-gray-700 align-middle whitespace-nowrap">{down === 0 ? 'Financed' : `$${down.toLocaleString()}`}</td>
-                          ) : (
-                            <td style={{ display: 'none' }}></td>
-                          )}
-                          <td className="px-4 py-3 align-top border-b border-gray-100 text-gray-600 whitespace-nowrap">{term}</td>
-                          <td className="px-4 py-3 align-top border-b border-gray-100 text-gray-600 whitespace-nowrap">${amountFinanced.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                          <td className={"px-4 py-3 align-top border-b border-gray-100 font-extrabold text-lg text-gray-900 whitespace-nowrap"}>{`$${payment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</td>
-                        </tr>
-                      );
+              <table className="w-full text-xs text-center rounded-xl shadow-lg border border-gray-200 bg-white">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="px-4 py-3 border-b border-gray-200 font-bold text-gray-700">Down Payment</th>
+                    <th className="px-4 py-3 border-b border-gray-200 font-bold text-gray-700">Term (mo)</th>
+                    <th className="px-4 py-3 border-b border-gray-200 font-bold text-gray-700">Amount Financed</th>
+                    <th className="px-4 py-3 border-b border-gray-200 font-bold text-gray-700">Payment</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(() => {
+                    // If nothing selected, fallback to 72 months and $0 down
+                    const terms = selectedTerms.length ? selectedTerms : [72];
+                    const downs = selectedDowns.length ? selectedDowns : [0];
+                    // Sort for clarity
+                    const sortedTerms = [...terms]
+                      .map(t => Number(t))
+                      .filter(t => !isNaN(t) && isFinite(t))
+                      .sort((a, b) => a - b);
+                    const sortedDowns = [...downs].map(d => Number(d)).filter(d => !isNaN(d) && isFinite(d)).sort((a, b) => a - b);
+                    const rows = [];
+                    sortedDowns.forEach((down, dIdx) => {
+                      let amountFinanced;
+                      sortedTerms.forEach((term, tIdx) => {
+                        amountFinanced = sellingPrice - down + docFee + otherFee;
+                        const payment = calculateMonthlyPayment(amountFinanced, rate, term);
+                        rows.push(
+                          <tr
+                            key={down + '-' + term}
+                            className={
+                              'transition-all duration-150 ' +
+                              ((dIdx + tIdx) % 2 === 0 ? 'bg-white' : 'bg-gray-50')
+                            }
+                          >
+                            {/* Down payment cell only on first row of group, else empty cell for alignment */}
+                            {tIdx === 0 ? (
+                              <td rowSpan={sortedTerms.length} className="px-4 py-3 font-bold border-b border-gray-100 text-gray-700 align-middle whitespace-nowrap">{down === 0 ? 'Financed' : `$${down.toLocaleString()}`}</td>
+                            ) : (
+                              <td style={{ display: 'none' }}></td>
+                            )}
+                            <td className="px-4 py-3 align-top border-b border-gray-100 text-gray-600 whitespace-nowrap">{term}</td>
+                            <td className="px-4 py-3 align-top border-b border-gray-100 text-gray-600 whitespace-nowrap">${amountFinanced.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            <td className={"px-4 py-3 align-top border-b border-gray-100 font-extrabold text-lg text-gray-900 whitespace-nowrap"}>{`$${payment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</td>
+                          </tr>
+                        );
+                      });
                     });
-                  });
-                  return rows;
-                })()}
-              </tbody>
-            </table>
+                    return rows;
+                  })()}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

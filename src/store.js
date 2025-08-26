@@ -57,6 +57,7 @@ const initialDealData = {
   interestRate: 6.99,
   vehiclesInMarket: 100,
   avgDaysToSell: 75,
+  showInterestRateOnOfferSheet: false,
 };
 
 const defaultSettings = {
@@ -74,7 +75,7 @@ const defaultSettings = {
     { label: 'Endurance', price: 125 },
     { label: 'Optional Plan', price: 100 },
   ],
-  defaultWPFLIndex: 0,
+  defaultWPFLIndex: 2,
   oilChangeCost: 150,
   ocflYears: 5,
   interestRate: 6.99,
