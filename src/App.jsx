@@ -373,7 +373,7 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
     const sortedDowns = [...selectedDowns].sort((a, b) => a - b);
     sortedDowns.forEach((down) => {
       sortedTerms.forEach((term) => {
-        const amountFinanced = sellingPriceForFinance - down + docFee + otherFee;
+        const amountFinanced = totalAmountFinanced || sellingPriceForFinance - down + docFee + otherFee;
         const payment = calculateMonthlyPayment(amountFinanced, financeRate, term);
         financeTableRows.push({
           down,
@@ -457,7 +457,7 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                   <div className="flex justify-between text-sm py-1 border-b border-gray-100 font-bold"><span>Total Add-ons</span><span>{formatCurrency(totalAddons)}</span></div>
                 </div>
 
-                <div className="flex justify-between items-center bg-white p-2 rounded-lg shadow-inner mt-2">
+                {/* <div className="flex justify-between items-center bg-white p-2 rounded-lg shadow-inner mt-2">
                   <p className="text-base font-bold text-gray-900">Subtotal</p>
                   <p className="text-lg font-bold text-red-600">{formatCurrency(sellingPrice + totalAddons)}</p>
                 </div>
@@ -466,7 +466,7 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                   <>
                     <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Trade Value</p><p>{formatCurrency(dealData.tradeValue)}</p></div>
                   </>
-                )}
+                )} */}
                 <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Doc Fee</p><p>{formatCurrency(dealData.docFee)}</p></div>
                 <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>License Estimate</p><p>{formatCurrency(dealData.licenseEstimate)}</p></div>
                 <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Other Fees</p><p>{formatCurrency(dealData.titleFee + dealData.tireFee + dealData.otherFee)}</p></div>
