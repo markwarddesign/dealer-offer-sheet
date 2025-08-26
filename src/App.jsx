@@ -337,10 +337,12 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
     
     const salesTax = difference > 0 ? roundToHundredth(difference * (dealData.taxRate / 100)) : 0;
 
-    const totalFees = roundToHundredth(dealData.docFee + dealData.titleFee + dealData.tireFee + dealData.otherFee);
+    const totalFees = roundToHundredth(dealData.docFee + dealData.titleFee + dealData.otherFee);
     
-    // Remove tax credit from calculations
-    const amountFinanced = roundToHundredth(difference + salesTax + dealData.licenseEstimate + totalFees - dealData.rebates);
+  // Remove tax credit from calculations
+  const licenseEstimate = Number(dealData.licenseEstimate) || 0;
+
+  const totalAmountFinanced = roundToHundredth(sellingPrice +  netTrade + salesTax + licenseEstimate + totalFees );
 
     // Restore sunsetExclusives
     const sunsetExclusives = [
@@ -419,21 +421,7 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                 <div className="flex justify-between text-sm items-start">
                   <div>
                     <p>Reconditioning Cost</p>
-                    {/* Sub-items for checked Trade Devalue Items */}
-                    {dealData.tradeDevalueSelected && settings && settings.tradeDevalueItems && dealData.tradeDevalueSelected.length > 0 && (
-                      <ul className="ml-4 mt-1 text-xs text-gray-600 list-disc">
-                        {dealData.tradeDevalueSelected.map(idx => {
-                          const item = settings.tradeDevalueItems[idx];
-                          if (!item) return null;
-                          return (
-                            <li key={idx} className="flex justify-between">
-                              <span>{item.label}</span>
-                              <span className="ml-2">{formatCurrency(item.price)}</span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
+                   
                   </div>
                   <p className="text-right">{formatCurrency(dealData.reconditioningCost)}</p>
                 </div>
@@ -484,7 +472,6 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                 <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Other Fees</p><p>{formatCurrency(dealData.titleFee + dealData.tireFee + dealData.otherFee)}</p></div>
                 <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Sales Tax ({dealData.taxRate}%)</p><p>{formatCurrency(salesTax)}</p></div>
                 {dealData.isNewVehicle && <div className="flex justify-between text-sm text-red-600"><p>Rebates</p><p>({formatCurrency(dealData.rebates)})</p></div>}
-                <div className="flex justify-between text-base font-bold border-t border-gray-300 pt-2 mt-2"><p>Amount Financed</p><p>{formatCurrency(amountFinanced)}</p></div>
               </div>
             </div>
             {/* Finance Table + Trade Breakdown stacked */}
@@ -507,13 +494,38 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                   </div>
                   <div className="space-y-1 text-gray-800">
                     <div className="flex justify-between text-sm"><span>Market Value</span><span>{formatCurrency(dealData.tradeMarketValue)}</span></div>
-                    <div className="flex justify-between text-sm"><span>Reconditioning</span><span>({formatCurrency(totalTradeDevalue)})</span></div>
+                    <div className="flex justify-between text-sm"><div><span>Reconditioning</span><br />
+                    
+                       {/* Sub-items for checked Trade Devalue Items */}
+                    {dealData.tradeDevalueSelected && settings && settings.tradeDevalueItems && dealData.tradeDevalueSelected.length > 0 && (
+                      <ul className="ml-4 mt-1 text-xs text-gray-600 list-disc">
+                        {dealData.tradeDevalueSelected.map(idx => {
+                          const item = settings.tradeDevalueItems[idx];
+                          if (!item) return null;
+                          return (
+                            <li key={idx} className="flex justify-between">
+                              <span>{item.label}</span>
+                              <span className="ml-2">{formatCurrency(item.price)}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}</div>
+                    <span>({formatCurrency(totalTradeDevalue)})</span>
+                    </div>
                     <div className="flex justify-between text-sm"><span>Trade Value</span><span>{formatCurrency(dealData.tradeValue)}</span></div>
                     <div className="flex justify-between text-sm"><span>Payoff</span><span>({formatCurrency(dealData.tradePayoff)})</span></div>
                     <div className="flex justify-between text-sm font-bold border-t border-gray-300 pt-2 mt-2"><span>Net Trade</span><span>{formatCurrency(netTrade)}</span></div>
                   </div>
                 </div>
               )}
+
+              {/* ADD Amount Financed in it's own box */}
+              <div className="bg-yellow-50 border border-yellow-200 p-6 rounded-xl shadow-sm flex flex-col">
+                <h3 className="text-xl font-bold text-yellow-900 mb-4">Amount Financed</h3>
+                <div className="text-2xl font-semibold text-yellow-900">{formatCurrency(totalAmountFinanced)}</div>
+              </div>
+
               <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-sm flex flex-col mb-0">
                 <h3 className="text-xl font-bold text-blue-900 mb-4 text-center">Financing Options</h3>
                 {dealData.showInterestRateOnOfferSheet && (
@@ -521,6 +533,7 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                     Interest Rate: <span className="text-red-700">{(dealData.interestRate ?? 6.99).toFixed(2)}%</span>
                   </div>
                 )}
+               
                 <div className="w-full">
                   <table className="w-full text-xs text-center rounded-xl shadow border border-gray-200 bg-white overflow-hidden">
                     <thead>
