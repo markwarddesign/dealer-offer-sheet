@@ -304,8 +304,11 @@ export default function TradeStep() {
                 type="number"
                 name="avgDaysToSell"
                 min="0"
-                value={dealData.avgDaysToSell ?? ''}
-                onChange={e => updateDealData({ avgDaysToSell: Number(e.target.value) })}
+                value={dealData.avgDaysToSell === 0 ? '' : (dealData.avgDaysToSell ?? '')}
+                onChange={e => {
+                  const val = e.target.value;
+                  updateDealData({ avgDaysToSell: val === '' ? '' : Number(val) });
+                }}
               className="w-20 text-center font-bold rounded border border-yellow-400 bg-white p-1 focus:ring-2 focus:ring-yellow-400"
             />
           </div>
