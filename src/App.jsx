@@ -342,7 +342,7 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
   // Remove tax credit from calculations
   const licenseEstimate = Number(dealData.licenseEstimate) || 0;
 
-  const totalAmountFinanced = roundToHundredth(sellingPrice +  netTrade + salesTax + licenseEstimate + totalFees );
+  const totalAmountFinanced = roundToHundredth(sellingPrice +  netTrade + salesTax + licenseEstimate + dealData.titleFee  );
 
     // Restore sunsetExclusives
     const sunsetExclusives = [
