@@ -142,6 +142,20 @@ function TradeVsPrivateSale({ dealData, onBack }) {
                 <li className="!list-none !pl-0">
                   <div className="my-2">
                     <div className="font-semibold text-blue-800 mb-1">Payments While Selling:</div>
+                    <button
+                          type="button"
+                          key={'today'}
+                          onClick={() => setSelectedMonths(0)}
+                          className={
+                            selectedMonths === 0
+                              ? 'bg-blue-900 text-white rounded p-2 ring-2 ring-blue-700 mb-2 w-full'
+                              : 'bg-blue-100 text-blue-900 rounded p-2 hover:bg-blue-200 mb-2 w-full'
+                          }
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <div className="font-bold">Today</div>
+                          <div>{formatCurrency(MONTHLY_PAYMENT * 0)}</div>
+                        </button>
                     <div className="grid grid-cols-3 gap-2 text-center mb-2">
                       {[1,2,3].map((mo) => (
                         <button

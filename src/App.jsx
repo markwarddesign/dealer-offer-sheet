@@ -338,11 +338,21 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
     const salesTax = difference > 0 ? roundToHundredth(difference * (dealData.taxRate / 100)) : 0;
 
     const totalFees = roundToHundredth(dealData.docFee + dealData.titleFee + dealData.otherFee);
+
+
     
   // Remove tax credit from calculations
   const licenseEstimate = Number(dealData.licenseEstimate) || 0;
 
-  const totalAmountFinanced = roundToHundredth(sellingPrice +  netTrade + salesTax + licenseEstimate + dealData.titleFee  );
+  console.log(dealData.tradePayoff);
+
+  const totalAmountFinanced = roundToHundredth(
+    Number(difference) +
+    (Number(dealData.tradePayoff) || 0) +
+    (Number(dealData.docFee) || 0) +
+    (Number(licenseEstimate) || 0) +
+    (Number(salesTax) || 0)
+  );
 
     // Restore sunsetExclusives
     const sunsetExclusives = [
@@ -373,8 +383,8 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
     const sortedDowns = [...selectedDowns].sort((a, b) => a - b);
     sortedDowns.forEach((down) => {
       sortedTerms.forEach((term) => {
-        const amountFinanced = totalAmountFinanced || sellingPriceForFinance - down + docFee + otherFee;
-        const payment = calculateMonthlyPayment(amountFinanced, financeRate, term);
+        const amountFinanced = totalAmountFinanced - down || sellingPriceForFinance - down + docFee + otherFee;
+        const payment = calculateMonthlyPayment(totalAmountFinanced, financeRate, term);
         financeTableRows.push({
           down,
           term,

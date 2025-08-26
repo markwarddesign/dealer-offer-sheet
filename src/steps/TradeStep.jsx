@@ -247,6 +247,8 @@ export default function TradeStep() {
       case 'tradePayOff':
         setPayOffInput(val);
         debouncedPayOff(val);
+        // Also update tradePayoff for compatibility with code that expects lowercase 'o'
+        updateDealData({ tradePayoff: val });
         break;
       default:
         updateDealData({ [name]: val });
@@ -288,8 +290,11 @@ export default function TradeStep() {
                 type="number"
                 name="vehiclesInMarket"
                 min="0"
-                value={dealData.vehiclesInMarket ?? ''}
-                onChange={e => updateDealData({ vehiclesInMarket: Number(e.target.value) })}
+                value={dealData.vehiclesInMarket === 0 ? '' : (dealData.vehiclesInMarket ?? '')}
+                onChange={e => {
+                  const val = e.target.value;
+                  updateDealData({ vehiclesInMarket: val === '' ? '' : Number(val) });
+                }}
               className="w-20 text-center font-bold rounded border border-yellow-400 bg-white p-1 focus:ring-2 focus:ring-yellow-400"
             />
           </div>
