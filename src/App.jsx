@@ -531,8 +531,8 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
               )}
 
               {/* ADD Amount Financed in it's own box */}
-              <div className="bg-yellow-50 border border-yellow-200 p-6 rounded-xl shadow-sm flex flex-col">
-                <h3 className="text-xl font-bold text-yellow-900 mb-4">Amount Financed</h3>
+              <div className="bg-yellow-50 border border-yellow-200 p-6 rounded-xl shadow-sm flex justify-between align-middle">
+                <h3 className="text-xl font-bold text-yellow-900">Amount Financed</h3>
                 <div className="text-2xl font-semibold text-yellow-900">{formatCurrency(totalAmountFinanced)}</div>
               </div>
 
