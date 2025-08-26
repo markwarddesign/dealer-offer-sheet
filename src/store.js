@@ -10,7 +10,7 @@ const initialDealData = {
   vehicleYear: 2024,
   vehicleMake: 'KIA',
   vehicleModel: 'Niro',
-  vehicleVin: 'VIN123456789XYZ',
+  vehicleVin: 'KNDCR3LE7RS152658',
   vehicleStock: 'C12345',
   vehicleColor: 'Summit White',
   vehicleMileage: 2468,
