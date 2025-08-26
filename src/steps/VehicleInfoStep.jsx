@@ -105,14 +105,44 @@ export default function VehicleInfoStep() {
   return (
     <FormSection title="Vehicle of Interest" icon={null}>
       <div className="col-span-2 flex flex-col gap-2 mb-2">
-        <button
-          type="button"
-          className="self-start bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 mb-1"
-          onClick={handleVinLookup}
-          disabled={vinLoading || !vinInput || vinInput.length < 5}
-        >
-          {vinLoading ? 'Looking up...' : 'Lookup VIN'}
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 mb-1"
+            onClick={handleVinLookup}
+            disabled={vinLoading || !vinInput || vinInput.length < 5}
+          >
+            {vinLoading ? 'Looking up...' : 'Lookup VIN'}
+          </button>
+          <label className="flex items-center gap-2 text-sm font-medium select-none cursor-pointer">
+            <span className="relative inline-block w-10 align-middle select-none transition duration-200 ease-in">
+              <input
+                type="checkbox"
+                name="wpfl"
+                checked={dealData.wpfl ?? true}
+                onChange={handleFieldChange}
+                className="sr-only peer"
+              />
+              <span className="block w-10 h-6 bg-gray-300 rounded-full shadow-inner peer-checked:bg-blue-600 transition" />
+              <span className="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition peer-checked:translate-x-4 shadow" />
+            </span>
+            WPFL
+          </label>
+          <label className="flex items-center gap-2 text-sm font-medium select-none cursor-pointer">
+            <span className="relative inline-block w-10 align-middle select-none transition duration-200 ease-in">
+              <input
+                type="checkbox"
+                name="ocfl"
+                checked={dealData.ocfl ?? true}
+                onChange={handleFieldChange}
+                className="sr-only peer"
+              />
+              <span className="block w-10 h-6 bg-gray-300 rounded-full shadow-inner peer-checked:bg-blue-600 transition" />
+              <span className="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition peer-checked:translate-x-4 shadow" />
+            </span>
+            OCFL
+          </label>
+        </div>
         <div className="flex-1">
           <label htmlFor="vehicleVin" className="block text-sm font-medium text-gray-700">VIN</label>
           <input

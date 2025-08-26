@@ -311,7 +311,8 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
     if (dealData.tradeDevalueSelected && settings && settings.tradeDevalueItems) {
       totalTradeDevalue = dealData.tradeDevalueSelected.reduce((sum, idx) => sum + (settings.tradeDevalueItems[idx]?.price || 0), 0);
     }
-    const netTrade = roundToHundredth(dealData.tradeValue - dealData.tradePayoff - totalTradeDevalue);
+  // Net Trade should match TradeStep Net Trade Equity: tradeValue - tradePayoff
+  const netTrade = roundToHundredth(dealData.tradeValue - dealData.tradePayoff);
     const totalAddons = roundToHundredth(dealData.protectionPackage + dealData.gapInsurance + dealData.serviceContract + dealData.brakePlus + dealData.safeGuard);
     
     // If trade-in is a lease, tax is on full selling price + add-ons (no trade deduction)
@@ -374,12 +375,12 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
     return (
       <div className="space-y-8">
         {/* Price display in top right */}
-        <div className="flex justify-end mb-2">
+        {/* <div className="flex justify-end mb-2">
           <div className="bg-white rounded-lg shadow px-6 py-3 text-right border border-gray-200">
             <div className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Final Price</div>
             <div className="text-2xl font-extrabold text-red-600">{formatCurrency(sellingPrice)}</div>
           </div>
-        </div>
+        </div> */}
         <div className="bg-white rounded-xl shadow-lg p-8 printable-section">
           <div className="flex flex-row flex-wrap justify-between items-start mb-8 gap-6 mx-4">
             <div>
@@ -403,20 +404,58 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
               <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">Pricing Transparency</h3>
               <div className="space-y-2 text-gray-700">
                 <div className="flex justify-between text-base"><p>Market Value</p><p className="font-semibold">{formatCurrency(dealData.marketValue)}</p></div>
-                <div className="flex justify-between text-sm"><p>Acquisition & Reconditioning</p><p>{formatCurrency(dealData.acquisitionCost + dealData.reconditioningCost)}</p></div>
-                <div className="flex justify-between text-sm"><p>Advertising & Flooring</p><p>{formatCurrency(dealData.advertisingCost + dealData.flooringCost)}</p></div>
+                <div className="flex justify-between text-sm"><p>Acquisition Cost</p><p>{formatCurrency(dealData.acquisitionCost)}</p></div>
+                <div className="flex justify-between text-sm items-start">
+                  <div>
+                    <p>Reconditioning Cost</p>
+                    {/* Sub-items for checked Trade Devalue Items */}
+                    {dealData.tradeDevalueSelected && settings && settings.tradeDevalueItems && dealData.tradeDevalueSelected.length > 0 && (
+                      <ul className="ml-4 mt-1 text-xs text-gray-600 list-disc">
+                        {dealData.tradeDevalueSelected.map(idx => {
+                          const item = settings.tradeDevalueItems[idx];
+                          if (!item) return null;
+                          return (
+                            <li key={idx} className="flex justify-between">
+                              <span>{item.label}</span>
+                              <span className="ml-2">{formatCurrency(item.price)}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                  <p className="text-right">{formatCurrency(dealData.reconditioningCost)}</p>
+                </div>
+                <div className="flex justify-between text-sm items-end">
+                  <div>
+                    <p>Advertising</p>
+                    <span className="block text-[10px] text-gray-500">Avg: $600–$900 per vehicle</span>
+                  </div>
+                  <p>{formatCurrency(dealData.advertisingCost)}</p>
+                </div>
+                <div className="flex justify-between text-sm items-end">
+                  <div>
+                    <p>Flooring</p>
+                    <span className="block text-[10px] text-gray-500">Avg: $300–$500 per vehicle</span>
+                  </div>
+                  <p>{formatCurrency(dealData.flooringCost)}</p>
+                </div>
                 <div className="flex justify-between text-sm"><p>B&O Tax (Calculated)</p><p>{formatCurrency(roundToHundredth(sellingPrice * BO_TAX_RATE))}</p></div>
                 <div className="flex justify-between border-t border-gray-300 pt-2 mt-2"><p className="font-semibold">Total Investment</p><p className="font-bold">{formatCurrency(roundToHundredth(baseInvestment + (sellingPrice * BO_TAX_RATE)))}</p></div>
                 <div className="flex justify-between"><p>ROI ({roiPercentage}%)</p><p className="font-medium">{formatCurrency(profit)}</p></div>
                 <div className="flex justify-between items-center bg-white p-2 rounded-lg shadow-inner mt-2">
-                  <p className="text-base font-bold text-gray-900">Final Price</p>
+                  <p className="text-base font-bold text-gray-900">Adjusted Price</p>
                   <p className="text-lg font-bold text-red-600">{formatCurrency(sellingPrice)}</p>
                 </div>
-                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Final Price</p><p>{formatCurrency(sellingPrice)}</p></div>
+                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Adjusted Price</p><p>{formatCurrency(sellingPrice)}</p></div>
                 <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Add-ons</p><p>{formatCurrency(dealData.brakePlus + dealData.safeGuard + dealData.protectionPackage + dealData.gapInsurance + dealData.serviceContract)}</p></div>
-                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Trade Market Value</p><p className="font-semibold">{formatCurrency(dealData.tradeMarketValue)}</p></div>
-                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p className="text-yellow-900">Reconditioning</p><p className="text-yellow-900">({formatCurrency(totalTradeDevalue)})</p></div>
-                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Trade Value</p><p>{formatCurrency(dealData.tradeValue)}</p></div>
+                {dealData.hasTrade && (
+                  <>
+                    <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Trade Market Value</p><p className="font-semibold">{formatCurrency(dealData.tradeMarketValue)}</p></div>
+                    <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p className="text-yellow-900">Reconditioning</p><p className="text-yellow-900">({formatCurrency(totalTradeDevalue)})</p></div>
+                    <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Trade Value</p><p>{formatCurrency(dealData.tradeValue)}</p></div>
+                  </>
+                )}
                 <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Doc Fee</p><p>{formatCurrency(dealData.docFee)}</p></div>
                 <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>License Estimate</p><p>{formatCurrency(dealData.licenseEstimate)}</p></div>
                 <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Other Fees</p><p>{formatCurrency(dealData.titleFee + dealData.tireFee + dealData.otherFee)}</p></div>
@@ -427,29 +466,31 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
             </div>
             {/* Finance Table + Trade Breakdown stacked */}
             <div className="flex flex-col gap-6 w-full md:w-auto print:col-span-1">
-              <div className="bg-green-50 border border-green-200 p-6 rounded-xl shadow-sm flex flex-col">
-                <h3 className="text-xl font-bold text-green-900 mb-4 text-center">Trade Breakdown</h3>
-                {/* Prominent Trade Vehicle Card */}
-                <div className="mb-4 p-4 rounded-lg bg-white border border-green-300 shadow flex flex-col gap-1">
-                  <div className="text-lg font-bold text-green-900 flex flex-wrap items-center gap-2">
-                    {dealData.tradeVehicleYear} {dealData.tradeVehicleMake} {dealData.tradeVehicleModel}
-                    {dealData.tradeVehicleTrim && <span className="ml-1 text-base font-semibold text-green-700">{dealData.tradeVehicleTrim}</span>}
+              {dealData.hasTrade && (
+                <div className="bg-green-50 border border-green-200 p-6 rounded-xl shadow-sm flex flex-col">
+                  <h3 className="text-xl font-bold text-green-900 mb-4 text-center">Trade Breakdown</h3>
+                  {/* Prominent Trade Vehicle Card */}
+                  <div className="mb-4 p-4 rounded-lg bg-white border border-green-300 shadow flex flex-col gap-1">
+                    <div className="text-lg font-bold text-green-900 flex flex-wrap items-center gap-2">
+                      {dealData.tradeVehicleYear} {dealData.tradeVehicleMake} {dealData.tradeVehicleModel}
+                      {dealData.tradeVehicleTrim && <span className="ml-1 text-base font-semibold text-green-700">{dealData.tradeVehicleTrim}</span>}
+                    </div>
+                    <div className="text-sm text-gray-700 flex flex-wrap gap-x-6 gap-y-1 mt-1">
+                      <span><span className="font-semibold">VIN:</span> {dealData.tradeVehicleVin || '-'}</span>
+                      <span><span className="font-semibold">MPG:</span> {dealData.tradeVehicleMpg ? dealData.tradeVehicleMpg : '-'}{dealData.tradeVehicleMpg ? ' mpg' : ''}</span>
+                      <span><span className="font-semibold">Lease:</span> {dealData.tradeIsLease ? 'Yes' : 'No'}</span>
+                      <span><span className="font-semibold">Current Payment:</span> {dealData.tradePayment ? formatCurrency(dealData.tradePayment) : '-'}</span>
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-700 flex flex-wrap gap-x-6 gap-y-1 mt-1">
-                    <span><span className="font-semibold">VIN:</span> {dealData.tradeVehicleVin || '-'}</span>
-                    <span><span className="font-semibold">MPG:</span> {dealData.tradeVehicleMpg ? dealData.tradeVehicleMpg : '-'}{dealData.tradeVehicleMpg ? ' mpg' : ''}</span>
-                    <span><span className="font-semibold">Lease:</span> {dealData.tradeIsLease ? 'Yes' : 'No'}</span>
-                    <span><span className="font-semibold">Current Payment:</span> {dealData.tradePayment ? formatCurrency(dealData.tradePayment) : '-'}</span>
+                  <div className="space-y-1 text-gray-800">
+                    <div className="flex justify-between text-sm"><span>Market Value</span><span>{formatCurrency(dealData.tradeMarketValue)}</span></div>
+                    <div className="flex justify-between text-sm"><span>Reconditioning</span><span>({formatCurrency(totalTradeDevalue)})</span></div>
+                    <div className="flex justify-between text-sm"><span>Trade Value</span><span>{formatCurrency(dealData.tradeValue)}</span></div>
+                    <div className="flex justify-between text-sm"><span>Payoff</span><span>({formatCurrency(dealData.tradePayoff)})</span></div>
+                    <div className="flex justify-between text-sm font-bold border-t border-gray-300 pt-2 mt-2"><span>Net Trade</span><span>{formatCurrency(netTrade)}</span></div>
                   </div>
                 </div>
-                <div className="space-y-1 text-gray-800">
-                  <div className="flex justify-between text-sm"><span>Market Value</span><span>{formatCurrency(dealData.tradeMarketValue)}</span></div>
-                  <div className="flex justify-between text-sm"><span>Reconditioning</span><span>({formatCurrency(totalTradeDevalue)})</span></div>
-                  <div className="flex justify-between text-sm"><span>Trade Value</span><span>{formatCurrency(dealData.tradeValue)}</span></div>
-                  <div className="flex justify-between text-sm"><span>Payoff</span><span>({formatCurrency(dealData.tradePayoff)})</span></div>
-                  <div className="flex justify-between text-sm font-bold border-t border-gray-300 pt-2 mt-2"><span>Net Trade</span><span>{formatCurrency(netTrade)}</span></div>
-                </div>
-              </div>
+              )}
               <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-sm flex flex-col mb-0">
                 <h3 className="text-xl font-bold text-blue-900 mb-4 text-center">Financing Options</h3>
                 <div className="w-full">
@@ -528,7 +569,6 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
             </div>
 
             <div className="flex flex-col items-center pt-4 space-y-2 no-print mb-9">
-              
                 <div className="flex space-x-4">
                   <button onClick={onGoBack} className="bg-gray-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-gray-700 transition-colors duration-300">
                       Go Back & Edit
@@ -537,12 +577,14 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                       <Printer className="h-5 w-5 mr-2" />
                       Print Offer
                   </button> */}
-                  <button
-                    className="px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 font-semibold"
-                    onClick={onShowTradeVsPrivate}
-                  >
-                    Show Trade vs Private Sale
-                  </button>
+                  {dealData.hasTrade && (
+                    <button
+                      className="px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 font-semibold"
+                      onClick={onShowTradeVsPrivate}
+                    >
+                      Show Trade vs Private Sale
+                    </button>
+                  )}
                 </div>
             </div>
         </div>

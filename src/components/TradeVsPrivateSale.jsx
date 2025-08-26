@@ -66,8 +66,11 @@ function TradeVsPrivateSale({ dealData, onBack }) {
   // Cost of Ownership Adjustment
   const COST_OF_OWNERSHIP_TOTAL = WPFL_ENDURANCE + OCFL_MONTHLY_SAVINGS + FUEL_SAVINGS;
 
+  if (!dealData.hasTrade) {
+    return null;
+  }
   return (
-  <div className="bg-white border border-gray-300 rounded-xl shadow-lg p-8 mb-12 print:mb-0 print:break-before-page max-w-4xl mx-auto print:p-4 print:shadow-none print:max-w-full print:text-sm print:leading-tight trade-vs-private-print-main">
+    <div className="bg-white border border-gray-300 rounded-xl shadow-lg p-8 mb-12 print:mb-0 print:break-before-page max-w-4xl mx-auto print:p-4 print:shadow-none print:max-w-full print:text-sm print:leading-tight trade-vs-private-print-main">
       <h2 className="text-2xl font-bold mb-6 text-center">Trade-In vs Private Sale Breakdown</h2>
       <div className="mb-8 text-center text-lg text-gray-700">
         <span className="font-bold text-green-700">Trading in your vehicle</span> typically results in <span className="font-bold text-green-700">more money in your pocket</span> compared to selling it privately, once you factor in taxes, advertising, and holding costs.
@@ -96,8 +99,6 @@ function TradeVsPrivateSale({ dealData, onBack }) {
           </div>
          
         </div>
- 
-
     
 
             {/* Sell Option (Top) */}
@@ -148,54 +149,58 @@ function TradeVsPrivateSale({ dealData, onBack }) {
     </div>
 
       {/* OCFL Savings Table */}
-      <div className="mb-10 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-        <div className="text-lg font-bold mb-2">Oil Change for Life (OCFL) Savings</div>
-  <div className="overflow-x-auto w-full">
-  <table className="w-full min-w-[400px] text-xs text-center mb-2">
-          <thead>
-            <tr className="bg-yellow-100">
-              <th className="px-2 py-1">Oil Change Cost</th>
-              <th className="px-2 py-1">Per Year</th>
-              <th className="px-2 py-1">Yearly Savings</th>
-              <th className="px-2 py-1">Monthly Savings</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="px-2 py-1">{formatCurrency(OIL_CHANGE_COST)}</td>
-              <td className="px-2 py-1">{OCFL_YEARS}</td>
-              <td className="px-2 py-1">{formatCurrency(OCFL_TOTAL_SAVINGS)}</td>
-              <td className="px-2 py-1">{formatCurrency(OCFL_MONTHLY_SAVINGS)}</td>
-            </tr>
-          </tbody>
-  </table>
-  </div>
-      </div>
+      {dealData.ocfl && (
+        <div className="mb-10 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <div className="text-lg font-bold mb-2">Oil Change for Life (OCFL) Savings</div>
+          <div className="overflow-x-auto w-full">
+            <table className="w-full min-w-[400px] text-xs text-center mb-2">
+              <thead>
+                <tr className="bg-yellow-100">
+                  <th className="px-2 py-1">Oil Change Cost</th>
+                  <th className="px-2 py-1">Per Year</th>
+                  <th className="px-2 py-1">Yearly Savings</th>
+                  <th className="px-2 py-1">Monthly Savings</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="px-2 py-1">{formatCurrency(OIL_CHANGE_COST)}</td>
+                  <td className="px-2 py-1">{OCFL_YEARS}</td>
+                  <td className="px-2 py-1">{formatCurrency(OCFL_TOTAL_SAVINGS)}</td>
+                  <td className="px-2 py-1">{formatCurrency(OCFL_MONTHLY_SAVINGS)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* WPFL Table */}
-      <div className="mb-10 bg-gray-50 border border-gray-200 rounded-lg p-6">
-        <div className="text-lg font-bold mb-2">Warranty Protection for Life (WPFL) Monthly Cost</div>
-  <div className="w-full">
-  <table className="w-full text-xs text-center mb-2">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="px-2 py-1">Sunset Chevrolet</th>
-              <th className="px-2 py-1">CarShield</th>
-              <th className="px-2 py-1">Endurance</th>
-              <th className="px-2 py-1">Optional Plan</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="px-2 py-1">{formatCurrency(WPFL_SUNSET)}</td>
-              <td className="px-2 py-1">{formatCurrency(WPFL_CARSHIELD)}</td>
-              <td className="px-2 py-1">{formatCurrency(WPFL_ENDURANCE)}</td>
-              <td className="px-2 py-1">{formatCurrency(WPFL_OPTIONAL)}</td>
-            </tr>
-          </tbody>
-  </table>
-  </div>
-      </div>
+      {dealData.wpfl && (
+        <div className="mb-10 bg-gray-50 border border-gray-200 rounded-lg p-6">
+          <div className="text-lg font-bold mb-2">Warranty Protection for Life (WPFL) Monthly Cost</div>
+          <div className="w-full">
+            <table className="w-full text-xs text-center mb-2">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="px-2 py-1">Sunset Chevrolet</th>
+                  <th className="px-2 py-1">CarShield</th>
+                  <th className="px-2 py-1">Endurance</th>
+                  <th className="px-2 py-1">Optional Plan</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="px-2 py-1">{formatCurrency(WPFL_SUNSET)}</td>
+                  <td className="px-2 py-1">{formatCurrency(WPFL_CARSHIELD)}</td>
+                  <td className="px-2 py-1">{formatCurrency(WPFL_ENDURANCE)}</td>
+                  <td className="px-2 py-1">{formatCurrency(WPFL_OPTIONAL)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Fuel Savings Table */}
       <div className="mb-10 bg-blue-50 border border-blue-200 rounded-lg p-6">

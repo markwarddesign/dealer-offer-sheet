@@ -2,24 +2,25 @@ import { create } from 'zustand';
 
 // --- Initial State ---
 const initialDealData = {
+  hasTrade: false,
   buyerFirstName: 'John',
   buyerLastName: 'Appleseed',
   buyerPhone: '555-123-4567',
   buyerEmail: 'john.appleseed@email.com',
   vehicleYear: 2024,
-  vehicleMake: 'Chevrolet',
-  vehicleModel: 'Silverado 1500',
+  vehicleMake: 'KIA',
+  vehicleModel: 'Niro',
   vehicleVin: 'VIN123456789XYZ',
   vehicleStock: 'C12345',
   vehicleColor: 'Summit White',
-  vehicleMileage: 12,
-  vehicleMpg: 26,
-  marketValue: 45788,
-  acquisitionCost: 38244,
+  vehicleMileage: 2468,
+  vehicleMpg: 49,
+  marketValue: 32988,
+  acquisitionCost: 26500,
   reconditioningCost: 2650,
   advertisingCost: 675,
   flooringCost: 382.63,
-  sellingPrice: 43477,
+  sellingPrice: 31869,
   roiPercentage: 5,
   rebates: 0,
   tradeValue: 4500,
@@ -48,6 +49,8 @@ const initialDealData = {
   downPayment: [2500, 5000, 7500],
   financeTerm: [48, 60, 72],
   tradeDevalueSelected: [0,1,2,3],
+  wpfl: true,
+  ocfl: true,
 };
 
 const defaultSettings = {
