@@ -44,10 +44,10 @@ function TradeVsPrivateSale({ dealData, onBack }) {
 
   // --- Calculations ---
   // Removed unused tradeMarketValue variable
-  const tradePayoff = Number(dealData.tradePayoff) || 0;
+  const tradePayOff = Number(dealData.tradePayOff) || 0;
   const tradeValue = Number(dealData.tradeValue) || 0;
   // Removed unused totalDevalue variable
-  const netTrade = tradeValue - tradePayoff;
+  const netTrade = tradeValue - tradePayOff;
 
   // Private sale proceeds
   // Removed unused privateSaleGross variable
@@ -127,7 +127,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
               <div className="text-5xl font-extrabold text-gray-800 mb-2">{(() => {
                 const adCost = AVG_AD_COST;
                 const holdingCost = MONTHLY_PAYMENT * selectedMonths;
-                const numerator = netTrade + tradePayoff + adCost + holdingCost - netTrade * TAX_RATE;
+                const numerator = netTrade + tradePayOff + adCost + holdingCost - netTrade * TAX_RATE;
                 const requiredSalePrice = numerator / (1 - TAX_RATE);
                 return formatCurrency(Math.ceil(requiredSalePrice));
               })()}</div>

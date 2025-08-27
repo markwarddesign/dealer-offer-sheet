@@ -62,8 +62,8 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
     if (dealData.tradeDevalueSelected && settings && settings.tradeDevalueItems) {
       totalTradeDevalue = dealData.tradeDevalueSelected.reduce((sum, idx) => sum + (settings.tradeDevalueItems[idx]?.price || 0), 0);
     }
-  // Net Trade should match TradeStep Net Trade Equity: tradeValue - tradePayoff
-  const netTrade = roundToHundredth(dealData.tradeValue - dealData.tradePayoff);
+  // Net Trade should match TradeStep Net Trade Equity: tradeValue - tradePayOff
+  const netTrade = roundToHundredth(dealData.tradeValue - dealData.tradePayOff);
     // Use dealData value if set, else fallback to store default
     const getAddon = (key, fallback = 0) => {
       const val = dealData[key];
@@ -92,11 +92,11 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
   // Remove tax credit from calculations
   const licenseEstimate = Number(dealData.licenseEstimate) || 0;
 
-  console.log(dealData.tradePayoff);
+  console.log(dealData.tradePayOff);
 
   const totalAmountFinanced = roundToHundredth(
     Number(difference) +
-    (Number(dealData.tradePayoff) || 0) +
+    (Number(dealData.tradePayOff) || 0) +
     (Number(dealData.docFee) || 0) +
     (Number(licenseEstimate) || 0) +
     (Number(salesTax) || 0)
@@ -278,7 +278,7 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                     <span>({formatCurrency(totalTradeDevalue)})</span>
                     </div>
                     <div className="flex justify-between text-sm"><span>Trade Value</span><span>{formatCurrency(dealData.tradeValue)}</span></div>
-                    <div className="flex justify-between text-sm"><span>Payoff</span><span>({formatCurrency(dealData.tradePayoff)})</span></div>
+                    <div className="flex justify-between text-sm"><span>Payoff</span><span>({formatCurrency(dealData.tradePayOff)})</span></div>
                     <div className="flex justify-between text-sm font-bold border-t border-blue-200 pt-2 mt-2 text-blue-900"><span>Net Trade</span><span>{formatCurrency(netTrade)}</span></div>
                   </div>
                 </div>
@@ -296,15 +296,15 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                 <h3 className="text-xl font-bold text-blue-900 mb-4 text-center">Financing Options</h3>
                 <div className="flex flex-row justify-between">
                    {dealData.rebates != null && dealData.rebates !== '' && !isNaN(Number(dealData.rebates)) && Number(dealData.rebates) !== 0 && (
-                                <div className="mb-2 text-left text-sm text-blue-700 font-semibold">
-                                  Rebates: <span className="text-blue-900">{formatCurrency(Number(dealData.rebates))}</span>
-                                </div>
-                              )}
-                              {dealData.showInterestRateOnOfferSheet && (
-                                <div className="mb-2 text-right text-sm text-gray-700 font-semibold">
-                                  Interest Rate: <span className="text-red-700">{(dealData.interestRate ?? 6.99).toFixed(2)}%</span>
-                                </div>
-                              )}
+                      <div className="mb-2 text-left text-sm text-blue-700 font-semibold">
+                        Rebates: <span className="text-blue-900">{formatCurrency(Number(dealData.rebates))}</span>
+                      </div>
+                    )}
+                    {dealData.showInterestRateOnOfferSheet && (
+                      <div className="mb-2 text-right text-sm text-gray-700 font-semibold">
+                        Interest Rate: <span className="text-red-700">{(dealData.interestRate ?? 6.99).toFixed(2)}%</span>
+                      </div>
+                    )}
                 </div>
                
                 <div className="w-full">

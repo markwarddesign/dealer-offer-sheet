@@ -47,7 +47,7 @@ const steps = [
     fields: [
       { label: "Market Value / Auction Value", name: "tradeMarketValue", type: "number", helpText: "The raw value before trade devalue deductions." },
       { label: "Trade Value", name: "tradeValue", type: "number", helpText: "This is Market Value minus trade devalue items. Editing this will update Market Value." },
-      { label: "Trade Payoff", name: "tradePayoff", type: "number" },
+      { label: "Trade Payoff", name: "tradePayOff", type: "number" },
       { label: "Year", name: "tradeVehicleYear", type: "number" },
       { label: "Make", name: "tradeVehicleMake", type: "text" },
       { label: "Model", name: "tradeVehicleModel", type: "text" },

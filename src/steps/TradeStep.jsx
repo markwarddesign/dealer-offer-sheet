@@ -247,8 +247,8 @@ export default function TradeStep() {
       case 'tradePayOff':
         setPayOffInput(val);
         debouncedPayOff(val);
-        // Also update tradePayoff for compatibility with code that expects lowercase 'o'
-        updateDealData({ tradePayoff: val });
+        // Also update tradePayOff for compatibility with code that expects lowercase 'o'
+        updateDealData({ tradePayOff: val });
         break;
       case 'tradeLease':
         // Map checkbox to correct state field
