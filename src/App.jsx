@@ -144,7 +144,7 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
 
 
     return (
-      <div className="space-y-8">
+      <div className="space-y-8 offer-sheet">
         {/* Price display in top right */}
         {/* <div className="flex justify-end mb-2">
           <div className="bg-white rounded-lg shadow px-6 py-3 text-right border border-gray-200">

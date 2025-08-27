@@ -1,5 +1,9 @@
 
 @media print {
+
+  .offer-sheet{
+    font-size: 140% !important;
+  }
 	html, body {
 		width: 100% !important;
 		min-width: 0 !important;
