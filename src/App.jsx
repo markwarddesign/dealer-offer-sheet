@@ -248,9 +248,13 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                   </>
                 )} */}
                 <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Doc Fee</p><p>{formatCurrency(dealData.docFee)}</p></div>
-                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>License Estimate</p><p>{formatCurrency(dealData.licenseEstimate)}</p></div>
+                {dealData.showLicenseFeeOnOfferSheet && (
+                  <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>License Estimate</p><p>{formatCurrency(dealData.licenseEstimate)}</p></div>
+                )}
                 <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Other Fees</p><p>{formatCurrency(dealData.titleFee + dealData.tireFee + dealData.otherFee)}</p></div>
-                <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Sales Tax ({dealData.taxRate}%)</p><p>{formatCurrency(salesTax)}</p></div>
+                {dealData.showTaxRateOnOfferSheet && (
+                  <div className="flex justify-between text-sm py-1 border-b border-gray-100"><p>Sales Tax ({dealData.taxRate}%)</p><p>{formatCurrency(salesTax)}</p></div>
+                )}
                 {dealData.isNewVehicle && <div className="flex justify-between text-sm text-blue-700"><p>Rebates</p><p>({formatCurrency(dealData.rebates)})</p></div>}
               </div>
             </div>

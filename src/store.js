@@ -59,6 +59,8 @@ const initialDealData = {
   avgDaysToSell: 75,
   showInterestRateOnOfferSheet: false,
   showAmountFinancedOnOfferSheet: false,
+  showLicenseFeeOnOfferSheet: false,
+  showTaxRateOnOfferSheet: false,
 };
 
 const defaultSettings = {
