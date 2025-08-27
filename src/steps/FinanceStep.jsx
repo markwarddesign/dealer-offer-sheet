@@ -178,9 +178,9 @@ export default function FinanceStep() {
 
           <div className="w-full mt-12">
             <div className="flex flex-row justify-between">
-            {dealData.rebates && Number(dealData.rebates) !== 0 && (
+            {dealData.rebates != null && dealData.rebates !== '' && !isNaN(Number(dealData.rebates)) && Number(dealData.rebates) !== 0 && (
               <div className="mb-2 text-left text-sm text-blue-700 font-semibold">
-                Rebates: <span className="text-blue-900">{formatCurrency(dealData.rebates)}</span>
+                Rebates: <span className="text-blue-900">{formatCurrency(Number(dealData.rebates))}</span>
               </div>
             )}
             {dealData.showInterestRateOnOfferSheet && (

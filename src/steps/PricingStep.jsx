@@ -41,9 +41,10 @@ export default function PricingStep() {
   }, [settings.roiPercentage, dealData.sellingPrice]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    // Always store as number for interestRate
-    if (name === 'interestRate') {
+    const { name, value, type, checked } = e.target;
+    if (type === 'checkbox') {
+      updateDealData({ [name]: checked });
+    } else if (name === 'interestRate') {
       updateDealData({ [name]: value === '' ? '' : Number(value) });
     } else {
       updateDealData({ [name]: value });

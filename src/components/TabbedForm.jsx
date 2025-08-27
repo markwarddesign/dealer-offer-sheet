@@ -6,6 +6,7 @@ import roundToHundredth from '../utils/roundToHundredth';
 
 export default function TabbedForm({ dealData, setDealData, onGenerateOffer, settings, setSettings }) {
   const [tab, setTab] = useState(0);
+  const [hovered, setHovered] = useState(null);
   const totalTabs = steps.length;
   const handleChange = (e) => {
     const { name, value, type } = e.target;
@@ -27,22 +28,30 @@ export default function TabbedForm({ dealData, setDealData, onGenerateOffer, set
   };
   return (
     <form className="relative max-w-4xl mx-auto bg-white rounded-xl shadow-md p-0 flex flex-col min-h-[600px]">
-      {/* Responsive Tabs: horizontal scroll on mobile, sidebar on desktop */}
-      <div className="block md:hidden sticky top-[64px] z-10 bg-white border-b no-scrollbar">
-        <div className="flex flex-row gap-1 px-2 py-2">
-          {steps.map((s, i) => (
-            <button
-              key={s.title}
-              type="button"
-              className={`flex-1 min-w-[120px] whitespace-nowrap px-3 py-2 text-xs font-semibold rounded transition-colors duration-200 ${i === tab ? 'bg-red-600 text-white shadow' : 'bg-gray-100 text-gray-700 hover:bg-red-100'}`}
-              onClick={() => setTab(i)}
-              style={{ flex: '0 0 auto' }}
-            >
-              <span className="flex items-center gap-1 justify-center">{s.icon}{s.title}</span>
-            </button>
-          ))}
-        </div>
+      {/* Mobile: icon-only sidebar */}
+      <div className="flex md:hidden flex-col w-16 border-r bg-gray-50 rounded-l-xl py-4 pr-0 absolute h-full left-0 top-0 z-0 items-center">
+        {steps.map((s, i) => (
+          <button
+            key={s.title}
+            type="button"
+            className={`flex flex-col items-center justify-center w-12 h-12 my-2 rounded-lg transition-colors duration-200 group ${i === tab ? 'bg-red-600 text-white shadow' : 'bg-gray-100 text-white hover:bg-red-600'}`}
+            onClick={() => setTab(i)}
+            title={s.title}
+            style={{ position: 'relative' }}
+            onMouseEnter={() => setHovered(i)}
+            onMouseLeave={() => setHovered(null)}
+          >
+            <span className="text-2xl flex items-center justify-center m-0 p-0">
+              {React.cloneElement(s.icon, {
+                className: 'w-7 h-7',
+                style: { margin: 0, padding: 0 },
+                stroke: i === tab || hovered === i ? 'white' : '#dc2626',
+              })}
+            </span>
+          </button>
+        ))}
       </div>
+      {/* Desktop: icon + title sidebar */}
       <div className="hidden md:flex w-56 border-r bg-gray-50 rounded-l-xl flex-col py-8 pr-0 absolute h-full left-0 top-0 z-0">
         {steps.map((s, i) => (
           <button
@@ -56,7 +65,7 @@ export default function TabbedForm({ dealData, setDealData, onGenerateOffer, set
         ))}
       </div>
       {/* Form Content */}
-      <div className="flex-1 p-4 md:p-10 md:ml-56">
+  <div className="flex-1 p-4 md:p-10 md:ml-56 ml-16">
         {React.createElement(stepComponents[tab], {
           dealData,
           setDealData,
