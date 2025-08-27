@@ -83,19 +83,19 @@ function TradeVsPrivateSale({ dealData, onBack }) {
     return null;
   }
   return (
-    <div className="bg-white border border-gray-300 rounded-xl shadow-lg p-8 mb-12 trade-vs-private-print-main">
-        <h2 className="text-3xl font-bold mb-6 text-center flex items-center justify-center gap-2">
+    <div className="bg-white border border-gray-300 rounded-xl shadow-lg p-4 sm:p-8 mb-12 trade-vs-private-print-main">
+        <h2 className="text-3xl font-bold mb-6 print:mb-4 text-center flex items-center justify-center gap-2">
           <svg width="28" height="28" fill="none" viewBox="0 0 24 24" className="text-red-500 inline-block mr-1"><circle cx="12" cy="12" r="10" fill="#fee2e2"/><path d="M8 13.5l2.5 2.5L16 10" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
           Trade-In vs Private Sale Breakdown
         </h2>
-        <div className="mb-8 text-center text-base text-gray-800 max-w-3xl mx-auto">
+        <div className="mb-8 text-center text-base text-gray-800 max-w-3xl mx-auto print:mb-4">
           <span className="font-bold text-gray-900">Trading in your vehicle</span> typically results in <span className="font-bold text-gray-900">more money in your pocket</span> compared to selling it privately, once you factor in taxes, advertising, and holding costs.
         </div>
 
         {/* --- Combined Trade & Sale Comparison Section --- */}
-        <div className="mb-10 grid grid-cols-1 md:grid-cols-2 gap-8 the-options">
+  <div className="mb-10 flex flex-col md:flex-row gap-6 md:gap-8 the-options print:mb-5">
           {/* Trade Option (Top) */}
-          <div className="bg-blue-50 border-2 border-blue-400 rounded-lg p-6 flex flex-col items-center shadow-md">
+          <div className="bg-blue-50 border-2 border-blue-400 rounded-lg p-4 sm:p-6 flex flex-col items-center shadow-md min-w-0 w-full">
             <div className="text-lg font-bold mb-2 text-blue-700 flex items-center gap-2">
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24" className="text-blue-500"><circle cx="12" cy="12" r="10" fill="#dbeafe"/><path d="M8 13.5l2.5 2.5L16 10" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               Trade Option <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-semibold">Recommended</span>
@@ -118,7 +118,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
             </div>
           </div>
           {/* Sell Option (Top) */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 flex flex-col items-center">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 sm:p-6 flex flex-col items-center min-w-0 w-full">
             <div className="text-lg font-bold mb-2 text-gray-800 flex items-center gap-2">
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24" className="text-gray-400"><circle cx="12" cy="12" r="10" fill="#f3f4f6"/><path d="M8 13.5l2.5 2.5L16 10" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               Sell Option
@@ -191,9 +191,9 @@ function TradeVsPrivateSale({ dealData, onBack }) {
 
 
         {/* --- Monthly Cost Savings Cards Layout --- */}
-        <div className="mb-10 grid grid-cols-1 md:grid-cols-3 gap-6 the-cards no-print">
+  <div className="print:mb-5 mb-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 the-cards">
           {/* OCFL Savings Card */}
-          <div className="bg-white border border-blue-200 rounded-lg p-6 flex flex-col items-center">
+          <div className="bg-white border border-blue-200 rounded-lg p-4 sm:p-6 flex flex-col items-center min-w-0 w-full">
             <div className="text-lg font-bold mb-2 text-blue-700 flex items-center gap-2">
               <svg width="18" height="18" fill="none" viewBox="0 0 24 24" className="text-blue-400"><circle cx="12" cy="12" r="10" fill="#dbeafe"/><path d="M8 13.5l2.5 2.5L16 10" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               OCFL Savings
@@ -208,7 +208,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
             </div>
           </div>
           {/* WPFL Cost Card */}
-          <div className="bg-white border border-blue-200 rounded-lg p-6 flex flex-col items-center">
+          <div className="bg-white border border-blue-200 rounded-lg p-4 sm:p-6 flex flex-col items-center min-w-0 w-full">
             <div className="text-lg font-bold mb-2 text-blue-700 flex items-center gap-2">
               <svg width="18" height="18" fill="none" viewBox="0 0 24 24" className="text-blue-400"><circle cx="12" cy="12" r="10" fill="#dbeafe"/><path d="M8 13.5l2.5 2.5L16 10" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               {WPFL_NAME}
@@ -218,7 +218,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
             {dealData.wpfl && WPFL_OPTIONS.length > 1 && (
               <div className="w-full mt-2">
                 <div className="text-xs text-gray-600 mb-1 font-semibold text-center">Other Options:</div>
-                <div className="flex flex-wrap gap-2 justify-center">
+                <div className="flex flex-wrap gap-2 justify-center other-options">
                   {WPFL_OPTIONS.map((opt, idx) => (
                     <div key={idx} className={`px-2 py-1 rounded border text-xs ${idx === defaultWPFLIndex ? 'bg-blue-50 border-blue-400 font-bold' : 'bg-white border-blue-200'}`}>{opt.label}: {formatCurrency(opt.price)}</div>
                   ))}
@@ -227,7 +227,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
             )}
           </div>
           {/* Fuel Savings Card */}
-          <div className="bg-white border border-blue-200 rounded-lg p-6 flex flex-col items-center">
+          <div className="bg-white border border-blue-200 rounded-lg p-4 sm:p-6 flex flex-col items-center min-w-0 w-full">
             <div className="text-lg font-bold mb-2 text-blue-700 flex items-center gap-2">
               <svg width="18" height="18" fill="none" viewBox="0 0 24 24" className="text-blue-400"><circle cx="12" cy="12" r="10" fill="#dbeafe"/><path d="M8 13.5l2.5 2.5L16 10" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               Fuel Savings
@@ -274,7 +274,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
         </div> */}
 
         {/* Cost of Ownership Adjustment - Modern Card Layout */}
-        <section className="mb-12 mt-12">
+        <section className="mb-12 mt-12 print:mt-0 print:mb-0">
           <div className="max-w-2xl mx-auto rounded-2xl shadow-lg border border-gray-200 bg-white print:border-gray-400 print:bg-white p-0 overflow-hidden">
             <div className="bg-gradient-to-r from-gray-100 via-blue-50 to-gray-100 px-8 py-6 border-b border-gray-200 print:bg-white print:border-b-gray-300 flex items-center gap-3">
               <svg width="32" height="32" fill="none" viewBox="0 0 24 24" className="text-blue-500"><circle cx="12" cy="12" r="10" fill="#e0e7ef"/><path d="M8 13.5l2.5 2.5L16 10" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -284,7 +284,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
               </div>
             </div>
             <div className="px-8 py-8 flex flex-col gap-6 print:gap-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 no-print">
                 <div className="flex flex-col items-center">
                   <span className="text-xs text-gray-500 font-semibold mb-1">WPFL</span>
                   <span className="text-lg font-bold text-blue-700">{formatCurrency(WPFL_SELECTED?.price ?? 0)}</span>
@@ -301,7 +301,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
                   <span className="text-xs text-gray-400 mt-1">Fuel Savings</span>
                 </div>
               </div>
-              <div className="flex flex-col items-center mt-2">
+              <div className="flex flex-col items-center mt-2 print:mt-0">
                 <span className="uppercase text-xs text-gray-500 tracking-widest font-semibold">Total Monthly Savings</span>
                 <span className="text-5xl font-extrabold text-blue-800 mt-1 mb-1">{formatCurrency(COST_OF_OWNERSHIP_TOTAL)}</span>
                 <span className="text-sm text-gray-700">All benefits included, every month</span>

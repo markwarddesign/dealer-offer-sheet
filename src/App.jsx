@@ -144,7 +144,7 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
 
 
     return (
-      <div className="space-y-8 offer-sheet">
+  <div className="space-y-8 offer-sheet">
         {/* Price display in top right */}
         {/* <div className="flex justify-end mb-2">
           <div className="bg-white rounded-lg shadow px-6 py-3 text-right border border-gray-200">
@@ -158,10 +158,26 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
               <div className="uppercase tracking-wide text-sm text-red-600 font-semibold">{dealData.vehicleYear} {dealData.vehicleMake}</div>
               <h2 className="block mt-1 text-3xl leading-tight font-extrabold text-black">{dealData.vehicleModel}</h2>
               <div className="mt-2 text-gray-700 text-sm grid grid-cols-2 gap-x-8 gap-y-1">
-                <span className="font-semibold">VIN:</span> <span>{dealData.vehicleVin}</span>
-                <span className="font-semibold">Stock #:</span> <span>{dealData.vehicleStock}</span>
-                <span className="font-semibold">Color:</span> <span>{dealData.vehicleColor}</span>
-                <span className="font-semibold">Mileage:</span> <span>{dealData.vehicleMileage?.toLocaleString()} mi</span>
+                <div className="flex flex-col sm:flex-row gap-y-1 sm:gap-x-8">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-x-2">
+                    <span className="font-semibold">VIN:</span>
+                    <span className="break-all">{dealData.vehicleVin}</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-x-2">
+                    <span className="font-semibold">Stock #:</span>
+                    <span>{dealData.vehicleStock}</span>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-y-1 sm:gap-x-8 mt-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-x-2">
+                    <span className="font-semibold">Color:</span>
+                    <span>{dealData.vehicleColor}</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-x-2">
+                    <span className="font-semibold">Mileage:</span>
+                    <span>{dealData.vehicleMileage?.toLocaleString()} mi</span>
+                  </div>
+                </div>
               </div>
             </div>
             <div className="text-right mt-6 md:mt-0">
@@ -357,6 +373,21 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Print-only signature box at the bottom of the offer sheet */}
+        <div className="print-only mt-16 flex flex-col items-center w-full">
+          <div className="w-full max-w-lg border-t-2 border-gray-400 pt-8 mt-8" style={{ minHeight: '80px' }}>
+            <div className="flex flex-row justify-between items-end w-full">
+              <div className="flex-1">
+                <div className="border-b border-gray-400 w-full mb-2" style={{ minWidth: '200px', minHeight: '2.5em' }}></div>
+                <div className="text-xs text-gray-700 text-left">Customer Signature</div>
+              </div>
+              <div className="flex-1 ml-8">
+                <div className="border-b border-gray-400 w-full mb-2" style={{ minWidth: '120px', minHeight: '2.5em' }}></div>
+                <div className="text-xs text-gray-700 text-left">Date</div>
               </div>
             </div>
           </div>

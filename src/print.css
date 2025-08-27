@@ -1,8 +1,17 @@
+/* Show only on print, hide on screen */
+.print-only {
+	display: none !important;
+}
+@media print {
+	.print-only {
+		display: block !important;
+	}
+}
 
 @media print {
 
   .offer-sheet{
-    font-size: 140% !important;
+    font-size: 120% !important;
   }
 	html, body {
 		width: 100% !important;
@@ -105,9 +114,30 @@
    .trade-vs-private-print-main .text-4xl, .trade-vs-private-print-main .text-lg{
     font-size: 2em !important;
   }
+
+  .trade-vs-private-print-main .the-cards .text-lg{
+    font-size: 1.25em !important;
+  }
+.trade-vs-private-print-main .gap-6{
+ gap: 0 !important;
+}
+ 
+
+.trade-vs-private-print-main .other-options{
+    font-size: 9px !important;
+    display: flex !important;
+  }
+
+  .trade-vs-private-print-main .the-cards .text-2xl{
+    font-size: 2em !important;
+  }
   .trade-vs-private-print-main .max-w-3xl{
     max-width: 70% !important;
     margin:30px auto !important;
     font-size: 13px !important;
+  }
+
+  .trade-vs-private-print-main .gap-6, .trade-vs-private-print-main .gap-8{
+    gap:10px !important;
   }
 }
