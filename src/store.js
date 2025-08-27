@@ -58,12 +58,13 @@ const initialDealData = {
   vehiclesInMarket: 100,
   avgDaysToSell: 75,
   showInterestRateOnOfferSheet: false,
+  showAmountFinancedOnOfferSheet: false,
 };
 
 const defaultSettings = {
-  showProtectionPackage: true,
-  showGapInsurance: true,
-  showServiceContract: true,
+  showProtectionPackage: false,
+  showGapInsurance: false,
+  showServiceContract: false,
   layout: 'tabs',
   tradeDevalueItems: [
     { label: 'Scratches & Dents', price: 1500 },

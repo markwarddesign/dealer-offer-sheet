@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import FormSection from '../components/FormSection';
 import { useAppStore } from '../store';
+import { formatCurrency } from '../utils/formatCurrency';
 
 function calculateMonthlyPayment(amount, rate, termMonths) {
   if (!amount || !rate || !termMonths) return 0;
@@ -18,6 +19,11 @@ export default function FinanceStep() {
   const showInterestRateOnOfferSheet = dealData.showInterestRateOnOfferSheet ?? false;
   const handleToggleShowInterestRate = () => {
     updateDealData({ showInterestRateOnOfferSheet: !showInterestRateOnOfferSheet });
+  };
+  // Toggle for showing amount financed on offer sheet
+  const showAmountFinancedOnOfferSheet = dealData.showAmountFinancedOnOfferSheet ?? true;
+  const handleToggleShowAmountFinanced = () => {
+    updateDealData({ showAmountFinancedOnOfferSheet: !showAmountFinancedOnOfferSheet });
   };
   // Use interest rate from dealData, fallback to store default
   const rate = dealData.interestRate !== undefined && dealData.interestRate !== '' ? Number(dealData.interestRate) : 6.99;
@@ -48,16 +54,36 @@ export default function FinanceStep() {
   return (
     <FormSection title="Finance Options" icon={null} noGrid={true}>
       <div className='flex flex-col w-full'>
-        <div className="flex items-center gap-3 mb-6">
-          <input
-            id="toggleShowInterestRateOnOfferSheet"
-            type="checkbox"
-            checked={showInterestRateOnOfferSheet}
-            onChange={handleToggleShowInterestRate}
-            className="form-checkbox h-5 w-5 text-red-600 border-gray-300 rounded focus:ring-red-500"
-          />
-          <label htmlFor="toggleShowInterestRateOnOfferSheet" className="text-base font-medium text-gray-800 select-none">
-            Display interest rate on offer sheet
+        <div className="flex items-center gap-6 mb-6">
+          {/* Sleek Toggle for Interest Rate */}
+          <label htmlFor="toggleShowInterestRateOnOfferSheet" className="flex items-center cursor-pointer select-none">
+            <div className="relative">
+              <input
+                id="toggleShowInterestRateOnOfferSheet"
+                type="checkbox"
+                checked={showInterestRateOnOfferSheet}
+                onChange={handleToggleShowInterestRate}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-red-500 transition-colors"></div>
+              <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"></div>
+            </div>
+            <span className="ml-3 text-base font-medium text-gray-800">Display interest rate on offer sheet</span>
+          </label>
+          {/* Sleek Toggle for Amount Financed */}
+          <label htmlFor="toggleShowAmountFinancedOnOfferSheet" className="flex items-center cursor-pointer select-none">
+            <div className="relative">
+              <input
+                id="toggleShowAmountFinancedOnOfferSheet"
+                type="checkbox"
+                checked={showAmountFinancedOnOfferSheet}
+                onChange={handleToggleShowAmountFinanced}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-500 transition-colors"></div>
+              <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"></div>
+            </div>
+            <span className="ml-3 text-base font-medium text-gray-800">Display Amount Financed on offer sheet</span>
           </label>
         </div>
         <div className="mb-8 w-full">
@@ -151,11 +177,18 @@ export default function FinanceStep() {
           </div>
 
           <div className="w-full mt-12">
-            {showInterestRateOnOfferSheet && (
-              <div className="mb-2 text-right text-sm text-gray-700 font-semibold">
-                Interest Rate: <span className="text-red-700">{rate.toFixed(2)}%</span>
+            <div className="flex flex-row justify-between">
+            {dealData.rebates && Number(dealData.rebates) !== 0 && (
+              <div className="mb-2 text-left text-sm text-blue-700 font-semibold">
+                Rebates: <span className="text-blue-900">{formatCurrency(dealData.rebates)}</span>
               </div>
             )}
+            {dealData.showInterestRateOnOfferSheet && (
+              <div className="mb-2 text-right text-sm text-gray-700 font-semibold">
+                Interest Rate: <span className="text-red-700">{(dealData.interestRate ?? 6.99).toFixed(2)}%</span>
+              </div>
+            )}
+          </div>
             <div className="w-full">
               <table className="w-full text-xs text-center rounded-xl shadow-lg border border-gray-200 bg-white">
                 <thead>

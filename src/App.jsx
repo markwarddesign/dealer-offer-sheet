@@ -1,8 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppStore } from './store';
 import { ShieldCheck, Car, Wrench, User, FileText, DollarSign, PlusCircle, ClipboardList, Settings as SettingsIcon } from 'lucide-react';
 import SettingsPage from './pages/SettingsPage';
 import { formatCurrency } from './utils/formatCurrency';
+import LoginPage from './components/LoginPage';
+import { isAuthenticated, logout } from './utils/auth';
 import TradeVsPrivateSale from './components/TradeVsPrivateSale';
 import BuyerInfoStep from './steps/BuyerInfoStep';
 import VehicleInfoStep from './steps/VehicleInfoStep';
@@ -282,19 +284,28 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                 </div>
               )}
 
-              {/* ADD Amount Financed in it's own box */}
-              <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-sm flex justify-between align-middle">
-                <h3 className="text-xl font-bold text-blue-900">Amount Financed</h3>
-                <div className="text-2xl font-semibold text-blue-900">{formatCurrency(totalAmountFinanced)}</div>
-              </div>
+              {/* ADD Amount Financed in its own box, controlled by toggle */}
+              {dealData.showAmountFinancedOnOfferSheet && (
+                <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-sm flex justify-between align-middle">
+                  <h3 className="text-xl font-bold text-blue-900">Amount Financed</h3>
+                  <div className="text-2xl font-semibold text-blue-900">{formatCurrency(totalAmountFinanced)}</div>
+                </div>
+              )}
 
               <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-sm flex flex-col mb-0">
                 <h3 className="text-xl font-bold text-blue-900 mb-4 text-center">Financing Options</h3>
-                {dealData.showInterestRateOnOfferSheet && (
-                  <div className="mb-2 text-right text-sm text-gray-700 font-semibold">
-                    Interest Rate: <span className="text-red-700">{(dealData.interestRate ?? 6.99).toFixed(2)}%</span>
-                  </div>
-                )}
+                <div className="flex flex-row justify-between">
+                  {dealData.rebates && Number(dealData.rebates) !== 0 && (
+                    <div className="mb-2 text-left text-sm text-blue-700 font-semibold">
+                      Rebates: <span className="text-blue-900">{formatCurrency(dealData.rebates)}</span>
+                    </div>
+                  )}
+                  {dealData.showInterestRateOnOfferSheet && (
+                    <div className="mb-2 text-right text-sm text-gray-700 font-semibold">
+                      Interest Rate: <span className="text-red-700">{(dealData.interestRate ?? 6.99).toFixed(2)}%</span>
+                    </div>
+                  )}
+                </div>
                
                 <div className="w-full">
                   <table className="w-full text-xs text-center rounded-xl shadow border border-gray-200 bg-white overflow-hidden">
@@ -399,7 +410,6 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
 
 
 // --- Main App Component ---
-
 export default function App() {
   const {
     page,
@@ -410,24 +420,21 @@ export default function App() {
     setSettings,
   } = useAppStore();
 
-  // Ensure tradePayoff and tradePayment are initialized from store defaults if not already set
-  useEffect(() => {
-    let needsUpdate = false;
-    const updated = { ...dealData };
-    if (dealData.tradePayOff !== undefined && (dealData.tradePayoff === undefined || dealData.tradePayoff === '')) {
-      updated.tradePayoff = dealData.tradePayOff;
-      needsUpdate = true;
-    }
-    if (dealData.tradePayment !== undefined && (dealData.tradePayment === undefined || dealData.tradePayment === '')) {
-      updated.tradePayment = 620; // match store.js default
-      needsUpdate = true;
-    }
-    if (needsUpdate) setDealData(updated);
-  }, [dealData, setDealData]);
+  const [authed, setAuthed] = useState(isAuthenticated());
 
   useEffect(() => {
-    localStorage.setItem('offerSheetSettings', JSON.stringify(settings));
-  }, [settings]);
+    if (!isAuthenticated()) setAuthed(false);
+  }, []);
+
+  const handleLogin = () => setAuthed(true);
+  const handleLogout = () => {
+    logout();
+    setAuthed(false);
+  };
+
+  if (!authed) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
 
   const logoUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRe20azLghiq6B4uoUgyV5A_j5zjglEyeNF9g&s";
 
@@ -456,6 +463,13 @@ export default function App() {
               aria-label="Settings"
             >
               <SettingsIcon className="h-6 w-6" />
+            </button>
+            <button
+              onClick={handleLogout}
+              className="ml-4 p-2 rounded-full bg-red-600 text-white hover:bg-red-700 flex items-center justify-center"
+              aria-label="Logout"
+            >
+              Logout
             </button>
           </div>
         </div>
