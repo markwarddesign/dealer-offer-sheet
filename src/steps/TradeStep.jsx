@@ -93,7 +93,7 @@ async function fetchVehicleMpgById(vehicleId) {
 
 export default function TradeStep() {
 
-  const { dealData, updateDealData, setDealData } = useAppStore();
+  const { dealData, updateDealData } = useAppStore();
 
   // Get the default trade state from the store's initialDealData
   // We use a ref to avoid re-importing the whole store (circular dep)
@@ -249,6 +249,10 @@ export default function TradeStep() {
         debouncedPayOff(val);
         // Also update tradePayoff for compatibility with code that expects lowercase 'o'
         updateDealData({ tradePayoff: val });
+        break;
+      case 'tradeLease':
+        // Map checkbox to correct state field
+        updateDealData({ tradeIsLease: val });
         break;
       default:
         updateDealData({ [name]: val });
@@ -458,7 +462,7 @@ export default function TradeStep() {
           </div>
           <div>
             <label className="flex items-center text-sm font-medium text-gray-700 mt-2">
-              <input type="checkbox" name="tradeLease" checked={!!dealData.tradeLease} onChange={handleFieldChange} className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500 mr-2" />
+              <input type="checkbox" name="tradeLease" checked={!!dealData.tradeIsLease} onChange={handleFieldChange} className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500 mr-2" />
               Is this a Lease?
             </label>
           </div>

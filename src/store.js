@@ -61,6 +61,9 @@ const initialDealData = {
 };
 
 const defaultSettings = {
+  showProtectionPackage: true,
+  showGapInsurance: true,
+  showServiceContract: true,
   layout: 'tabs',
   tradeDevalueItems: [
     { label: 'Scratches & Dents', price: 1500 },

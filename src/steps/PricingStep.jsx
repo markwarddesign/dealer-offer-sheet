@@ -41,7 +41,7 @@ export default function PricingStep() {
   }, [settings.roiPercentage, dealData.sellingPrice]);
 
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
+    const { name, value } = e.target;
     // Always store as number for interestRate
     if (name === 'interestRate') {
       updateDealData({ [name]: value === '' ? '' : Number(value) });

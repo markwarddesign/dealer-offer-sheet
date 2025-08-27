@@ -1,186 +1,109 @@
+
 @media print {
-  /* Condense TradeVsPrivateSale for print */
+	html, body {
+		width: 100% !important;
+		min-width: 0 !important;
+		max-width: 100% !important;
+		padding: 0 !important;
+		margin: 0 !important;
+	}
+	.print-page-break {
+		page-break-before: always;
+		break-before: page;
+	}
+	.printable-section {
+		page-break-inside: avoid;
+		break-inside: avoid;
+		max-height: 95vh;
+		overflow: hidden;
+		padding: 0 !important;
+		margin: 0 !important;
+		width: 100vw !important;
+		min-width: 0 !important;
+		max-width: 100vw !important;
+		box-sizing: border-box !important;
+	}
+	/* Force all direct children to fill width */
+	.printable-section > *,
+	.printable-section table,
+	.printable-section .w-full,
+	.printable-section .max-w-4xl,
+	.printable-section .max-w-2xl {
+		width: 97% !important;
+		max-width: 97% !important;
+		margin-left: 0 !important;
+		margin-right: 0 !important;
+		box-sizing: border-box !important;
+	}
+	/* Remove max-width and centering for print on common containers */
+	.max-w-2xl, .max-w-4xl, .mx-auto {
+		max-width: 100% !important;
+		margin-left: 0 !important;
+		margin-right: 0 !important;
+	}
+	body, html {
+		font-size: 11px !important;
+	}
+	h1 { font-size: 3em !important; }
+	body h2 { font-size: 2em !important; }
+	h3 { font-size: 1em !important; }
+	h4, h5, h6 { font-size: 0.95em !important; }
+	.text-5xl, .text-4xl, .text-3xl, .text-2xl, .text-xl, .text-lg, .text-base, .text-sm, .text-xs {
+		font-size: 0.9em !important;
+	}
+	/* Hide all buttons on print */
+	.no-print, .print-hide {
+		display: none !important;
+	}
+	/* Remove all box-shadows on print */
+	*, *:before, *:after {
+		box-shadow: none !important;
+	}
+
+
+  /* Trade vs Sale */
   .trade-vs-private-print-main {
-    padding: 0.25rem !important;
+    border: none !important;
+    padding: 0 !important;
     margin: 0 !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    max-width: 100vw !important;
-    font-size: 11px !important;
   }
-  .trade-vs-private-print-main > h2 {
-    font-size: 1.1em !important;
-    margin-bottom: 0.25em !important;
+
+  .trade-vs-private-print-main .flex{
+    display: flex !important;
   }
-  .trade-vs-private-print-main > div.print-grid {
+  .trade-vs-private-print-main .grid {
     display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 0.25rem !important;
-    margin-bottom: 0 !important;
   }
-  .trade-vs-private-print-main .print-col {
-    padding: 0.25rem !important;
-    margin: 0 !important;
-    border-radius: 0.15rem !important;
-    font-size: 0.95em !important;
-    min-width: 0 !important;
-    box-shadow: none !important;
+  .trade-vs-private-print-main .grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
-  .trade-vs-private-print-main ul,
-  .trade-vs-private-print-main li,
-  .trade-vs-private-print-main .text-xs,
-  .trade-vs-private-print-main .text-sm {
-    font-size: 0.95em !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    line-height: 1.1 !important;
+  .trade-vs-private-print-main .w-1\/2 {
+    width: 50% !important;
   }
-  .trade-vs-private-print-main .print-col > div,
-  .trade-vs-private-print-main .print-col > ul {
-    margin-bottom: 0.15rem !important;
+  .trade-vs-private-print-main .the-options{
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
-  .trade-vs-private-print-main .col-span-1,
-  .trade-vs-private-print-main .md\:col-span-2 {
-    grid-column: span 2 !important;
+
+  .trade-vs-private-print-main .the-cards{
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   }
-  .trade-vs-private-print-main .flex,
-  .trade-vs-private-print-main .items-center {
-    gap: 0.15rem !important;
-  }
-  .trade-vs-private-print-main button {
-    padding: 0.15rem 0.3rem !important;
-    font-size: 0.95em !important;
-    min-width: 0 !important;
-  }
-  .trade-vs-private-print-main .text-lg,
-  .trade-vs-private-print-main .text-xl,
-  .trade-vs-private-print-main .text-2xl,
-  .trade-vs-private-print-main .text-3xl,
-  .trade-vs-private-print-main .text-4xl {
-    font-size: 1em !important;
-    margin: 0 !important;
-  }
-  .trade-vs-private-print-main .font-bold,
-  .trade-vs-private-print-main .font-extrabold {
-    font-weight: 600 !important;
-  }
-  .trade-vs-private-print-main .mb-1,
-  .trade-vs-private-print-main .mb-2,
-  .trade-vs-private-print-main .mb-3,
-  .trade-vs-private-print-main .mb-4,
-  .trade-vs-private-print-main .mb-6,
-  .trade-vs-private-print-main .mb-8,
-  .trade-vs-private-print-main .mb-10,
-  .trade-vs-private-print-main .mt-1,
-  .trade-vs-private-print-main .mt-2,
-  .trade-vs-private-print-main .mt-4,
-  .trade-vs-private-print-main .mt-6,
-  .trade-vs-private-print-main .mt-8,
-  .trade-vs-private-print-main .mt-10 {
-    margin: 0 !important;
-  }
-  .trade-vs-private-print-main .p-2,
-  .trade-vs-private-print-main .p-4,
-  .trade-vs-private-print-main .p-6,
-  .trade-vs-private-print-main .p-8 {
-    padding: 0.25rem !important;
-  }
-  .trade-vs-private-print-main .rounded,
-  .trade-vs-private-print-main .rounded-lg,
-  .trade-vs-private-print-main .rounded-xl {
-    border-radius: 0.15rem !important;
-  }
-  .trade-vs-private-print-main .shadow,
-  .trade-vs-private-print-main .shadow-lg,
-  .trade-vs-private-print-main .shadow-none {
-    box-shadow: none !important;
-  }
-}
-/* Condensed print styles for TradeVsPrivateSale and offer sheet */
-@media print {
-  html, body, #root, .container, main.container {
-    background: #fff !important;
-    color: #222 !important;
-    font-size: 12px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-height: 0 !important;
-    height: auto !important;
-    box-sizing: border-box !important;
-    overflow: visible !important;
-  }
-  .no-print, .print-hide, .sunset-exclusives-section {
+
+  .trade-vs-private-print-main .no-print {
     display: none !important;
   }
-  header, footer {
-    background: #000 !important;
-    color: #fff !important;
-    box-shadow: none !important;
-    padding: 8px 0 !important;
-    max-width: 100% !important;
-    margin: 0 auto !important;
+
+   .trade-vs-private-print-main h2,  .trade-vs-private-print-main .text-5xl{
+    font-size: 3em !important;
   }
-  .printable-section, .print-section {
-    box-shadow: none !important;
-    border: 1px solid #ccc !important;
-    background: #fff !important;
-    page-break-inside: avoid;
-    padding: 8px !important;
-    margin: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-height: 0 !important;
-    height: auto !important;
+
+   .trade-vs-private-print-main .text-4xl, .trade-vs-private-print-main .text-lg{
+    font-size: 2em !important;
   }
-  h1, h2, h3, h4 {
-    font-size: 1em !important;
-    margin: 0.1em 0 !important;
-  }
-  .text-red-600 {
-    color: #dc2626 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  .bg-red-50, .bg-gray-50 {
-    background: #fff !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  .space-y-8 > :not([hidden]) ~ :not([hidden]) {
-    margin-top: 0.5rem !important;
-  }
-  img[alt~="Logo"] {
-    max-height: 32px !important;
-  }
-  /* Condensed grid and spacing for print */
-  .print-grid {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 0.5rem !important;
-  }
-  .print-col {
-    padding: 0.5rem !important;
-    border: 1px solid #eee !important;
-    background: #fff !important;
-    border-radius: 0.25rem !important;
-    box-shadow: none !important;
-  }
-  .print-summary {
-    margin-top: 0.5rem !important;
-    padding: 0.5rem !important;
-    border: 1px solid #ccc !important;
-    background: #f9f9f9 !important;
-    font-size: 1em !important;
-  }
-  .print-tight {
-    line-height: 1.1 !important;
-    font-size: 0.95em !important;
-    padding: 0.25rem 0.5rem !important;
-  }
-  @page {
-    size: A4 portrait;
-    margin: 0.25in;
+  .trade-vs-private-print-main .max-w-3xl{
+    max-width: 70% !important;
+    margin:30px auto !important;
+    font-size: 13px !important;
   }
 }
