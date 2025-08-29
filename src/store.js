@@ -64,17 +64,19 @@ const initialDealData = {
 };
 
 const defaultSettings = {
+  roiPercentage: 5,
+  wpflName: 'Warranty Protection for Life (WPFL)',
+  ocflPrice: 45,
+  ocflServicesPerYear: 3,
   showProtectionPackage: false,
   showGapInsurance: false,
   showServiceContract: false,
-  layout: 'tabs',
   tradeDevalueItems: [
     { label: 'Scratches & Dents', price: 1500 },
     { label: 'Brakes', price: 800 },
     { label: 'Tires', price: 900 },
     { label: 'Safety Inspection', price: 800 },
   ],
-  wpflName: 'Warranty Protection for Life (WPFL)',
   wpflOptions: [
     { label: 'Sunset Chevrolet', price: 0 },
     { label: 'CarShield', price: 149 },
@@ -82,12 +84,10 @@ const defaultSettings = {
     { label: 'Optional Plan', price: 100 },
   ],
   defaultWPFLIndex: 2,
-  oilChangeCost: 150,
-  ocflYears: 5,
   interestRate: 6.99,
 };
 
-export const useAppStore = create((set) => ({
+export const useAppStore = create((set, get) => ({
   // UI State
   page: 'form',
   showTradeVsPrivate: false,
@@ -95,14 +95,35 @@ export const useAppStore = create((set) => ({
 
   // Data State
   dealData: initialDealData,
-  settings: defaultSettings,
+  settings: (() => {
+    try {
+      const savedSettings = localStorage.getItem('offerSheetSettings');
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        // Merge saved settings with defaults to ensure all keys are present
+        return { ...defaultSettings, ...parsed };
+      }
+    } catch (e) {
+      console.error("Failed to parse settings from localStorage", e);
+    }
+    return defaultSettings;
+  })(),
 
   // Actions
   setPage: (page) => set({ page }),
   setShowTradeVsPrivate: (show) => set({ showTradeVsPrivate: show }),
   setSettingsOpen: (open) => set({ settingsOpen: open }),
   setDealData: (dealData) => set({ dealData }),
-  setSettings: (settings) => set({ settings }),
+  setSettings: (newSettings) => {
+    const currentSettings = get().settings;
+    const updatedSettings = { ...currentSettings, ...newSettings };
+    set({ settings: updatedSettings });
+    try {
+      localStorage.setItem('offerSheetSettings', JSON.stringify(updatedSettings));
+    } catch (e) {
+      console.error("Failed to save settings to localStorage", e);
+    }
+  },
   updateDealData: (updates) => set((state) => ({ dealData: { ...state.dealData, ...updates } })),
   updateSettings: (updates) => set((state) => ({ settings: { ...state.settings, ...updates } })),
 }));

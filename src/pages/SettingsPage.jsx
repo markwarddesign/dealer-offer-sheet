@@ -7,15 +7,16 @@ export default function SettingsPage({ onBack }) {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    const val = type === 'checkbox' ? checked : type === 'number' ? (value === '' ? null : Number(value)) : value;
     setSettings({
       ...settings,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: val,
     });
   };
 
   const handleListChange = (e, listName, index, field) => {
     const newList = [...(settings[listName] || [])];
-    const value = e.target.type === 'number' ? Number(e.target.value) : e.target.value;
+    const value = e.target.type === 'number' ? (e.target.value === '' ? null : Number(e.target.value)) : e.target.value;
     if (field) {
       newList[index] = { ...newList[index], [field]: value };
     } else {
@@ -67,7 +68,7 @@ export default function SettingsPage({ onBack }) {
               type="number"
               id="roiPercentage"
               name="roiPercentage"
-              value={settings.roiPercentage ?? ''}
+              value={settings.roiPercentage ?? 5}
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
             />
@@ -78,7 +79,7 @@ export default function SettingsPage({ onBack }) {
               type="text"
               id="wpflName"
               name="wpflName"
-              value={settings.wpflName ?? ''}
+              value={settings.wpflName ?? 'Warranty Protection for Life (WPFL)'}
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
             />
@@ -96,7 +97,7 @@ export default function SettingsPage({ onBack }) {
               type="number"
               id="ocflPrice"
               name="ocflPrice"
-              value={settings.ocflPrice ?? ''}
+              value={settings.ocflPrice ?? 45}
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
             />
@@ -107,7 +108,7 @@ export default function SettingsPage({ onBack }) {
               type="number"
               id="ocflServicesPerYear"
               name="ocflServicesPerYear"
-              value={settings.ocflServicesPerYear ?? ''}
+              value={settings.ocflServicesPerYear ?? 3}
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
             />
@@ -205,15 +206,15 @@ export default function SettingsPage({ onBack }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <label className="flex items-center justify-between bg-gray-50 p-3 rounded-md border">
             <span className="text-sm font-medium text-gray-700">Protection Package</span>
-            <input type="checkbox" name="showProtectionPackage" checked={!!settings.showProtectionPackage} onChange={handleChange} className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+            <input type="checkbox" name="showProtectionPackage" checked={settings.showProtectionPackage ?? true} onChange={handleChange} className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
           </label>
           <label className="flex items-center justify-between bg-gray-50 p-3 rounded-md border">
             <span className="text-sm font-medium text-gray-700">GAP Insurance</span>
-            <input type="checkbox" name="showGapInsurance" checked={!!settings.showGapInsurance} onChange={handleChange} className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+            <input type="checkbox" name="showGapInsurance" checked={settings.showGapInsurance ?? true} onChange={handleChange} className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
           </label>
           <label className="flex items-center justify-between bg-gray-50 p-3 rounded-md border">
             <span className="text-sm font-medium text-gray-700">Service Contract</span>
-            <input type="checkbox" name="showServiceContract" checked={!!settings.showServiceContract} onChange={handleChange} className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+            <input type="checkbox" name="showServiceContract" checked={settings.showServiceContract ?? true} onChange={handleChange} className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
           </label>
         </div>
       </div>
