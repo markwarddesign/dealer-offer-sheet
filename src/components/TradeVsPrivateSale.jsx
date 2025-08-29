@@ -1,4 +1,3 @@
-
 // ...existing code...
 import React from "react";
 import { useAppStore } from '../store';
@@ -26,8 +25,12 @@ function TradeVsPrivateSale({ dealData, onBack }) {
     { label: 'Endurance', price: 125 },
     { label: 'Optional Plan', price: 100 },
   ];
-  const defaultWPFLIndex = settings.defaultWPFLIndex ?? 0;
-  const WPFL_SELECTED = WPFL_OPTIONS[defaultWPFLIndex] || WPFL_OPTIONS[0];
+  const [selectedWpflIndex, setSelectedWpflIndex] = React.useState(settings.defaultWPFLIndex ?? 0);
+  const WPFL_SELECTED = WPFL_OPTIONS[selectedWpflIndex] || WPFL_OPTIONS[0];
+
+  const [ocflPrice, setOcflPrice] = React.useState(settings.ocflPrice ?? 45);
+  const [ocflServicesPerYear, setOcflServicesPerYear] = React.useState(settings.ocflServicesPerYear ?? 3);
+
   // Print styles are now in a separate CSS file
   // Helper to calculate monthly savings for selected months
   // Removed unused getMonthlySavings function and requiredSalePrice variable
@@ -49,6 +52,14 @@ function TradeVsPrivateSale({ dealData, onBack }) {
   // Removed unused totalDevalue variable
   const netTrade = tradeValue - tradePayOff;
 
+  const calculateRequiredSalePrice = (months) => {
+    const adCost = AVG_AD_COST;
+    const holdingCost = MONTHLY_PAYMENT * months;
+    const numerator = netTrade + tradePayOff + adCost + holdingCost - netTrade * TAX_RATE;
+    const requiredSalePrice = numerator / (1 - TAX_RATE);
+    return formatCurrency(Math.ceil(requiredSalePrice));
+  };
+
   // Private sale proceeds
   // Removed unused privateSaleGross variable
   // Removed unused privateSaleTaxOwed, privateSaleAdCost, privateSaleHoldingCost, and privateSaleNet variables
@@ -57,11 +68,9 @@ function TradeVsPrivateSale({ dealData, onBack }) {
   // Removed unused savings variable
 
   // --- OCFL/WPFL/Fuel Savings Example Data ---
-  const OIL_CHANGE_COST = settings.oilChangeCost ?? 150;
-  const OCFL_YEARS = settings.ocflYears ?? 5;
-  const OCFL_YEARLY_SAVINGS = OIL_CHANGE_COST;
-  const OCFL_TOTAL_SAVINGS = OIL_CHANGE_COST * OCFL_YEARS;
-  const OCFL_MONTHLY_SAVINGS = OCFL_TOTAL_SAVINGS / 12;
+  const OCFL_YEARLY_SAVINGS = ocflPrice * ocflServicesPerYear;
+  const OCFL_TOTAL_SAVINGS = OCFL_YEARLY_SAVINGS * 5; // 5 years
+  const OCFL_MONTHLY_SAVINGS = OCFL_TOTAL_SAVINGS / (5 * 12);
 
   const WPFL_NAME = settings.wpflName || 'Warranty Protection for Life (WPFL)';
 
@@ -98,7 +107,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
           <div className="bg-blue-50 border-2 border-blue-400 rounded-lg p-4 sm:p-6 flex flex-col items-center shadow-md min-w-0 w-full">
             <div className="text-lg font-bold mb-2 text-blue-700 flex items-center gap-2">
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24" className="text-blue-500"><circle cx="12" cy="12" r="10" fill="#dbeafe"/><path d="M8 13.5l2.5 2.5L16 10" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Trade Option <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-semibold">Recommended</span>
+              Trade Option <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-semibold badge">Recommended</span>
             </div>
             <div className="w-full flex flex-col items-center mb-4">
               <div className="text-5xl font-extrabold text-blue-700 mb-2">{formatCurrency(tradeValue)}</div>
@@ -124,13 +133,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
               Sell Option
             </div>
             <div className="w-full flex flex-col items-center mb-4">
-              <div className="text-5xl font-extrabold text-gray-800 mb-2">{(() => {
-                const adCost = AVG_AD_COST;
-                const holdingCost = MONTHLY_PAYMENT * selectedMonths;
-                const numerator = netTrade + tradePayOff + adCost + holdingCost - netTrade * TAX_RATE;
-                const requiredSalePrice = numerator / (1 - TAX_RATE);
-                return formatCurrency(Math.ceil(requiredSalePrice));
-              })()}</div>
+              <div className="text-5xl font-extrabold text-gray-800 mb-2">{calculateRequiredSalePrice(selectedMonths)}</div>
               <div className="mt-4 text-sm font-semibold text-gray-800">Required Sale Price to Match Trade Value</div>
             </div>
             <div className="mt-4">
@@ -140,7 +143,9 @@ function TradeVsPrivateSale({ dealData, onBack }) {
                 <li>Must market and advertise yourself</li>
                 <li className="!list-none !pl-0">
                   <div className="my-2">
-                    <div className="font-semibold text-gray-800 mb-1">Payments While Selling:</div>
+                    <div className="font-semibold text-gray-800 mb-1">
+                      Required Sale Price after Holding Costs (at {formatCurrency(MONTHLY_PAYMENT)}/mo):
+                    </div>
                     <div className="flex gap-1 mb-2 w-full">
                       <button
                         type="button"
@@ -153,7 +158,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
                         }
                         style={{ cursor: 'pointer' }}
                       >
-                        Today<br />{formatCurrency(MONTHLY_PAYMENT * 0)}
+                        Today<br />{calculateRequiredSalePrice(0)}
                       </button>
                       {[1,2,3].map((mo) => (
                         <button
@@ -167,7 +172,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
                           }
                           style={{ cursor: 'pointer' }}
                         >
-                          {mo} mo<br />{formatCurrency(MONTHLY_PAYMENT * mo)}
+                          {mo} mo<br />{calculateRequiredSalePrice(mo)}
                         </button>
                       ))}
                     </div>
@@ -200,11 +205,13 @@ function TradeVsPrivateSale({ dealData, onBack }) {
             </div>
             <div className="text-2xl font-extrabold text-blue-700 mb-1">{formatCurrency(OCFL_MONTHLY_SAVINGS)}</div>
             <div className="text-xs text-gray-700 mb-2">per month</div>
-            <div className="text-sm text-gray-800">{OCFL_YEARS} years • {formatCurrency(OCFL_TOTAL_SAVINGS)} total</div>
+            <div className="text-sm text-gray-800">Yearly Total: {formatCurrency(OCFL_YEARLY_SAVINGS)}</div>
             <div className="mt-2 text-xs text-gray-700 text-center bg-blue-50 rounded p-2 w-full">
-              <div className="font-semibold mb-1">How it's calculated:</div>
-              <div>Oil Change Cost × Years ÷ 12</div>
-              <div>{formatCurrency(OIL_CHANGE_COST)} × {OCFL_YEARS} ÷ 12 = <span className="font-bold">{formatCurrency(OCFL_MONTHLY_SAVINGS)}</span></div>
+              <div className="font-semibold mb-1">Value Calculation:</div>
+              <div className="flex items-center justify-center gap-2">
+                <label>Price per Service: <input type="number" value={ocflPrice} onChange={(e) => setOcflPrice(Number(e.target.value))} className="w-20 p-1 border rounded" /></label>
+                <label>Services per Year: <input type="number" value={ocflServicesPerYear} onChange={(e) => setOcflServicesPerYear(Number(e.target.value))} className="w-16 p-1 border rounded" /></label>
+              </div>
             </div>
           </div>
           {/* WPFL Cost Card */}
@@ -217,10 +224,16 @@ function TradeVsPrivateSale({ dealData, onBack }) {
             <div className="text-xs text-gray-700 mb-2">per month</div>
             {dealData.wpfl && WPFL_OPTIONS.length > 1 && (
               <div className="w-full mt-2">
-                <div className="text-xs text-gray-600 mb-1 font-semibold text-center">Other Options:</div>
+                <div className="text-xs text-gray-600 mb-1 font-semibold text-center">Select WPFL Option:</div>
                 <div className="flex flex-wrap gap-2 justify-center other-options">
                   {WPFL_OPTIONS.map((opt, idx) => (
-                    <div key={idx} className={`px-2 py-1 rounded border text-xs ${idx === defaultWPFLIndex ? 'bg-blue-50 border-blue-400 font-bold' : 'bg-white border-blue-200'}`}>{opt.label}: {formatCurrency(opt.price)}</div>
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedWpflIndex(idx)}
+                      className={`px-2 py-1 rounded border text-xs ${idx === selectedWpflIndex ? 'bg-blue-50 border-blue-400 font-bold' : 'bg-white border-blue-200'}`}
+                    >
+                      {opt.label}: {formatCurrency(opt.price)}
+                    </button>
                   ))}
                 </div>
               </div>

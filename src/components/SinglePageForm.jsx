@@ -1,5 +1,5 @@
 import React from 'react';
-import steps from '../formSteps.jsx';
+import { formSteps as steps } from '../formSteps.jsx';
 import stepComponents from '../stepComponents';
 import getTotalTradeDevalue from '../utils/getTotalTradeDevalue';
 import roundToHundredth from '../utils/roundToHundredth';

@@ -53,6 +53,36 @@ export default function PricingStep() {
 
   return (
     <FormSection title="Pricing & Profitability" icon={null}>
+      <div className="flex items-center justify-between bg-gray-50 p-3 rounded-md border border-gray-200 mb-4">
+        <label htmlFor="isNewVehicleToggle" className="text-sm font-medium text-gray-700">
+          Vehicle Type
+        </label>
+        <div className="flex items-center">
+          <span className={`mr-3 text-sm font-medium ${!dealData.isNewVehicle ? 'text-gray-900' : 'text-gray-500'}`}>
+            Used
+          </span>
+          <label htmlFor="isNewVehicleToggle" className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              id="isNewVehicleToggle"
+              name="isNewVehicle"
+              className="sr-only peer"
+              checked={!!dealData.isNewVehicle}
+              onChange={handleChange}
+            />
+            <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-offset-2 peer-focus:ring-blue-500 peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+          </label>
+          <span className={`ml-3 text-sm font-medium ${dealData.isNewVehicle ? 'text-gray-900' : 'text-gray-500'}`}>
+            New
+          </span>
+        </div>
+      </div>
+      {dealData.isNewVehicle && (
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">Rebates</label>
+          <input type="number" name="rebates" value={dealData.rebates || ''} onChange={handleChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
+        </div>
+      )}
       <div>
         <label className="block text-sm font-medium text-gray-700">Selling Price</label>
         <input type="number" name="sellingPrice" value={dealData.sellingPrice || ''} onChange={handleChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
@@ -111,16 +141,6 @@ export default function PricingStep() {
         />
         <div className="text-xs text-gray-600 mt-1">Used for finance calculations.</div>
       </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Is this a new vehicle?</label>
-        <input type="checkbox" name="isNewVehicle" checked={!!dealData.isNewVehicle} onChange={handleChange} className="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded" />
-      </div>
-      {dealData.isNewVehicle && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Rebates</label>
-          <input type="number" name="rebates" value={dealData.rebates || ''} onChange={handleChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
-        </div>
-      )}
     </FormSection>
   );
 }

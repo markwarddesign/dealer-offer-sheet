@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../store';
 import { formatCurrency } from '../utils/formatCurrency';
+import { ArrowLeft } from 'lucide-react';
+
 export default function SettingsPage() {
   const { settings, setSettings, setPage } = useAppStore();
   // Local state mirrors SettingsModal logic
-  const [layout, setLayout] = useState(settings.layout || 'steps');
   const [tradeDevalueItems, setTradeDevalueItems] = useState(settings.tradeDevalueItems || []);
   const [newItemLabel, setNewItemLabel] = useState('');
   const [newItemPrice, setNewItemPrice] = useState('');
@@ -29,7 +30,6 @@ export default function SettingsPage() {
   const handleSave = () => {
     setSettings({
       ...settings,
-      layout,
       tradeDevalueItems,
       wpflName,
       wpflOptions,
@@ -42,7 +42,6 @@ export default function SettingsPage() {
     });
     localStorage.setItem('offerSheetSettings', JSON.stringify({
       ...settings,
-      layout,
       tradeDevalueItems,
       wpflName,
       wpflOptions,
@@ -61,25 +60,12 @@ export default function SettingsPage() {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold">Settings</h2>
         <button
-          className="px-4 py-2 rounded bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300"
           onClick={() => setPage('form')}
+          className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:bg-blue-700 transition-colors duration-300 flex items-center"
         >
-          Back to Deal
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          Back to Form
         </button>
-      </div>
-      <div className="mb-6">
-        <label className="block font-semibold mb-2">Form Layout</label>
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2">
-            <input type="radio" name="layout" value="steps" checked={layout === 'steps'} onChange={() => setLayout('steps')} /> Steps
-          </label>
-          <label className="flex items-center gap-2">
-            <input type="radio" name="layout" value="tabs" checked={layout === 'tabs'} onChange={() => setLayout('tabs')} /> Tabs
-          </label>
-          <label className="flex items-center gap-2">
-            <input type="radio" name="layout" value="single" checked={layout === 'single'} onChange={() => setLayout('single')} /> Single Page
-          </label>
-        </div>
       </div>
       <div>
         <label className="block font-semibold mb-2">Trade Devalue Items</label>

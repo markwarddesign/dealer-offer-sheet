@@ -14,8 +14,7 @@ import FeesStep from './steps/FeesStep';
 import AddonsStep from './steps/AddonsStep';
 import FinanceStep from './steps/FinanceStep';
 import SteppedForm from './components/SteppedForm';
-import TabbedForm from './components/TabbedForm';
-import SinglePageForm from './components/SinglePageForm';
+import Sidebar from './components/Sidebar';
 
 // --- Helper Functions & Initial State ---
 
@@ -39,7 +38,8 @@ const BO_TAX_RATE = 0.00471; // 0.471%
 const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
     // --- DYNAMIC CALCULATIONS ---
     let sellingPrice, roiPercentage, profit;
-    const baseInvestment = roundToHundredth(dealData.acquisitionCost + dealData.reconditioningCost + dealData.advertisingCost + dealData.flooringCost);
+    const reconditioningCost = dealData.isNewVehicle ? 0 : dealData.reconditioningCost;
+    const baseInvestment = roundToHundredth(dealData.acquisitionCost + reconditioningCost + dealData.advertisingCost + dealData.flooringCost);
 
     if (dealData.sellingPrice > 0) {
         // Scenario 1: Selling Price was entered manually. Calculate ROI from it.
@@ -192,6 +192,7 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
               <div className="space-y-5 text-gray-700">
                 <div className="flex justify-between text-base"><p>Market Value</p><p className="font-semibold">{formatCurrency(dealData.marketValue)}</p></div>
                 <div className="flex justify-between text-sm"><p>Acquisition Cost</p><p>{formatCurrency(dealData.acquisitionCost)}</p></div>
+                {!dealData.isNewVehicle && (
                 <div className="flex justify-between text-sm items-start">
                   <div>
                     <p>Reconditioning Cost</p>
@@ -199,6 +200,7 @@ const OfferSheet = ({ dealData, onGoBack, settings, onShowTradeVsPrivate }) => {
                   </div>
                   <p className="text-right">{formatCurrency(dealData.reconditioningCost)}</p>
                 </div>
+                )}
                 <div className="flex justify-between text-sm items-end">
                   <div>
                     <p>Advertising</p>
@@ -456,6 +458,7 @@ export default function App() {
   } = useAppStore();
 
   const [authed, setAuthed] = useState(isAuthenticated());
+  const [activeStep, setActiveStep] = useState(0);
 
   useEffect(() => {
     if (!isAuthenticated()) setAuthed(false);
@@ -483,22 +486,21 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
+  const handleStepChange = (step) => {
+    setActiveStep(step);
+    window.scrollTo(0, 0);
+  };
+
   return (
     <div className="bg-gray-100 min-h-screen font-sans">
-      <header className="bg-black text-white p-4 shadow-lg sticky top-0 z-10 no-print">
+      <Sidebar activeStep={activeStep} onStepClick={handleStepChange} />
+      <header className="bg-black text-white p-4 shadow-lg sticky top-0 z-10 no-print ml-15">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center">
             <img src={logoUrl} alt="Sunset Chevrolet Logo" className="h-12" />
           </div>
           <div className="flex items-center gap-4">
             <p className="text-sm text-gray-300">{page === 'form' ? 'Deal Configuration' : page === 'settings' ? 'Settings' : 'Customer Offer Sheet'}</p>
-            <button
-              onClick={() => setPage('settings')}
-              className="ml-4 p-2 rounded-full bg-gray-800 text-white hover:bg-gray-700 flex items-center justify-center"
-              aria-label="Settings"
-            >
-              <SettingsIcon className="h-6 w-6" />
-            </button>
             <button
               onClick={handleLogout}
               className="ml-4 p-2 rounded-full bg-red-600 text-white hover:bg-red-700 flex items-center justify-center"
@@ -509,43 +511,23 @@ export default function App() {
           </div>
         </div>
       </header>
-      <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-        {page === 'settings' ? (
-          <SettingsPage />
-        ) : page === 'form' ? (
-          settings.layout === 'tabs' ? (
-            <TabbedForm dealData={dealData} setDealData={setDealData} onGenerateOffer={handleGenerateOffer} settings={settings} setSettings={setSettings} />
-          ) : settings.layout === 'single' ? (
-            <SinglePageForm dealData={dealData} setDealData={setDealData} onGenerateOffer={handleGenerateOffer} settings={settings} setSettings={setSettings} />
-          ) : (
-            <SteppedForm dealData={dealData} setDealData={setDealData} onGenerateOffer={handleGenerateOffer} settings={settings} setSettings={setSettings} />
-          )
-        ) : page === 'offer' ? (
-          <>
-            <OfferSheet dealData={dealData} onGoBack={handleGoBack} settings={settings} onShowTradeVsPrivate={() => setPage('trade-vs-private')} />
-          </>
-        ) : (
-          <>
-            <div className="print-offer-trade-wrapper">
-              <OfferSheet
-                dealData={dealData}
-                onGoBack={() => setPage('offer')}
-                settings={settings}
-                onShowTradeVsPrivate={() => {}}
-              />
-              <div className="print:break-before-page">
-                <TradeVsPrivateSale dealData={dealData} onBack={() => setPage('offer')} />
-              </div>
-            </div>
-          </>
+      <main className="max-w-7xl container mx-auto p-4 sm:p-6 md:p-8">
+        {page === 'form' && (
+          <SteppedForm
+            dealData={dealData}
+            setDealData={setDealData}
+            onGenerateOffer={handleGenerateOffer}
+            settings={settings}
+            setSettings={setSettings}
+            activeStep={activeStep}
+            onStepChange={handleStepChange}
+          />
         )}
+        {(page === 'offer' || page === 'trade-vs-private') && <OfferSheet dealData={dealData} onGoBack={handleGoBack} settings={settings} onShowTradeVsPrivate={() => setPage('trade-vs-private')} />}
+        {page === 'trade-vs-private' && <TradeVsPrivateSale dealData={dealData} settings={settings} onBack={() => setPage('offer')} />}
+        {page === 'settings' && <SettingsPage onBack={() => setPage('form')} />}
+        
       </main>
-      <footer className="bg-black text-white mt-12 py-8 no-print">
-        <div className="container mx-auto text-center">
-          <p className="font-semibold">Sunset Chevrolet</p>
-          <p className="text-sm text-gray-400 mt-1">910 Traffic Ave, Sumner, WA 98390 | Sales: (253) 299-2561</p>
-        </div>
-      </footer>
     </div>
   );
 }
