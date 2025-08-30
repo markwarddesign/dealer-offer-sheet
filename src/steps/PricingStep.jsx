@@ -14,7 +14,19 @@ const PricingStep = () => {
 	return (
 		<FormSection title="Pricing & Profitability">
 			{/* Pricing Section */}
-			<div className="col-span-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+			<div className="col-span-full grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+				<div>
+					<label htmlFor="marketValue" className="block text-sm font-medium text-gray-700 mb-1">
+						Market Value
+					</label>
+					<NumberInput
+						name="marketValue"
+						id="marketValue"
+						value={dealData.marketValue}
+						onChange={handleNumericChange}
+						className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
+					/>
+				</div>
 				<div>
 					<label htmlFor="sellingPrice" className="block text-sm font-medium text-gray-700 mb-1">
 						Selling Price
@@ -49,18 +61,6 @@ const PricingStep = () => {
 			<div className="col-span-full">
 				<h3 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Investment Costs</h3>
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-					<div>
-						<label htmlFor="marketValue" className="block text-sm font-medium text-gray-700 mb-1">
-							Market Value
-						</label>
-						<NumberInput
-							name="marketValue"
-							id="marketValue"
-							value={dealData.marketValue}
-							onChange={handleNumericChange}
-							className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
-						/>
-					</div>
 					<div>
 						<label htmlFor="acquisitionCost" className="block text-sm font-medium text-gray-700 mb-1">
 							Acquisition Cost

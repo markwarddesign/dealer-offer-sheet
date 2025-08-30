@@ -154,4 +154,25 @@
   .trade-vs-private-print-main {
     page-break-before: always  !important;
   }
+
+  /* When printing, hide borders and backgrounds on input fields to make them look like plain text */
+.trade-vs-private-print-main input[type='number'] {
+		border: none !important;
+		box-shadow: none !important;
+		background-color: transparent !important;
+		-webkit-appearance: none; /* Hide spinners on Chrome/Safari */
+		-moz-appearance: textfield; /* Hide spinners on Firefox */
+		margin: 0;
+		width: auto !important; /* Adjust width to content */
+		padding: 0 !important; /* Remove input padding */
+		text-align: center !important;
+		font-weight: bold !important;
+	}
+
+	/* Explicitly hide number input spinners for Webkit */
+	.printable-section input[type='number']::-webkit-outer-spin-button,
+	.printable-section input[type='number']::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
 }

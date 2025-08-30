@@ -22,6 +22,8 @@ const App = () => {
     const [isAuth, setIsAuth] = useState(isAuthenticated());
     const [showTradeVsPrivate, setShowTradeVsPrivate] = useState(false);
 
+	const { dealData } = useAppStore();
+
     const formSteps = allFormSteps;
 
     useEffect(() => {

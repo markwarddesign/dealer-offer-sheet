@@ -20,6 +20,7 @@ export const initialDealData = {
 
 	// Deal Info
 	marketValue: 32988,
+	msrp: 0,
 	acquisitionCost: 26500,
 	reconditioningCost: 2650,
 	advertisingCost: 675,
@@ -130,7 +131,13 @@ export const useAppStore = create(
 				set({ settings: updatedSettings });
 			},
 			onStepChange: (step) => set({ activeStep: step }),
-			resetDeal: () => set({ dealData: initialDealData }),
+			resetDeal: () =>
+				set((state) => ({
+					dealData: {
+						...initialDealData,
+						roiPercentage: state.settings.roiPercentage, // Get default from settings
+					},
+				})),
 		}),
 		{
 			name: 'offer-sheet-storage', // name of the item in the storage (must be unique)

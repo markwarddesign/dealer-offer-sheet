@@ -69,6 +69,7 @@ export default function VehicleDealStep() {
 	const [tradeVinError, setTradeVinError] = useState('');
     const [marketValueInput, setMarketValueInput] = useState(dealData.tradeMarketValue || '');
 	const [payOffInput, setPayOffInput] = useState(dealData.tradePayOff || '');
+	const [paymentInput, setPaymentInput] = useState(dealData.tradePayment || '');
 
 	const tradeDevalueItems = settings?.tradeDevalueItems || [];
 	const devalueCheckboxSum = dealData.tradeDevalueSelected?.reduce((sum, idx) => sum + (tradeDevalueItems?.[idx]?.price || 0), 0) || 0;
@@ -128,6 +129,7 @@ export default function VehicleDealStep() {
         if (name === 'tradeVehicleVin') setTradeVin(val.toUpperCase());
         if (name === 'tradeMarketValue') setMarketValueInput(val);
 		if (name === 'tradePayOff') setPayOffInput(val);
+		if (name === 'tradePayment') setPaymentInput(val);
 
 
 		updateDealData({ [name]: val });
@@ -140,6 +142,7 @@ export default function VehicleDealStep() {
 			updateDealData({ ...tradeFieldsToReset, hasTrade: false });
             setMarketValueInput('');
             setPayOffInput('');
+            setPaymentInput('');
             setTradeVin('');
 		}
 	};
@@ -181,6 +184,26 @@ export default function VehicleDealStep() {
 							</div>
 							{interestVinError && <p className="mt-2 text-sm text-red-600">{interestVinError}</p>}
 						</div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+							{dealData.isNewVehicle && (
+								<div>
+									<label className="block text-sm font-medium text-gray-700">MSRP</label>
+									<NumberInput name="msrp" value={dealData.msrp} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
+								</div>
+							)}
+							<div>
+								<label className="block text-sm font-medium text-gray-700">Stock #</label>
+								<input type="text" name="vehicleStock" value={dealData.vehicleStock || ''} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
+							</div>
+							<div>
+								<label className="block text-sm font-medium text-gray-700">Color</label>
+								<input type="text" name="vehicleColor" value={dealData.vehicleColor || ''} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
+							</div>
+							<div>
+								<label className="block text-sm font-medium text-gray-700">Mileage</label>
+								<NumberInput name="vehicleMileage" value={dealData.vehicleMileage} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
+							</div>
+						</div>
 						<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
 							<div>
 								<label className="block text-sm font-medium text-gray-700">Year</label>
@@ -204,24 +227,6 @@ export default function VehicleDealStep() {
 							</div>
 						</div>
 					</div>
-
-					<div className="border-t pt-4">
-						<h4 className="text-lg font-semibold text-gray-700 mb-3">Vehicle Details</h4>
-						<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-							<div>
-								<label className="block text-sm font-medium text-gray-700">Stock #</label>
-								<input type="text" name="vehicleStock" value={dealData.vehicleStock || ''} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
-							</div>
-							<div>
-								<label className="block text-sm font-medium text-gray-700">Color</label>
-								<input type="text" name="vehicleColor" value={dealData.vehicleColor || ''} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
-							</div>
-							<div>
-								<label className="block text-sm font-medium text-gray-700">Mileage</label>
-								<NumberInput name="vehicleMileage" value={dealData.vehicleMileage} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
-							</div>
-						</div>
-					</div>
 				</div>
 
 				{/* --- CARD 2: TRADE-IN VEHICLE --- */}
@@ -236,6 +241,17 @@ export default function VehicleDealStep() {
 							</label>
 						</div>
 					</div>
+
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-gray-800 text-white rounded-lg p-3 text-center shadow-lg flex flex-col justify-center">
+                            <div className="text-sm font-semibold text-gray-400">ACV</div>
+                            <div className="text-2xl font-bold text-green-400">{formatCurrency(netTradeValue)}</div>
+                        </div>
+                        <div className={`rounded-lg p-3 text-center shadow-lg flex flex-col justify-center ${netTradeEquity >= 0 ? 'bg-blue-800' : 'bg-red-800'} text-white`}>
+                            <div className="text-sm font-semibold text-gray-300">Equity</div>
+                            <div className="text-2xl font-bold">{formatCurrency(netTradeEquity)}</div>
+                        </div>
+                    </div>
 
 					{dealData.hasTrade && (
 						<div className="flex flex-col gap-4 animate-fade-in">
@@ -279,17 +295,8 @@ export default function VehicleDealStep() {
 								<h4 className="text-lg font-semibold text-gray-700 mb-3">Trade-In Value</h4>
 								<div className="grid grid-cols-1  gap-4">
 									<div className="flex flex-col gap-4">
-                                        <div className="grid grid-cols-2 gap-4">
-											<div className="bg-gray-800 text-white rounded-lg p-3 text-center shadow-lg flex flex-col justify-center">
-												<div className="text-sm font-semibold text-gray-400">ACV</div>
-												<div className="text-2xl font-bold text-green-400">{formatCurrency(netTradeValue)}</div>
-											</div>
-											<div className={`rounded-lg p-3 text-center shadow-lg flex flex-col justify-center ${netTradeEquity >= 0 ? 'bg-blue-800' : 'bg-red-800'} text-white`}>
-												<div className="text-sm font-semibold text-gray-300">Equity</div>
-												<div className="text-2xl font-bold">{formatCurrency(netTradeEquity)}</div>
-											</div>
-										</div>
-										<div className="grid grid-cols-2 gap-4">
+                                       
+										<div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                             
 											<div>
 												<label className="block text-sm font-medium text-gray-700">Market Value</label>
@@ -299,8 +306,32 @@ export default function VehicleDealStep() {
 												<label className="block text-sm font-medium text-gray-700">Pay Off</label>
 												<NumberInput name="tradePayOff" value={payOffInput} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
 											</div>
+											<div>
+												<label className="block text-sm font-medium text-gray-700">Payment</label>
+												<NumberInput
+													name="tradePayment"
+													value={paymentInput}
+													onChange={handleFieldChange}
+													className="block w-full rounded-md border-gray-300 shadow-sm p-2"
+												/>
+											</div>
 										</div>
-										
+										<div className="pb-2">
+											<label className="flex items-center gap-3 text-base font-semibold cursor-pointer select-none">
+												<span>Is this a Lease?</span>
+												<span className="relative inline-block w-12 align-middle select-none transition duration-200 ease-in">
+													<input
+														type="checkbox"
+														name="tradeIsLease"
+														checked={!!dealData.tradeIsLease}
+														onChange={handleFieldChange}
+														className="sr-only peer"
+													/>
+													<span className="block w-12 h-7 bg-gray-300 rounded-full shadow-inner peer-checked:bg-red-500 transition" />
+													<span className="dot absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition peer-checked:translate-x-5 shadow" />
+												</span>
+											</label>
+                            			</div>
 									</div>
 									{tradeDevalueItems.length > 0 && (
 										<div className="bg-gray-50 p-3 rounded-lg">
@@ -312,6 +343,25 @@ export default function VehicleDealStep() {
 														<span>{item.label} <span className="text-gray-500">({formatCurrency(item.price, true)})</span></span>
 													</label>
 												))}
+											</div>
+											<div className="grid grid-cols-2 gap-4 mt-4">
+												<div>
+													<label className="block text-sm font-medium text-gray-700">Devalue Total</label>
+													<NumberInput
+														value={devalueCheckboxSum}
+														readOnly
+														className="block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-100 font-bold"
+													/>
+												</div>
+												<div>
+													<label className="block text-sm font-medium text-gray-700">Trade Value (ACV)</label>
+													<NumberInput
+														name="tradeValue"
+														value={netTradeValue}
+														readOnly
+														className="block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-100 font-bold"
+													/>
+												</div>
 											</div>
 										</div>
 									)}

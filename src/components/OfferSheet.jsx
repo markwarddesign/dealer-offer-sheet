@@ -4,31 +4,66 @@ import { formatCurrency } from '../utils/formatCurrency';
 import { roundToHundredth } from '../utils/roundToHundredth';
 import { BO_TAX_RATE } from '../utils/constants';
 import { ShieldCheck, Wrench } from 'lucide-react';
+import NumberInput from './NumberInput'; // Make sure this path is correct
 
 const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
-	const { dealData, settings } = useAppStore();
-	// --- DYNAMIC CALCULATIONS ---
-	let sellingPrice, roiPercentage, profit;
+	const { dealData, settings, updateDealData } = useAppStore();
+
 	const reconditioningCost = dealData.isNewVehicle ? 0 : dealData.reconditioningCost;
 	const baseInvestment = roundToHundredth(
 		dealData.acquisitionCost + reconditioningCost + dealData.advertisingCost + dealData.flooringCost
 	);
 
-	if (dealData.sellingPrice > 0) {
-		// Scenario 1: Selling Price was entered manually. Calculate ROI from it.
-		sellingPrice = roundToHundredth(dealData.sellingPrice);
-		const boTax = roundToHundredth(sellingPrice * BO_TAX_RATE);
+	// --- HANDLERS FOR DIRECT STORE UPDATES ---
+	const handleSellingPriceChange = (e) => {
+		const newSellingPrice = e.target.value === null ? 0 : Number(e.target.value);
+
+		const boTax = roundToHundredth(newSellingPrice * BO_TAX_RATE);
 		const dealershipInvestment = roundToHundredth(baseInvestment + boTax);
-		profit = roundToHundredth(sellingPrice - dealershipInvestment);
-		roiPercentage = baseInvestment > 0 ? roundToHundredth((profit / baseInvestment) * 100) : 0;
+		const newProfit = roundToHundredth(newSellingPrice - dealershipInvestment);
+		const newRoi = baseInvestment > 0 ? roundToHundredth((newProfit / baseInvestment) * 100) : 0;
+
+		updateDealData({
+			sellingPrice: newSellingPrice,
+			roiPercentage: newRoi,
+		});
+	};
+
+	const handleRoiChange = (e) => {
+		const newRoi = e.target.value === null ? 0 : Number(e.target.value);
+
+		if (baseInvestment > 0) {
+			const newSellingPrice = roundToHundredth((baseInvestment * (1 + newRoi / 100)) / (1 - BO_TAX_RATE));
+			updateDealData({
+				sellingPrice: newSellingPrice,
+				roiPercentage: newRoi,
+			});
+		} else {
+			updateDealData({
+				sellingPrice: 0,
+				roiPercentage: newRoi,
+			});
+		}
+	};
+
+	// --- DYNAMIC CALCULATIONS ON EVERY RENDER ---
+	// These variables are derived from the store state on each render.
+	let sellingPrice, profit;
+
+	// To ensure consistency, we decide which value drives the calculation.
+	// If ROI is set, it dictates the selling price. Otherwise, selling price is used directly.
+	if (dealData.roiPercentage > 0) {
+		// Scenario 1: ROI is the source of truth. Calculate selling price from it.
+		sellingPrice = roundToHundredth((baseInvestment * (1 + dealData.roiPercentage / 100)) / (1 - BO_TAX_RATE));
 	} else {
-		// Scenario 2: Selling Price is 0, so calculate it from the ROI percentage.
-		roiPercentage = dealData.roiPercentage;
-		sellingPrice = roundToHundredth((baseInvestment * (1 + roiPercentage / 100)) / (1 - BO_TAX_RATE));
-		const boTax = roundToHundredth(sellingPrice * BO_TAX_RATE);
-		const dealershipInvestment = roundToHundredth(baseInvestment + boTax);
-		profit = roundToHundredth(sellingPrice - dealershipInvestment);
+		// Scenario 2: Selling Price is the source of truth.
+		sellingPrice = dealData.sellingPrice;
 	}
+
+	// Profit is always calculated based on the determined selling price.
+	const boTax = roundToHundredth(sellingPrice * BO_TAX_RATE);
+	const dealershipInvestment = roundToHundredth(baseInvestment + boTax);
+	profit = roundToHundredth(sellingPrice - dealershipInvestment);
 
 	// --- Trade Devalue Calculation ---
 	let totalTradeDevalue = 0;
@@ -207,16 +242,39 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 									{formatCurrency(roundToHundredth(baseInvestment + sellingPrice * BO_TAX_RATE))}
 								</p>
 							</div>
-							<div className="flex justify-between">
-								<p>ROI ({(roiPercentage || 0).toFixed(2)}%)</p>
+							{/* ROI Input */}
+							<div className="flex justify-between items-center">
+								<div className="flex items-center gap-2">
+									<p>ROI</p>
+									<NumberInput
+										name="roiPercentage"
+										value={dealData.roiPercentage}
+										onChange={handleRoiChange}
+										className="w-20 p-1 text-sm font-medium border rounded-md shadow-inner no-print"
+										placeholder="ROI %"
+									/>
+									<span className="print-only">({(dealData.roiPercentage || 0).toFixed(2)})</span>
+									<p>%</p>
+								</div>
 								<p className="font-medium">{formatCurrency(profit)}</p>
 							</div>
+
+							{/* Adjusted Price Input */}
 							<div className="flex justify-between items-center bg-white p-2 rounded-lg shadow-inner mt-2">
 								<p className="text-base font-bold text-gray-900">Adjusted Price</p>
-								<p className="text-lg font-bold text-blue-700">{formatCurrency(sellingPrice)}</p>
+								<p>
+								$ <NumberInput
+									name="sellingPrice"
+									value={dealData.sellingPrice}
+									onChange={handleSellingPriceChange}
+									className="w-32 p-1 text-lg font-bold text-blue-700 border rounded-md text-right"
+									placeholder="Price"
+								/>
+								</p>
 							</div>
+
 							{/* Value Add-ons itemized */}
-							<div className="flex justify-between text-sm py-1 border-b border-gray-100 font-semibold text-gray-700">
+							<div className="flex justify-between text-sm py-1 border-b border-gray-100 font-semibold text-gray-700 mt-4">
 								<p>Value Add-ons</p>
 								<p></p>
 							</div>
