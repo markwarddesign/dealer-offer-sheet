@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useAppStore } from '../store';
 import { formSteps } from '../formSteps'; // Assuming formSteps exports the steps array
 import { FileText, Settings as SettingsIcon, MenuSquareIcon} from 'lucide-react';
+import milesLogo from '../assets/MILES_Logo.svg';
+import milesIcon from '../assets/MILES_Icon.svg';
 
 const Sidebar = () => {
   const { page, setPage, activeStep, onStepChange } = useAppStore();
@@ -34,9 +36,9 @@ const Sidebar = () => {
           <div className="flex flex-col items-center py-4 pt-0">
             <div className="p-4 bg-miles-darkest w-full text-center flex justify-center">
               {isHovered ? (
-                <img src="/assets/MILES_Logo.svg" alt="Miles Logo" className="h-7" />
+                <img src={milesLogo} alt="Miles Logo" className="h-7" />
               ) : (
-                <img src="/assets/MILES_Icon.svg" alt="Miles Icon" className="w-8 h-7" />
+                <img src={milesIcon} alt="Miles Icon" className="w-8 h-7" />
               )}
             </div>
             <nav className="flex flex-col space-y-2 w-full">
