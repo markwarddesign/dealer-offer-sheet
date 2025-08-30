@@ -7,6 +7,7 @@ import SteppedForm from './components/SteppedForm';
 import Sidebar from './components/Sidebar';
 import OfferSheet from './components/OfferSheet';
 import TradeVsPrivateSale from './components/TradeVsPrivateSale';
+import QuickEntryPage from './pages/QuickEntryPage';
 const logoUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRe20azLghiq6B4uoUgyV5A_j5zjglEyeNF9g&s";
 
 import { formSteps as allFormSteps } from './formSteps';
@@ -21,8 +22,6 @@ const App = () => {
     } = useAppStore();
     const [isAuth, setIsAuth] = useState(isAuthenticated());
     const [showTradeVsPrivate, setShowTradeVsPrivate] = useState(false);
-
-	const { dealData } = useAppStore();
 
     const formSteps = allFormSteps;
 
@@ -68,6 +67,8 @@ const App = () => {
                 );
             case 'settings':
                 return <SettingsPage onBack={() => setPage('form')} />;
+            case 'quick-entry':
+                return <QuickEntryPage />;
             case 'form':
             default:
                 return (

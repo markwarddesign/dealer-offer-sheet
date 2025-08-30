@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../store';
 import { formSteps } from '../formSteps'; // Assuming formSteps exports the steps array
-import { FileText, Settings as SettingsIcon, MenuSquareIcon} from 'lucide-react';
+import { FileText, Settings as SettingsIcon, MenuSquareIcon, Zap } from 'lucide-react';
 import milesLogo from '../assets/MILES_Logo.svg';
 import milesIcon from '../assets/MILES_Icon.svg';
 
@@ -22,6 +22,10 @@ const Sidebar = () => {
 
   const handleSettingsClick = () => {
     setPage('settings');
+  };
+
+  const handleQuickEntryClick = () => {
+    setPage('quick-entry');
   };
 
   return (
@@ -69,6 +73,17 @@ const Sidebar = () => {
               >
                 <FileText className="h-6 w-6 flex-shrink-0" />
                 {isHovered && <span className="ml-4">Offer Sheet</span>}
+              </button>
+              <button
+                onClick={handleQuickEntryClick}
+                className={`flex items-center py-3 transition-colors duration-200 text-miles-light hover:bg-miles-darkest hover:text-white w-full ${
+                  page === 'quick-entry' ? 'bg-miles-dark text-white' : ''
+                }`}
+                style={{ paddingLeft: isHovered ? '20px' : '18px' }}
+                title="Quick Entry"
+              >
+                <Zap className="h-6 w-6 flex-shrink-0" />
+                {isHovered && <span className="ml-4">Quick Entry</span>}
               </button>
             </nav>
           </div>

@@ -2,7 +2,7 @@ import React from 'react';
 
 const Toggle = ({ label, name, checked, onChange, helpText }) => {
   return (
-    <div className="flex items-center justify-between py-2">
+    <div className="flex items-center justify-between py-2 gap-2">
       <div>
         <label htmlFor={name} className="font-medium text-gray-700">
           {label}
