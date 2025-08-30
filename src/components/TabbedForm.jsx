@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { formSteps as steps } from '../formSteps.jsx';
 import stepComponents from '../stepComponents';
-import getTotalTradeDevalue from '../utils/getTotalTradeDevalue';
+import { getTotalTradeDevalue } from '../utils/getTotalTradeDevalue';
 import roundToHundredth from '../utils/roundToHundredth';
 
 export default function TabbedForm({ dealData, setDealData, onGenerateOffer, settings, setSettings }) {
@@ -65,7 +65,7 @@ export default function TabbedForm({ dealData, setDealData, onGenerateOffer, set
         ))}
       </div>
       {/* Form Content */}
-  <div className="flex-1 p-4 md:p-10 md:ml-56 ml-16">
+  <div className="flex-1 p-4 md:p-10 md:ml-56 mx-auto">
         {React.createElement(stepComponents[tab], {
           dealData,
           setDealData,

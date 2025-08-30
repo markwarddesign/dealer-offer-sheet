@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/postcss'
 import autoprefixer from 'autoprefixer'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
   ],
@@ -16,5 +16,5 @@ export default defineConfig({
       ],
     },
   },
-  base: '/dealer-offer-sheet/',
-})
+  base: mode === 'production' ? '/dealer-offer-sheet/' : '/',
+}));

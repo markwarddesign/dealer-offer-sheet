@@ -1,146 +1,132 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import FormSection from '../components/FormSection';
 import { useAppStore } from '../store';
+import NumberInput from '../components/NumberInput';
 
-export default function PricingStep() {
-  const { dealData, updateDealData, settings, updateSettings } = useAppStore();
+const PricingStep = () => {
+	const { dealData, updateDealData, settings } = useAppStore();
 
-  useEffect(() => {
-    if (settings.roiPercentage === undefined || settings.roiPercentage === null || settings.roiPercentage === '') {
-      updateSettings({ roiPercentage: 5 });
-    }
-    // eslint-disable-next-line
-  }, []);
+	const handleNumericChange = (e) => {
+		const { name, value } = e.target;
+		updateDealData({ [name]: value });
+	};
 
-  const handleRoiChange = (e) => {
-    const raw = e.target.value;
-    const value = raw === '' ? '' : parseFloat(raw);
-    updateSettings({ roiPercentage: value });
+	return (
+		<FormSection title="Pricing & Profitability">
+			{/* Pricing Section */}
+			<div className="col-span-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+				<div>
+					<label htmlFor="sellingPrice" className="block text-sm font-medium text-gray-700 mb-1">
+						Selling Price
+					</label>
+					<NumberInput
+						name="sellingPrice"
+						id="sellingPrice"
+						value={dealData.sellingPrice}
+						onChange={handleNumericChange}
+						className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
+						placeholder="0"
+					/>
+					<p className="mt-1 text-xs text-gray-500">Optional. Leave at 0 to calculate from ROI %.</p>
+				</div>
+				<div>
+					<label htmlFor="roiPercentage" className="block text-sm font-medium text-gray-700 mb-1">
+						ROI Percentage (%)
+					</label>
+					<NumberInput
+						name="roiPercentage"
+						id="roiPercentage"
+						value={dealData.roiPercentage ?? settings.roiPercentage}
+						onChange={handleNumericChange}
+						className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
+						placeholder="e.g., 15"
+					/>
+					<p className="mt-1 text-xs text-gray-500">Used if Selling Price is 0.</p>
+				</div>
+			</div>
 
-    // Calculate selling price from ROI and update dealData
-    const BO_TAX_RATE = 0.00471;
-    const roundToHundredth = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
-    const baseInvestment = roundToHundredth(
-      Number(dealData.acquisitionCost || 0) +
-      Number(dealData.reconditioningCost || 0) +
-      Number(dealData.advertisingCost || 0) +
-      Number(dealData.flooringCost || 0)
-    );
-    const roi = (typeof value === 'number' && !isNaN(value)) ? value : 5;
-    let sellingPrice = (baseInvestment * (1 + roi / 100)) / (1 - BO_TAX_RATE);
-    sellingPrice = Math.ceil(sellingPrice);
-    updateDealData({ sellingPrice });
-  };
+			{/* Investment Section */}
+			<div className="col-span-full">
+				<h3 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Investment Costs</h3>
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div>
+						<label htmlFor="marketValue" className="block text-sm font-medium text-gray-700 mb-1">
+							Market Value
+						</label>
+						<NumberInput
+							name="marketValue"
+							id="marketValue"
+							value={dealData.marketValue}
+							onChange={handleNumericChange}
+							className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
+						/>
+					</div>
+					<div>
+						<label htmlFor="acquisitionCost" className="block text-sm font-medium text-gray-700 mb-1">
+							Acquisition Cost
+						</label>
+						<NumberInput
+							name="acquisitionCost"
+							id="acquisitionCost"
+							value={dealData.acquisitionCost}
+							onChange={handleNumericChange}
+							className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
+						/>
+					</div>
+					{!dealData.isNewVehicle && (
+						<div>
+							<label htmlFor="reconditioningCost" className="block text-sm font-medium text-gray-700 mb-1">
+								Reconditioning Cost
+							</label>
+							<NumberInput
+								name="reconditioningCost"
+								id="reconditioningCost"
+								value={dealData.reconditioningCost}
+								onChange={handleNumericChange}
+								className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
+							/>
+						</div>
+					)}
+					<div>
+						<label htmlFor="advertisingCost" className="block text-sm font-medium text-gray-700 mb-1">
+							Advertising Cost
+						</label>
+						<NumberInput
+							name="advertisingCost"
+							id="advertisingCost"
+							value={dealData.advertisingCost}
+							onChange={handleNumericChange}
+							className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
+						/>
+					</div>
+					<div>
+						<label htmlFor="flooringCost" className="block text-sm font-medium text-gray-700 mb-1">
+							Flooring Cost
+						</label>
+						<NumberInput
+							name="flooringCost"
+							id="flooringCost"
+							value={dealData.flooringCost}
+							onChange={handleNumericChange}
+							className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
+						/>
+					</div>
+					<div>
+						<label htmlFor="rebates" className="block text-sm font-medium text-gray-700 mb-1">
+							Rebates
+						</label>
+						<NumberInput
+							name="rebates"
+							id="rebates"
+							value={dealData.rebates}
+							onChange={handleNumericChange}
+							className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
+						/>
+					</div>
+				</div>
+			</div>
+		</FormSection>
+	);
+};
 
-  useEffect(() => {
-    const roiIsNumber = typeof settings.roiPercentage === 'number' && !isNaN(settings.roiPercentage);
-    if ((!dealData.sellingPrice || dealData.sellingPrice === 0) && roiIsNumber) {
-      handleRoiChange({ target: { value: settings.roiPercentage } });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.roiPercentage, dealData.sellingPrice]);
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    if (type === 'checkbox') {
-      updateDealData({ [name]: checked });
-    } else if (name === 'interestRate') {
-      updateDealData({ [name]: value === '' ? '' : Number(value) });
-    } else {
-      updateDealData({ [name]: value });
-    }
-  };
-
-  return (
-    <FormSection title="Pricing & Profitability" icon={null}>
-      <div className="flex items-center justify-between bg-gray-50 p-3 rounded-md border border-gray-200 mb-4">
-        <label htmlFor="isNewVehicleToggle" className="text-sm font-medium text-gray-700">
-          Vehicle Type
-        </label>
-        <div className="flex items-center">
-          <span className={`mr-3 text-sm font-medium ${!dealData.isNewVehicle ? 'text-gray-900' : 'text-gray-500'}`}>
-            Used
-          </span>
-          <label htmlFor="isNewVehicleToggle" className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              id="isNewVehicleToggle"
-              name="isNewVehicle"
-              className="sr-only peer"
-              checked={!!dealData.isNewVehicle}
-              onChange={handleChange}
-            />
-            <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-offset-2 peer-focus:ring-blue-500 peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
-          </label>
-          <span className={`ml-3 text-sm font-medium ${dealData.isNewVehicle ? 'text-gray-900' : 'text-gray-500'}`}>
-            New
-          </span>
-        </div>
-      </div>
-      {dealData.isNewVehicle && (
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Rebates</label>
-          <input type="number" name="rebates" value={dealData.rebates || ''} onChange={handleChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
-        </div>
-      )}
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Selling Price</label>
-        <input type="number" name="sellingPrice" value={dealData.sellingPrice || ''} onChange={handleChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">ROI Percentage (%)</label>
-        <input 
-          type="number" 
-          name="roiPercentage" 
-          // 👇 4. FIX: Use `?? ''` to correctly handle the number 0.
-          // This displays an empty string only if the value is null/undefined, allowing 0 to be shown.
-          value={settings.roiPercentage ?? ''} 
-          onChange={handleRoiChange} 
-          step="any" 
-          className="block w-full rounded-md border-gray-300 shadow-sm p-2" 
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Market Value</label>
-        <input type="number" name="marketValue" value={dealData.marketValue || ''} onChange={handleChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Acquisition Cost</label>
-        <input type="number" name="acquisitionCost" value={dealData.acquisitionCost || ''} onChange={handleChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Reconditioning Cost</label>
-        <input type="number" name="reconditioningCost" value={dealData.reconditioningCost || ''} onChange={handleChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Advertising Cost</label>
-        <input type="number" name="advertisingCost" value={675} readOnly className="block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-100 font-bold" />
-        <div className="text-xs text-gray-600 mt-1">This is a national average advertising cost.</div>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Flooring Cost</label>
-        <input
-          type="number"
-          name="flooringCost"
-          value={dealData.acquisitionCost ? (Number(dealData.acquisitionCost) * 0.00667 * 1.5).toFixed(2) : ''}
-          readOnly
-          className="block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-100 font-bold"
-        />
-        <div className="text-xs text-gray-600 mt-1">6.67% × 1.5 of Adjusted Acquisition Cost</div>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Interest Rate (%)</label>
-        <input
-          type="number"
-          name="interestRate"
-          value={dealData.interestRate ?? 6.99}
-          onChange={handleChange}
-          step="0.01"
-          min="0"
-          className="block w-full rounded-md border-gray-300 shadow-sm p-2"
-        />
-        <div className="text-xs text-gray-600 mt-1">Used for finance calculations.</div>
-      </div>
-    </FormSection>
-  );
-}
+export default PricingStep;

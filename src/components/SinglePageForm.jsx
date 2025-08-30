@@ -1,7 +1,7 @@
 import React from 'react';
 import { formSteps as steps } from '../formSteps.jsx';
 import stepComponents from '../stepComponents';
-import getTotalTradeDevalue from '../utils/getTotalTradeDevalue';
+import { getTotalTradeDevalue } from '../utils/getTotalTradeDevalue';
 import roundToHundredth from '../utils/roundToHundredth';
 
 export default function SinglePageForm({ dealData, setDealData, onGenerateOffer, settings, setSettings }) {

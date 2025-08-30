@@ -1,1 +1,23 @@
 @import "tailwindcss";
+
+@theme {
+  --color-miles-lightest: #e6f6f7;
+  --color-miles-light: #b7d7da;
+  --color-miles: #5fa6ad;
+  --color-miles-dark: #388087;
+  --color-miles-darkest: #205259;
+  /* Dark gradient colors */
+  --color-dark-gradient-1: #18181b;
+  --color-dark-gradient-2: #23272f;
+  --color-dark-gradient-3: #3b4252;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: absolute;
+  }
+}
+
+button:hover{
+    cursor: pointer;
+}

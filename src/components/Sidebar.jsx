@@ -3,17 +3,15 @@ import { useAppStore } from '../store';
 import { formSteps } from '../formSteps'; // Assuming formSteps exports the steps array
 import { FileText, Settings as SettingsIcon, MenuSquareIcon} from 'lucide-react';
 
-const Sidebar = ({ activeStep, onStepClick }) => {
-  const { page, setPage } = useAppStore();
+const Sidebar = () => {
+  const { page, setPage, activeStep, onStepChange } = useAppStore();
   const [isHovered, setIsHovered] = useState(false);
 
   const handleNavClick = (stepIndex) => {
     if (page !== 'form') {
       setPage('form');
     }
-    // This component will need to be able to switch the active tab/step in the form
-    // For now, we'll just call the passed onStepClick function
-    onStepClick(stepIndex);
+    onStepChange(stepIndex);
   };
 
   const handleOfferSheetClick = () => {
@@ -24,20 +22,22 @@ const Sidebar = ({ activeStep, onStepClick }) => {
     setPage('settings');
   };
 
-
   return (
     <div
-      className="no-print fixed top-0 left-0 h-full bg-gray-800 text-white transition-all duration-300 ease-in-out z-20"
+      className="sidebar no-print fixed top-0 left-0 h-full text-white transition-all duration-300 ease-in-out z-20 bg-gradient-to-br from-dark-gradient-1 via-dark-gradient-2 to-dark-gradient-3"
       style={{ width: isHovered ? '250px' : '60px' }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="flex flex-col justify-between h-full">
         <div>
-          <div className="flex flex-col items-center py-4">
-            <div className="mb-8">
-              {/* Placeholder for logo */}
-              <div className="w-8 h-8 rounded-full"><MenuSquareIcon /></div>
+          <div className="flex flex-col items-center py-4 pt-0">
+            <div className="p-4 bg-miles-darkest w-full text-center flex justify-center">
+              {isHovered ? (
+                <img src="/assets/MILES_Logo.svg" alt="Miles Logo" className="h-7" />
+              ) : (
+                <img src="/assets/MILES_Icon.svg" alt="Miles Icon" className="w-8 h-7" />
+              )}
             </div>
             <nav className="flex flex-col space-y-2 w-full">
               {formSteps.map((step, index) => (
@@ -46,27 +46,27 @@ const Sidebar = ({ activeStep, onStepClick }) => {
                   onClick={() => handleNavClick(index)}
                   className={`flex items-center py-3 transition-colors duration-200 ${
                     page === 'form' && activeStep === index
-                      ? 'bg-red-600 text-white'
-                      : 'text-gray-400 hover:bg-gray-700 hover:text-white'
+                      ? 'bg-miles-dark text-white'
+                      : 'text-miles-light hover:bg-miles-darkest hover:text-white'
                   }`}
                   style={{ paddingLeft: isHovered ? '20px' : '18px' }}
                   title={step.title}
                 >
                   <step.icon className="h-6 w-6 flex-shrink-0" />
-                  {isHovered && <span className="ml-4 font-semibold">{step.title}</span>}
+                  {isHovered && <span className="ml-4 text-white">{step.title}</span>}
                 </button>
               ))}
-              <hr className="my-2 border-gray-700" />
+              <hr className="my-2 border-miles-dark" />
               <button
                 onClick={handleOfferSheetClick}
-                className={`flex items-center py-3 transition-colors duration-200 text-gray-400 hover:bg-gray-700 hover:text-white w-full ${
-                  page === 'offer' ? 'bg-red-600 text-white' : ''
+                className={`flex items-center py-3 transition-colors duration-200 text-miles-light hover:bg-miles-darkest hover:text-white w-full ${
+                  page === 'offer' ? 'bg-miles-dark text-white' : ''
                 }`}
                 style={{ paddingLeft: isHovered ? '20px' : '18px' }}
                 title="Go to Offer Sheet"
               >
                 <FileText className="h-6 w-6 flex-shrink-0" />
-                {isHovered && <span className="ml-4 font-semibold">Offer Sheet</span>}
+                {isHovered && <span className="ml-4">Offer Sheet</span>}
               </button>
             </nav>
           </div>
@@ -75,8 +75,8 @@ const Sidebar = ({ activeStep, onStepClick }) => {
           <nav className="flex flex-col space-y-2 w-full">
             <button
               onClick={handleSettingsClick}
-              className={`flex items-center py-3 transition-colors duration-200 text-gray-400 hover:bg-gray-700 hover:text-white w-full ${
-                page === 'settings' ? 'bg-red-600 text-white' : ''
+              className={`flex items-center py-3 transition-colors duration-200 text-miles-light hover:bg-miles-darkest hover:text-white w-full ${
+                page === 'settings' ? 'bg-miles-dark text-white' : ''
               }`}
               style={{ paddingLeft: isHovered ? '20px' : '18px' }}
               title="Settings"

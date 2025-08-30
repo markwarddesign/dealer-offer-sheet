@@ -1,6 +1,6 @@
-// ...existing code...
 import React from "react";
 import { useAppStore } from '../store';
+import NumberInput from './NumberInput';
 
 // Helper function to format currency
 const formatCurrency = (amount) => {
@@ -12,19 +12,23 @@ const formatCurrency = (amount) => {
   }).format(number);
 };
 
-function TradeVsPrivateSale({ dealData, onBack }) {
+function TradeVsPrivateSale({ onBack }) {
+  const { dealData, settings } = useAppStore();
+  console.log(settings);
   // Market data values
   const vehiclesInMarket = dealData.vehiclesInMarket ?? '';
   const avgDaysToSell = dealData.avgDaysToSell ?? '';
 
   // Always use the latest settings from the global store for live updates
-  const settings = useAppStore(state => state.settings);
-  const WPFL_OPTIONS = settings.wpflOptions || [
+
+  const WPFL_OPTIONS = (settings.wpflOptions && settings.wpflOptions.length > 0) ? settings.wpflOptions : [
     { label: 'Sunset Chevrolet', price: 0 },
     { label: 'CarShield', price: 149 },
     { label: 'Endurance', price: 125 },
     { label: 'Optional Plan', price: 100 },
   ];
+
+  console.log(WPFL_OPTIONS);
   const [selectedWpflIndex, setSelectedWpflIndex] = React.useState(settings.defaultWPFLIndex ?? 0);
   const WPFL_SELECTED = WPFL_OPTIONS[selectedWpflIndex] || WPFL_OPTIONS[0];
 
@@ -85,8 +89,10 @@ function TradeVsPrivateSale({ dealData, onBack }) {
   const NET_GALLONS = TRADE_GALLONS - NEW_GALLONS;
   const FUEL_SAVINGS = (TRADE_MPG > 0 && NEW_MPG > 0) ? (TRADE_GALLONS - NEW_GALLONS) * GAS_PRICE : 0;
 
+  const showFuelSavings = NET_MPG > 0;
+
   // Cost of Ownership Adjustment
-  const COST_OF_OWNERSHIP_TOTAL = (WPFL_SELECTED?.price ?? 0) + OCFL_MONTHLY_SAVINGS + FUEL_SAVINGS;
+  const COST_OF_OWNERSHIP_TOTAL = (WPFL_SELECTED?.price ?? 0) + OCFL_MONTHLY_SAVINGS + (showFuelSavings ? FUEL_SAVINGS : 0);
 
   if (!dealData.hasTrade) {
     return null;
@@ -196,7 +202,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
 
 
         {/* --- Monthly Cost Savings Cards Layout --- */}
-  <div className="print:mb-5 mb-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 the-cards">
+  <div className={`print:mb-5 mb-10 grid grid-cols-1 sm:grid-cols-2 ${showFuelSavings ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4 md:gap-6 the-cards`}>
           {/* OCFL Savings Card */}
           <div className="bg-white border border-blue-200 rounded-lg p-4 sm:p-6 flex flex-col items-center min-w-0 w-full">
             <div className="text-lg font-bold mb-2 text-blue-700 flex items-center gap-2">
@@ -209,8 +215,8 @@ function TradeVsPrivateSale({ dealData, onBack }) {
             <div className="mt-2 text-xs text-gray-700 text-center bg-blue-50 rounded p-2 w-full">
               <div className="font-semibold mb-1">Value Calculation:</div>
               <div className="flex items-center justify-center gap-2">
-                <label>Price per Service: <input type="number" value={ocflPrice} onChange={(e) => setOcflPrice(Number(e.target.value))} className="w-20 p-1 border rounded" /></label>
-                <label>Services per Year: <input type="number" value={ocflServicesPerYear} onChange={(e) => setOcflServicesPerYear(Number(e.target.value))} className="w-16 p-1 border rounded" /></label>
+                <label>Price per Service: <NumberInput min="0" value={ocflPrice} onChange={(e) => setOcflPrice(e.target.value)} className="w-20 p-1 border rounded" /></label>
+                <label>Services per Year: <NumberInput min="0" value={ocflServicesPerYear} onChange={(e) => setOcflServicesPerYear(e.target.value)} className="w-16 p-1 border rounded" /></label>
               </div>
             </div>
           </div>
@@ -222,7 +228,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
             </div>
             <div className="text-2xl font-extrabold text-blue-700 mb-1">{formatCurrency(WPFL_SELECTED?.price ?? 0)}</div>
             <div className="text-xs text-gray-700 mb-2">per month</div>
-            {dealData.wpfl && WPFL_OPTIONS.length > 1 && (
+            {settings.wpflOptions && WPFL_OPTIONS.length > 1 && (
               <div className="w-full mt-2">
                 <div className="text-xs text-gray-600 mb-1 font-semibold text-center">Select WPFL Option:</div>
                 <div className="flex flex-wrap gap-2 justify-center other-options">
@@ -240,21 +246,25 @@ function TradeVsPrivateSale({ dealData, onBack }) {
             )}
           </div>
           {/* Fuel Savings Card */}
-          <div className="bg-white border border-blue-200 rounded-lg p-4 sm:p-6 flex flex-col items-center min-w-0 w-full">
-            <div className="text-lg font-bold mb-2 text-blue-700 flex items-center gap-2">
-              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" className="text-blue-400"><circle cx="12" cy="12" r="10" fill="#dbeafe"/><path d="M8 13.5l2.5 2.5L16 10" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Fuel Savings
+          {showFuelSavings && 
+            <div className="bg-white border border-blue-200 rounded-lg p-4 sm:p-6 flex flex-col items-center min-w-0 w-full">
+              <div className="text-lg font-bold mb-2 text-blue-700 flex items-center gap-2">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" className="text-blue-400"><circle cx="12" cy="12" r="10" fill="#dbeafe"/><path d="M8 13.5l2.5 2.5L16 10" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                Fuel Savings
+              </div>
+              <div className="text-2xl font-extrabold text-blue-700 mb-1">{formatCurrency(FUEL_SAVINGS)}</div>
+              <div className="text-xs text-gray-700 mb-2">per month</div>
+              <div className="text-sm text-gray-800">MPG: {NET_MPG > 0 ? '+' : ''}{NET_MPG} | Gallons: {(NET_GALLONS || 0).toFixed(1)}</div>
+              <div className="mt-2 text-xs text-gray-700 text-center bg-blue-50 rounded p-2 w-full">
+                <div className="font-semibold mb-1">How it's calculated:</div>
+                <div>(Trade MPG vs New MPG) × Miles ÷ MPG × Gas Price</div>
+                <div>({TRADE_MPG} vs {NEW_MPG}) × {MILES_PER_MONTH} ÷ MPG × {formatCurrency(GAS_PRICE)}</div>
+                <div>({(TRADE_GALLONS || 0).toFixed(1)} - {(NEW_GALLONS || 0).toFixed(1)}) × {formatCurrency(GAS_PRICE)} = <span className="font-bold">{formatCurrency(FUEL_SAVINGS)}</span></div>
+              </div>
             </div>
-            <div className="text-2xl font-extrabold text-blue-700 mb-1">{formatCurrency(FUEL_SAVINGS)}</div>
-            <div className="text-xs text-gray-700 mb-2">per month</div>
-            <div className="text-sm text-gray-800">MPG: {NET_MPG > 0 ? '+' : ''}{NET_MPG} | Gallons: {NET_GALLONS.toFixed(1)}</div>
-            <div className="mt-2 text-xs text-gray-700 text-center bg-blue-50 rounded p-2 w-full">
-              <div className="font-semibold mb-1">How it's calculated:</div>
-              <div>(Trade MPG vs New MPG) × Miles ÷ MPG × Gas Price</div>
-              <div>({TRADE_MPG} vs {NEW_MPG}) × {MILES_PER_MONTH} ÷ MPG × {formatCurrency(GAS_PRICE)}</div>
-              <div>({TRADE_GALLONS.toFixed(1)} - {NEW_GALLONS.toFixed(1)}) × {formatCurrency(GAS_PRICE)} = <span className="font-bold">{formatCurrency(FUEL_SAVINGS)}</span></div>
-            </div>
-          </div>
+          }
+
+
         </div>
 
        
@@ -297,7 +307,7 @@ function TradeVsPrivateSale({ dealData, onBack }) {
               </div>
             </div>
             <div className="px-8 py-8 flex flex-col gap-6 print:gap-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 no-print">
+              <div className={`grid grid-cols-1 ${showFuelSavings ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-4 no-print`}>
                 <div className="flex flex-col items-center">
                   <span className="text-xs text-gray-500 font-semibold mb-1">WPFL</span>
                   <span className="text-lg font-bold text-blue-700">{formatCurrency(WPFL_SELECTED?.price ?? 0)}</span>
@@ -308,11 +318,13 @@ function TradeVsPrivateSale({ dealData, onBack }) {
                   <span className="text-lg font-bold text-yellow-600">{formatCurrency(OCFL_MONTHLY_SAVINGS)}</span>
                   <span className="text-xs text-gray-400 mt-1">Oil Change Savings</span>
                 </div>
-                <div className="flex flex-col items-center">
-                  <span className="text-xs text-gray-500 font-semibold mb-1">Fuel</span>
-                  <span className="text-lg font-bold text-blue-600">{formatCurrency(FUEL_SAVINGS)}</span>
-                  <span className="text-xs text-gray-400 mt-1">Fuel Savings</span>
-                </div>
+                {showFuelSavings && 
+                  <div className="flex flex-col items-center">
+                    <span className="text-xs text-gray-500 font-semibold mb-1">Fuel</span>
+                    <span className="text-lg font-bold text-blue-600">{formatCurrency(FUEL_SAVINGS)}</span>
+                    <span className="text-xs text-gray-400 mt-1">Fuel Savings</span>
+                  </div>
+                }
               </div>
               <div className="flex flex-col items-center mt-2 print:mt-0">
                 <span className="uppercase text-xs text-gray-500 tracking-widest font-semibold">Total Monthly Savings</span>

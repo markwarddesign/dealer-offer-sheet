@@ -1,4 +1,4 @@
-import { User, Car, ClipboardList, DollarSign, FileText, PlusCircle } from 'lucide-react';
+import { User, Car, Calculator, ArrowRightLeft, Receipt, PlusCircle, Landmark, Handshake } from 'lucide-react';
 
 export const formSteps = [
 	{
@@ -13,29 +13,14 @@ export const formSteps = [
 		],
 	},
 	{
-		title: 'Vehicle of Interest',
-		name: 'Vehicle Info',
-		icon: Car,
-		fields: [
-			{ label: 'Year', name: 'vehicleYear', type: 'number' },
-			{ label: 'Make', name: 'vehicleMake', type: 'text' },
-			{ label: 'Model', name: 'vehicleModel', type: 'text' },
-			{ label: 'VIN', name: 'vehicleVin', type: 'text' },
-			{ label: 'Stock #', name: 'vehicleStock', type: 'text' },
-			{ label: 'Color', name: 'vehicleColor', type: 'text' },
-			{ label: 'Mileage', name: 'vehicleMileage', type: 'number' },
-			{
-				label: 'Fuel Economy (MPG)',
-				name: 'vehicleMpg',
-				type: 'number',
-				helpText: 'Auto-filled from VIN or enter manually.',
-			},
-		],
+		title: 'Vehicle & Trade',
+		name: 'Vehicle & Trade',
+		icon: Handshake,
 	},
 	{
 		title: 'Pricing & Profitability',
 		name: 'Pricing',
-		icon: ClipboardList,
+		icon: Calculator,
 		fields: [
 			{
 				label: 'Selling Price',
@@ -54,63 +39,30 @@ export const formSteps = [
 			{ label: 'Reconditioning Cost', name: 'reconditioningCost', type: 'number' },
 			{ label: 'Advertising Cost', name: 'advertisingCost', type: 'number' },
 			{ label: 'Flooring Cost', name: 'flooringCost', type: 'number' },
-		],
-	},
-	{
-		title: 'Trade',
-		name: 'Trade',
-		icon: DollarSign,
-		fields: [
 			{
-				label: 'Market Value / Auction Value',
-				name: 'tradeMarketValue',
-				type: 'number',
-				helpText: 'The raw value before trade devalue deductions.',
+				label: 'Is this a new vehicle?',
+				name: 'isNewVehicle',
+				type: 'checkbox',
+				helpText: 'Check if the vehicle being purchased is new.',
 			},
 			{
-				label: 'Trade Value',
-				name: 'tradeValue',
+				label: 'Rebates',
+				name: 'rebates',
 				type: 'number',
-				helpText: 'This is Market Value minus trade devalue items. Editing this will update Market Value.',
+				showIf: (dealData) => !!dealData.isNewVehicle,
 			},
-			{ label: 'Trade Payoff', name: 'tradePayOff', type: 'number' },
-			{ label: 'Is trade a lease?', name: 'tradeIsLease', type: 'checkbox' },
-			{ label: 'Has trade-in?', name: 'hasTrade', type: 'checkbox', helpText: 'Check if the customer has a trade-in vehicle.' },
-			// Trade-in vehicle details (conditionally shown)
-			{ label: 'Trade Year', name: 'tradeVehicleYear', type: 'number', showIf: (dealData) => !!dealData.hasTrade },
-			{ label: 'Trade Make', name: 'tradeVehicleMake', type: 'text', showIf: (dealData) => !!dealData.hasTrade },
-			{ label: 'Trade Model', name: 'tradeVehicleModel', type: 'text', showIf: (dealData) => !!dealData.hasTrade },
-			{ label: 'Trade Trim', name: 'tradeVehicleTrim', type: 'text', showIf: (dealData) => !!dealData.hasTrade },
-			{ label: 'Trade VIN', name: 'tradeVehicleVin', type: 'text', showIf: (dealData) => !!dealData.hasTrade },
-			{ label: 'Trade Mileage', name: 'tradeVehicleMileage', type: 'number', showIf: (dealData) => !!dealData.hasTrade },
-			{ label: 'Trade Color', name: 'tradeVehicleColor', type: 'text', showIf: (dealData) => !!dealData.hasTrade },
-			{ label: 'Trade Payment', name: 'tradePayment', type: 'number', showIf: (dealData) => !!dealData.hasTrade },
-			{ label: 'Trade MPG', name: 'tradeVehicleMpg', type: 'number', showIf: (dealData) => !!dealData.hasTrade },
 		],
 	},
 	{
 		title: 'Fees & Taxes',
 		name: 'Fees',
-		icon: FileText,
+		icon: Receipt,
 		fields: [
 			{ label: 'Tax Rate (%)', name: 'taxRate', type: 'number' },
 			{ label: 'Doc Fee', name: 'docFee', type: 'number' },
 			{ label: 'License Estimate', name: 'licenseEstimate', type: 'number' },
 			{ label: 'Title Fee', name: 'titleFee', type: 'number' },
 			{ label: 'Tire Fee', name: 'tireFee', type: 'number' },
-			{ label: 'Other Fee', name: 'otherFee', type: 'number' },
-			{
-				label: 'Hide License Fee on Offer Sheet',
-				name: 'showLicenseFeeOnOfferSheet',
-				type: 'checkbox',
-				inverted: true,
-			},
-			{
-				label: 'Hide Tax Rate on Offer Sheet',
-				name: 'showTaxRateOnOfferSheet',
-				type: 'checkbox',
-				inverted: true,
-			},
 		],
 	},
 	{
@@ -155,8 +107,9 @@ export const formSteps = [
 	{
 		title: 'Finance Details',
 		name: 'Finance',
-		icon: FileText,
+		icon: Landmark,
 		fields: [
+			{ label: 'Term (months)', name: 'financeTerm', type: 'number' },
 			{
 				label: 'Interest Rate (%)',
 				name: 'interestRate',
@@ -164,27 +117,9 @@ export const formSteps = [
 				helpText: 'Used for finance calculations.',
 			},
 			{
-				label: 'Term (Months)',
-				name: 'term',
-				type: 'number',
-				helpText: 'Loan term in months.',
-			},
-			{
 				label: 'Down Payment',
 				name: 'downPayment',
 				type: 'number',
-			},
-			{
-				label: 'Is this a new vehicle?',
-				name: 'isNewVehicle',
-				type: 'checkbox',
-				helpText: 'Check if the vehicle being purchased is new.',
-			},
-			{
-				label: 'Rebates',
-				name: 'rebates',
-				type: 'number',
-				showIf: (dealData) => !!dealData.isNewVehicle,
 			},
 		],
 	},

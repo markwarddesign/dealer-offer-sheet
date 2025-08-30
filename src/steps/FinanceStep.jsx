@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import FormSection from '../components/FormSection';
 import { useAppStore } from '../store';
 import { formatCurrency } from '../utils/formatCurrency';
+import NumberInput from '../components/NumberInput';
 
 function calculateMonthlyPayment(amount, rate, termMonths) {
   if (!amount || !rate || !termMonths) return 0;
@@ -13,7 +13,7 @@ function calculateMonthlyPayment(amount, rate, termMonths) {
 const downPaymentOptions = [0, 1000, 2500, 5000, 7500, 10000];
 const financeTerms = [24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84];
 
-export default function FinanceStep() {
+const FinanceStep = () => {
   const { dealData, updateDealData } = useAppStore();
   // Toggle for showing interest rate on offer sheet
   const showInterestRateOnOfferSheet = dealData.showInterestRateOnOfferSheet ?? false;
@@ -143,24 +143,23 @@ export default function FinanceStep() {
                     >
                       ${opt.toLocaleString()}
                     </button>
-                  );
-                })}
+                );
+              })}
               </div>
               <div className="flex items-center gap-2 mt-2 w-full">
                 <label htmlFor="customDownPayment" className="text-sm text-gray-700">Custom:</label>
-                <input
+                <NumberInput
                   id="customDownPayment"
-                  type="number"
                   min="0"
                   step="100"
                   className="w-40 px-3 py-2 rounded border border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
                   value={customDown}
                   placeholder="Other..."
                   onChange={e => {
-                    const val = Number(e.target.value);
-                    setCustomDown(e.target.value);
+                    const val = e.target.value;
+                    setCustomDown(val === null ? '' : val);
                     let newDowns = selectedDowns.filter(d => !downPaymentOptions.includes(d));
-                    if (!isNaN(val) && val > 0) {
+                    if (val !== null && val > 0) {
                       // Only add custom if not exceeding 4 total
                       const baseDowns = downPaymentOptions.filter(d => selectedDowns.includes(d));
                       if (baseDowns.length + 1 > 4) return;
@@ -185,7 +184,7 @@ export default function FinanceStep() {
             )}
             {dealData.showInterestRateOnOfferSheet && (
               <div className="mb-2 text-right text-sm text-gray-700 font-semibold">
-                Interest Rate: <span className="text-red-700">{(dealData.interestRate ?? 6.99).toFixed(2)}%</span>
+                Interest Rate: <span className="text-red-700">{(Number(dealData.interestRate) || 6.99).toFixed(2)}%</span>
               </div>
             )}
           </div>
@@ -246,4 +245,6 @@ export default function FinanceStep() {
         </div>
     </FormSection>
   );
-}
+};
+
+export default FinanceStep;
