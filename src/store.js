@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { calculateOffer, calculateSellingPriceFromROI } from './utils/calculateOffer';
 
 export const initialDealData = {
 	// Buyer Info
@@ -49,6 +50,7 @@ export const initialDealData = {
 	docFee: 200,
 	titleFee: 0,
 	tireFee: 0,
+	otherFee: 0,
 	licenseEstimate: 675,
 	brakePlus: 499,
 	safeGuard: 249,
@@ -75,6 +77,20 @@ export const initialDealData = {
 	showLicenseFeeOnOfferSheet: true,
 	showTaxRateOnOfferSheet: true,
 	showAmountFinancedOnOfferSheet: true,
+
+	// Calculated Fields
+	baseInvestment: 0,
+	boTax: 0,
+	dealershipInvestment: 0,
+	profit: 0,
+	totalTradeDevalue: 0,
+	netTrade: 0,
+	totalAddons: 0,
+	taxableAmount: 0,
+	salesTax: 0,
+	totalAmountFinanced: 0,
+	financeTableRows: [],
+	lastChanged: null,
 };
 
 const defaultSettings = {
@@ -124,7 +140,19 @@ export const useAppStore = create(
 				const updatedSettings = { ...currentSettings, ...newSettings };
 				set({ settings: updatedSettings });
 			},
-			updateDealData: (updates) => set((state) => ({ dealData: { ...state.dealData, ...updates } })),
+			updateDealData: (updates) =>
+				set((state) => {
+					const newDealData = { ...state.dealData, ...updates, lastChanged: Object.keys(updates)[0] };
+					const calculatedData = calculateOffer(newDealData, state.settings);
+					return { dealData: calculatedData };
+				}),
+			updateRoi: (newRoi) =>
+				set((state) => {
+					const tempDealData = { ...state.dealData, roiPercentage: newRoi };
+					const withNewSellingPrice = calculateSellingPriceFromROI(tempDealData);
+					const calculatedData = calculateOffer(withNewSellingPrice, state.settings);
+					return { dealData: calculatedData };
+				}),
 			updateSettings: (updates) => {
 				const currentSettings = get().settings;
 				const updatedSettings = { ...currentSettings, ...updates };
@@ -132,12 +160,14 @@ export const useAppStore = create(
 			},
 			onStepChange: (step) => set({ activeStep: step }),
 			resetDeal: () =>
-				set((state) => ({
-					dealData: {
+				set((state) => {
+					const resetData = {
 						...initialDealData,
-						roiPercentage: state.settings.roiPercentage, // Get default from settings
-					},
-				})),
+						roiPercentage: state.settings.roiPercentage,
+					};
+					const calculatedData = calculateOffer(resetData, state.settings);
+					return { dealData: calculatedData };
+				}),
 		}),
 		{
 			name: 'offer-sheet-storage', // name of the item in the storage (must be unique)

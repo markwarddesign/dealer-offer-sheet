@@ -5,11 +5,16 @@ import Toggle from '../components/Toggle';
 import { formatCurrency } from '../utils/formatCurrency';
 
 const QuickEntryPage = () => {
-	const { dealData, updateDealData } = useAppStore();
+	const { dealData, updateDealData, updateRoi } = useAppStore();
 
 	const handleChange = (e) => {
 		const { name, value, type, checked } = e.target;
 		let val = type === 'checkbox' ? checked : value;
+
+		if (name === 'roiPercentage') {
+			updateRoi(Number(val));
+			return;
+		}
 
 		if (name === 'downPayment' || name === 'financeTerm') {
 			val = value.split(',').map(s => s.trim()).map(Number).filter(n => !isNaN(n));
@@ -20,15 +25,15 @@ const QuickEntryPage = () => {
 
 	const arrayToString = (arr) => (Array.isArray(arr) ? arr.join(', ') : '');
 
-	const inputClass = "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm";
+	const inputClass = "mt-1 block w-full border-0 border-b-2 border-gray-200 bg-transparent py-2 px-1 text-sm focus:outline-none focus:ring-0 focus:border-indigo-500";
 	const labelClass = "block text-sm font-medium text-gray-700";
-	const sectionClass = "p-4 border rounded-lg";
+	const sectionClass = "p-4 border border-gray-200 rounded-lg";
 	const gridClass = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3";
 
 	const adjustedPrice = (dealData.sellingPrice || 0) - (dealData.rebates || 0);
 
 	return (
-		<div className="p-4 bg-gray-50 min-h-screen">
+		<div className="min-h-screen">
 			<div className="max-w-7xl mx-auto bg-white rounded-lg shadow p-4">
 				<div className="flex justify-between items-center mb-4">
 					<h1 className="text-xl font-bold text-gray-800">Quick Entry</h1>

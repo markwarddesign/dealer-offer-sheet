@@ -1,116 +1,27 @@
 import React from 'react';
 import { useAppStore } from '../store';
 import { formatCurrency } from '../utils/formatCurrency';
-import { roundToHundredth } from '../utils/roundToHundredth';
-import { BO_TAX_RATE } from '../utils/constants';
 import { ShieldCheck, Wrench } from 'lucide-react';
-import NumberInput from './NumberInput'; // Make sure this path is correct
+import NumberInput from './NumberInput';
 
 const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
-	const { dealData, settings, updateDealData } = useAppStore();
+	const { dealData, settings, updateDealData, updateRoi } = useAppStore();
 
-	const reconditioningCost = dealData.isNewVehicle ? 0 : dealData.reconditioningCost;
-	const baseInvestment = roundToHundredth(
-		dealData.acquisitionCost + reconditioningCost + dealData.advertisingCost + dealData.flooringCost
-	);
-
-	// --- HANDLERS FOR DIRECT STORE UPDATES ---
 	const handleSellingPriceChange = (e) => {
 		const newSellingPrice = e.target.value === null ? 0 : Number(e.target.value);
-
-		const boTax = roundToHundredth(newSellingPrice * BO_TAX_RATE);
-		const dealershipInvestment = roundToHundredth(baseInvestment + boTax);
-		const newProfit = roundToHundredth(newSellingPrice - dealershipInvestment);
-		const newRoi = baseInvestment > 0 ? roundToHundredth((newProfit / baseInvestment) * 100) : 0;
-
-		updateDealData({
-			sellingPrice: newSellingPrice,
-			roiPercentage: newRoi,
-		});
+		updateDealData({ sellingPrice: newSellingPrice });
 	};
 
 	const handleRoiChange = (e) => {
 		const newRoi = e.target.value === null ? 0 : Number(e.target.value);
-
-		if (baseInvestment > 0) {
-			const newSellingPrice = roundToHundredth((baseInvestment * (1 + newRoi / 100)) / (1 - BO_TAX_RATE));
-			updateDealData({
-				sellingPrice: newSellingPrice,
-				roiPercentage: newRoi,
-			});
-		} else {
-			updateDealData({
-				sellingPrice: 0,
-				roiPercentage: newRoi,
-			});
-		}
+		updateRoi(newRoi);
 	};
 
-	// --- DYNAMIC CALCULATIONS ON EVERY RENDER ---
-	// These variables are derived from the store state on each render.
-	let sellingPrice, profit;
-
-	// To ensure consistency, we decide which value drives the calculation.
-	// If ROI is set, it dictates the selling price. Otherwise, selling price is used directly.
-	if (dealData.roiPercentage > 0) {
-		// Scenario 1: ROI is the source of truth. Calculate selling price from it.
-		sellingPrice = roundToHundredth((baseInvestment * (1 + dealData.roiPercentage / 100)) / (1 - BO_TAX_RATE));
-	} else {
-		// Scenario 2: Selling Price is the source of truth.
-		sellingPrice = dealData.sellingPrice;
-	}
-
-	// Profit is always calculated based on the determined selling price.
-	const boTax = roundToHundredth(sellingPrice * BO_TAX_RATE);
-	const dealershipInvestment = roundToHundredth(baseInvestment + boTax);
-	profit = roundToHundredth(sellingPrice - dealershipInvestment);
-
-	// --- Trade Devalue Calculation ---
-	let totalTradeDevalue = 0;
-	if (dealData.tradeDevalueSelected && settings && settings.tradeDevalueItems) {
-		totalTradeDevalue = dealData.tradeDevalueSelected.reduce(
-			(sum, idx) => sum + (settings.tradeDevalueItems[idx]?.price || 0),
-			0
-		);
-	}
-	// Net Trade should match TradeStep Net Trade Equity: tradeValue - tradePayOff
-	const netTrade = roundToHundredth(dealData.tradeValue - dealData.tradePayOff);
-	// Use dealData value if set, else fallback to store default
 	const getAddon = (key, fallback = 0) => {
 		const val = dealData[key];
 		return val !== undefined && val !== '' ? Number(val) : fallback;
 	};
-	const totalAddons = roundToHundredth(
-		(settings?.showProtectionPackage ? getAddon('protectionPackage', 0) : 0) +
-			(settings?.showGapInsurance ? getAddon('gapInsurance', 0) : 0) +
-			(settings?.showServiceContract ? getAddon('serviceContract', 0) : 0) +
-			getAddon('brakePlus', 0) +
-			getAddon('safeGuard', 0)
-	);
 
-	// If trade-in is a lease, tax is on full selling price + add-ons (no trade deduction)
-	let taxableAmount;
-	if (dealData.tradeIsLease) {
-		taxableAmount = sellingPrice + totalAddons;
-	} else {
-		taxableAmount = sellingPrice + totalAddons - dealData.tradeValue;
-	}
-	const difference = roundToHundredth(taxableAmount);
-
-	const salesTax = difference > 0 ? roundToHundredth(difference * (dealData.taxRate / 100)) : 0;
-
-	// Remove tax credit from calculations
-	const licenseEstimate = Number(dealData.licenseEstimate) || 0;
-
-	const totalAmountFinanced = roundToHundredth(
-		Number(difference) +
-			(Number(dealData.tradePayOff) || 0) +
-			(Number(dealData.docFee) || 0) +
-			(Number(licenseEstimate) || 0) +
-			(Number(salesTax) || 0)
-	);
-
-	// Restore sunsetExclusives
 	const sunsetExclusives = [
 		{
 			icon: <ShieldCheck className="h-8 w-8 text-blue-600" />,
@@ -123,40 +34,6 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 			description: 'Save thousands over the lifetime of your vehicle with complimentary oil changes.',
 		},
 	];
-
-	// --- Finance Options Section ---
-	// Support both array and single value for financeTerm and downPayment
-	const selectedTerms = Array.isArray(dealData.financeTerm)
-		? dealData.financeTerm.filter((t) => !isNaN(Number(t))).map(Number)
-		: [Number(dealData.financeTerm)].filter((t) => !isNaN(t));
-	const selectedDowns = Array.isArray(dealData.downPayment)
-		? dealData.downPayment.filter((d) => !isNaN(Number(d))).map(Number)
-		: [Number(dealData.downPayment)].filter((d) => !isNaN(d));
-	const financeRate = dealData.interestRate || 6.99;
-	const financeTableRows = [];
-	const docFee = dealData.docFee || 0;
-	const otherFee = dealData.otherFee || 0;
-	const sellingPriceForFinance = dealData.sellingPrice || 0;
-	const calculateMonthlyPayment = (amount, rate, termMonths) => {
-		if (!amount || !rate || !termMonths) return 0;
-		const monthlyRate = rate / 12 / 100;
-		return (amount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -termMonths));
-	};
-	// Grouped by down payment
-	const sortedTerms = [...selectedTerms].sort((a, b) => a - b);
-	const sortedDowns = [...selectedDowns].sort((a, b) => a - b);
-	sortedDowns.forEach((down) => {
-		sortedTerms.forEach((term) => {
-			const amountFinanced = totalAmountFinanced - down || sellingPriceForFinance - down + docFee + otherFee;
-			const payment = calculateMonthlyPayment(totalAmountFinanced - down, financeRate, term);
-			financeTableRows.push({
-				down,
-				term,
-				amountFinanced,
-				payment,
-			});
-		});
-	});
 
 	return (
 		<div className="space-y-8 offer-sheet">
@@ -234,13 +111,11 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 							</div>
 							<div className="flex justify-between text-sm">
 								<p>B&O Tax (Calculated)</p>
-								<p>{formatCurrency(roundToHundredth(sellingPrice * BO_TAX_RATE))}</p>
+								<p>{formatCurrency(dealData.boTax)}</p>
 							</div>
 							<div className="flex justify-between border-t border-gray-300 pt-2 mt-2">
 								<p className="font-semibold">Total Investment</p>
-								<p className="font-bold">
-									{formatCurrency(roundToHundredth(baseInvestment + sellingPrice * BO_TAX_RATE))}
-								</p>
+								<p className="font-bold">{formatCurrency(dealData.dealershipInvestment)}</p>
 							</div>
 							{/* ROI Input */}
 							<div className="flex justify-between items-center">
@@ -256,20 +131,20 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 									<span className="print-only">({(dealData.roiPercentage || 0).toFixed(2)})</span>
 									<p>%</p>
 								</div>
-								<p className="font-medium">{formatCurrency(profit)}</p>
+								<p className="font-medium">{formatCurrency(dealData.profit)}</p>
 							</div>
 
 							{/* Adjusted Price Input */}
 							<div className="flex justify-between items-center bg-white p-2 rounded-lg shadow-inner mt-2">
 								<p className="text-base font-bold text-gray-900">Adjusted Price</p>
 								<p>
-								$ <NumberInput
-									name="sellingPrice"
-									value={dealData.sellingPrice}
-									onChange={handleSellingPriceChange}
-									className="w-32 p-1 text-lg font-bold text-blue-700 border rounded-md text-right"
-									placeholder="Price"
-								/>
+									$ <NumberInput
+										name="sellingPrice"
+										value={dealData.sellingPrice}
+										onChange={handleSellingPriceChange}
+										className="w-32 p-1 text-lg font-bold text-blue-700 border rounded-md text-right"
+										placeholder="Price"
+									/>
 								</p>
 							</div>
 
@@ -307,7 +182,7 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 								)}
 								<div className="flex justify-between text-sm py-1 border-b border-gray-100 font-bold">
 									<span>Total Add-ons</span>
-									<span>{formatCurrency(totalAddons)}</span>
+									<span>{formatCurrency(dealData.totalAddons)}</span>
 								</div>
 							</div>
 
@@ -323,12 +198,12 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 							)}
 							<div className="flex justify-between text-sm py-1 border-b border-gray-100">
 								<p>Other Fees</p>
-								<p>{formatCurrency(dealData.titleFee + dealData.tireFee + dealData.otherFee)}</p>
+								<p>{formatCurrency((dealData.titleFee || 0) + (dealData.tireFee || 0) + (dealData.otherFee || 0))}</p>
 							</div>
 							{dealData.showTaxRateOnOfferSheet && (
 								<div className="flex justify-between text-sm py-1 border-b border-gray-100">
 									<p>Sales Tax ({dealData.taxRate}%)</p>
-									<p>{formatCurrency(salesTax)}</p>
+									<p>{formatCurrency(dealData.salesTax)}</p>
 								</div>
 							)}
 							{dealData.isNewVehicle && (
@@ -379,8 +254,6 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 										<div>
 											<span>Reconditioning</span>
 											<br />
-
-											{/* Sub-items for checked Trade Devalue Items */}
 											{dealData.tradeDevalueSelected &&
 												settings &&
 												settings.tradeDevalueItems &&
@@ -399,7 +272,7 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 													</ul>
 												)}
 										</div>
-										<span>({formatCurrency(totalTradeDevalue)})</span>
+										<span>({formatCurrency(dealData.totalTradeDevalue)})</span>
 									</div>
 									<div className="flex justify-between text-sm">
 										<span>Trade Value</span>
@@ -411,17 +284,16 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 									</div>
 									<div className="flex justify-between text-sm font-bold border-t border-blue-200 pt-2 mt-2 text-blue-900">
 										<span>Net Trade</span>
-										<span>{formatCurrency(netTrade)}</span>
+										<span>{formatCurrency(dealData.netTrade)}</span>
 									</div>
 								</div>
 							</div>
 						)}
 
-						{/* ADD Amount Financed in its own box, controlled by toggle */}
 						{dealData.showAmountFinancedOnOfferSheet && (
 							<div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-sm flex justify-between items-center">
 								<h3 className="text-xl font-bold text-blue-900">Amount Financed</h3>
-								<div className="text-2xl font-semibold text-blue-900">{formatCurrency(totalAmountFinanced)}</div>
+								<div className="text-2xl font-semibold text-blue-900">{formatCurrency(dealData.totalAmountFinanced)}</div>
 							</div>
 						)}
 
@@ -460,7 +332,7 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 									<tbody>
 										{(() => {
 											const grouped = {};
-											financeTableRows.forEach((row) => {
+											(dealData.financeTableRows || []).forEach((row) => {
 												if (!grouped[row.down]) grouped[row.down] = [];
 												grouped[row.down].push(row);
 											});

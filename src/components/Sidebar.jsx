@@ -59,7 +59,7 @@ const Sidebar = () => {
                   title={step.title}
                 >
                   <step.icon className="h-6 w-6 flex-shrink-0" />
-                  {isHovered && <span className="ml-4 text-white">{step.title}</span>}
+                  <span className={`ml-4 whitespace-nowrap overflow-hidden transition-all duration-300 ${isHovered ? 'max-w-xs opacity-100' : 'max-w-0 opacity-0'}`}>{step.title}</span>
                 </button>
               ))}
               <hr className="my-2 border-miles-dark" />
@@ -72,7 +72,7 @@ const Sidebar = () => {
                 title="Go to Offer Sheet"
               >
                 <FileText className="h-6 w-6 flex-shrink-0" />
-                {isHovered && <span className="ml-4">Offer Sheet</span>}
+                <span className={`ml-4 whitespace-nowrap overflow-hidden transition-all duration-300 ${isHovered ? 'max-w-xs opacity-100' : 'max-w-0 opacity-0'}`}>Offer Sheet</span>
               </button>
               <button
                 onClick={handleQuickEntryClick}
@@ -83,7 +83,7 @@ const Sidebar = () => {
                 title="Quick Entry"
               >
                 <Zap className="h-6 w-6 flex-shrink-0" />
-                {isHovered && <span className="ml-4">Quick Entry</span>}
+                <span className={`ml-4 whitespace-nowrap overflow-hidden transition-all duration-300 ${isHovered ? 'max-w-xs opacity-100' : 'max-w-0 opacity-0'}`}>Quick Entry</span>
               </button>
             </nav>
           </div>
@@ -99,7 +99,7 @@ const Sidebar = () => {
               title="Settings"
             >
               <SettingsIcon className="h-6 w-6 flex-shrink-0" />
-              {isHovered && <span className="ml-4 font-semibold">Settings</span>}
+              <span className={`ml-4 whitespace-nowrap overflow-hidden transition-all duration-300 ${isHovered ? 'max-w-xs opacity-100' : 'max-w-0 opacity-0'}`}>Settings</span>
             </button>
           </nav>
         </div>

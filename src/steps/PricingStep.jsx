@@ -4,11 +4,15 @@ import { useAppStore } from '../store';
 import NumberInput from '../components/NumberInput';
 
 const PricingStep = () => {
-	const { dealData, updateDealData, settings } = useAppStore();
+	const { dealData, updateDealData, settings, updateRoi } = useAppStore();
 
-	const handleNumericChange = (e) => {
+	const handleChange = (e) => {
 		const { name, value } = e.target;
-		updateDealData({ [name]: value });
+		if (name === 'roiPercentage') {
+			updateRoi(Number(value));
+		} else {
+			updateDealData({ [name]: value });
+		}
 	};
 
 	return (
@@ -23,7 +27,7 @@ const PricingStep = () => {
 						name="marketValue"
 						id="marketValue"
 						value={dealData.marketValue}
-						onChange={handleNumericChange}
+						onChange={handleChange}
 						className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
 					/>
 				</div>
@@ -35,7 +39,7 @@ const PricingStep = () => {
 						name="sellingPrice"
 						id="sellingPrice"
 						value={dealData.sellingPrice}
-						onChange={handleNumericChange}
+						onChange={handleChange}
 						className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
 						placeholder="0"
 					/>
@@ -49,7 +53,7 @@ const PricingStep = () => {
 						name="roiPercentage"
 						id="roiPercentage"
 						value={dealData.roiPercentage ?? settings.roiPercentage}
-						onChange={handleNumericChange}
+						onChange={handleChange}
 						className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
 						placeholder="e.g., 15"
 					/>
@@ -69,7 +73,7 @@ const PricingStep = () => {
 							name="acquisitionCost"
 							id="acquisitionCost"
 							value={dealData.acquisitionCost}
-							onChange={handleNumericChange}
+							onChange={handleChange}
 							className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
 						/>
 					</div>
@@ -82,7 +86,7 @@ const PricingStep = () => {
 								name="reconditioningCost"
 								id="reconditioningCost"
 								value={dealData.reconditioningCost}
-								onChange={handleNumericChange}
+								onChange={handleChange}
 								className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
 							/>
 						</div>
@@ -95,7 +99,7 @@ const PricingStep = () => {
 							name="advertisingCost"
 							id="advertisingCost"
 							value={dealData.advertisingCost}
-							onChange={handleNumericChange}
+							onChange={handleChange}
 							className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
 						/>
 					</div>
@@ -107,10 +111,17 @@ const PricingStep = () => {
 							name="flooringCost"
 							id="flooringCost"
 							value={dealData.flooringCost}
-							onChange={handleNumericChange}
+							onChange={handleChange}
 							className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
 						/>
 					</div>
+				</div>
+			</div>
+
+			{/* Rebates Section */}
+			<div className="col-span-full mt-6">
+				<h3 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Rebates & Incentives</h3>
+				<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 					<div>
 						<label htmlFor="rebates" className="block text-sm font-medium text-gray-700 mb-1">
 							Rebates
@@ -119,7 +130,7 @@ const PricingStep = () => {
 							name="rebates"
 							id="rebates"
 							value={dealData.rebates}
-							onChange={handleNumericChange}
+							onChange={handleChange}
 							className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
 						/>
 					</div>
