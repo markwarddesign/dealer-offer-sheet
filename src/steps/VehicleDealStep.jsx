@@ -220,13 +220,13 @@ export default function VehicleDealStep() {
 							</div>
 							<div>
 								<label className="block text-sm font-medium text-gray-700">Mileage</label>
-								<NumberInput name="vehicleMileage" value={dealData.vehicleMileage} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
+								<NumberInput name="vehicleMileage" value={dealData.vehicleMileage} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" isCurrency={false} />
 							</div>
 						</div>
 						<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
 							<div>
 								<label className="block text-sm font-medium text-gray-700">Year</label>
-								<NumberInput name="vehicleYear" value={dealData.vehicleYear} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
+								<NumberInput name="vehicleYear" value={dealData.vehicleYear} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" isCurrency={false} />
 							</div>
 							<div>
 								<label className="block text-sm font-medium text-gray-700">Make</label>
@@ -242,7 +242,7 @@ export default function VehicleDealStep() {
 							</div>
 							<div>
 								<label className="block text-sm font-medium text-gray-700">MPG</label>
-								<NumberInput name="vehicleMpg" value={dealData.vehicleMpg} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
+								<NumberInput name="vehicleMpg" value={dealData.vehicleMpg} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" isCurrency={false} />
 							</div>
 						</div>
 					</div>
@@ -289,7 +289,7 @@ export default function VehicleDealStep() {
 								<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
 									<div>
 										<label className="block text-sm font-medium text-gray-700">Year</label>
-										<NumberInput name="tradeVehicleYear" value={dealData.tradeVehicleYear} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
+										<NumberInput name="tradeVehicleYear" value={dealData.tradeVehicleYear} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" isCurrency={false} />
 									</div>
 									<div>
 										<label className="block text-sm font-medium text-gray-700">Make</label>
@@ -305,7 +305,7 @@ export default function VehicleDealStep() {
 									</div>
 									<div>
 										<label className="block text-sm font-medium text-gray-700">MPG</label>
-										<NumberInput name="tradeVehicleMpg" value={dealData.tradeVehicleMpg} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
+										<NumberInput name="tradeVehicleMpg" value={dealData.tradeVehicleMpg} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" isCurrency={false} />
 									</div>
 								</div>
 							</div>
