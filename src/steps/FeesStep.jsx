@@ -86,6 +86,7 @@ const FeesStep = () => {
 								value={dealData.taxRate}
 								onChange={handleNumericChange}
 								className="block w-full rounded-md border-gray-300 shadow-sm p-2"
+								isCurrency={false}
 							/>
 						</div>
 						<div>

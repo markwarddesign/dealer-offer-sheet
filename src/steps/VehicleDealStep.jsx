@@ -73,9 +73,11 @@ export default function VehicleDealStep() {
 
 	const tradeDevalueItems = settings?.tradeDevalueItems || [];
 	const devalueCheckboxSum = dealData.tradeDevalueSelected?.reduce((sum, idx) => sum + (tradeDevalueItems?.[idx]?.price || 0), 0) || 0;
+	const customDevalueSum = (dealData.tradeDevalueItems || []).reduce((acc, item) => acc + (Number(item.value) || 0), 0);
+	const totalDevaluation = devalueCheckboxSum + customDevalueSum;
 	const marketValue = Number(marketValueInput) || 0;
 	const tradePayOff = Number(payOffInput) || 0;
-	const netTradeValue = Math.max(0, marketValue - devalueCheckboxSum);
+	const netTradeValue = Math.max(0, marketValue - totalDevaluation);
 	const netTradeEquity = netTradeValue - tradePayOff;
 
     useEffect(() => {
@@ -153,6 +155,23 @@ export default function VehicleDealStep() {
 			? currentSelected.filter((i) => i !== index)
 			: [...currentSelected, index];
 		updateDealData({ tradeDevalueSelected: newSelected });
+	};
+
+	const handleAddDevalueItem = () => {
+		const items = dealData.tradeDevalueItems || [];
+		updateDealData({ tradeDevalueItems: [...items, { name: '', value: '' }] });
+	};
+
+	const handleDevalueItemChange = (index, e) => {
+		const { name, value } = e.target;
+		const items = [...(dealData.tradeDevalueItems || [])];
+		items[index] = { ...items[index], [name]: value };
+		updateDealData({ tradeDevalueItems: items });
+	};
+
+	const handleRemoveDevalueItem = (index) => {
+		const items = (dealData.tradeDevalueItems || []).filter((_, i) => i !== index);
+		updateDealData({ tradeDevalueItems: items });
 	};
 
 
@@ -333,38 +352,72 @@ export default function VehicleDealStep() {
 											</label>
                             			</div>
 									</div>
-									{tradeDevalueItems.length > 0 && (
-										<div className="bg-gray-50 p-3 rounded-lg">
-											<h4 className="text-lg font-semibold text-gray-700 mb-2">Devaluation</h4>
-											<div className="flex flex-wrap gap-3">
-												{tradeDevalueItems.map((item, idx) => (
-													<label key={idx} className="flex items-center gap-2 bg-white px-2 py-1 rounded shadow-sm text-xs">
-														<input type="checkbox" checked={dealData.tradeDevalueSelected?.includes(idx)} onChange={() => handleDevalueSelection(idx)} />
-														<span>{item.label} <span className="text-gray-500">({formatCurrency(item.price, true)})</span></span>
-													</label>
-												))}
-											</div>
-											<div className="grid grid-cols-2 gap-4 mt-4">
-												<div>
-													<label className="block text-sm font-medium text-gray-700">Devalue Total</label>
-													<NumberInput
-														value={devalueCheckboxSum}
-														readOnly
-														className="block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-100 font-bold"
-													/>
-												</div>
-												<div>
-													<label className="block text-sm font-medium text-gray-700">Trade Value (ACV)</label>
-													<NumberInput
-														name="tradeValue"
-														value={netTradeValue}
-														readOnly
-														className="block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-100 font-bold"
-													/>
-												</div>
-											</div>
+									<div className="mt-4">
+										<h4 className="text-lg font-semibold text-gray-700 mb-3">Devaluation</h4>
+										<div className="text-sm text-gray-600 mb-4">
+											The <span className="font-bold text-gray-800">Net Trade Value</span> is calculated by subtracting the total devaluation from the Market Value.
 										</div>
-									)}
+										{tradeDevalueItems.length > 0 && (
+											<div className="mb-4">
+												<h5 className="text-md font-semibold text-gray-600 mb-2">Default Items</h5>
+												<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+													{tradeDevalueItems.map((item, index) => (
+														<label key={index} className="flex items-center space-x-2 p-2 rounded-md bg-gray-50 border border-gray-200 hover:bg-gray-100 cursor-pointer">
+															<input
+																type="checkbox"
+																checked={(dealData.tradeDevalueSelected || []).includes(index)}
+																onChange={() => handleDevalueSelection(index)}
+																className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+															/>
+															<span className="text-sm text-gray-800">{item.label} ({formatCurrency(item.price)})</span>
+														</label>
+													))}
+												</div>
+											</div>
+										)}
+
+										<h5 className="text-md font-semibold text-gray-600 mb-2">Custom Items</h5>
+										<div className="space-y-3">
+											{(dealData.tradeDevalueItems || []).map((item, index) => (
+												<div key={index} className="grid grid-cols-1 sm:grid-cols-10 gap-3 items-end">
+													<div className="sm:col-span-5">
+														<label className="block text-sm font-medium text-gray-700">Item Name</label>
+														<input
+															type="text"
+															name="name"
+															value={item.name}
+															onChange={(e) => handleDevalueItemChange(index, e)}
+															className="block w-full rounded-md border-gray-300 shadow-sm p-2"
+															placeholder="e.g. Scratches, Tire Wear"
+														/>
+													</div>
+													<div className="sm:col-span-4">
+														<label className="block text-sm font-medium text-gray-700">Value</label>
+														<NumberInput
+															name="value"
+															value={item.value}
+															onChange={(e) => handleDevalueItemChange(index, e)}
+															className="block w-full rounded-md border-gray-300 shadow-sm p-2"
+														/>
+													</div>
+													<div className="sm:col-span-1">
+														<button
+															onClick={() => handleRemoveDevalueItem(index)}
+															className="w-full bg-red-500 text-white font-bold py-2 px-2 rounded-lg shadow-sm hover:bg-red-600 transition-colors text-sm"
+														>
+															Remove
+														</button>
+													</div>
+												</div>
+											))}
+										</div>
+										<button
+											onClick={handleAddDevalueItem}
+											className="mt-4 bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors text-sm"
+										>
+											+ Add Custom Devalue Item
+										</button>
+									</div>
 								</div>
 							</div>
 						</div>

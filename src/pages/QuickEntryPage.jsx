@@ -49,6 +49,12 @@ const QuickEntryPage = () => {
 	}, [dealData.isNewVehicle, updateDealData]);
 
 	React.useEffect(() => {
+		if (!dealData.isNewVehicle) {
+			updateDealData({ rebates: 0 });
+		}
+	}, [dealData.isNewVehicle, updateDealData]);
+
+	React.useEffect(() => {
 		if (dealData.hasTrade) {
 			updateDealData({ tradeValue: calculatedTradeValue });
 		} else {
@@ -102,12 +108,6 @@ const QuickEntryPage = () => {
 			<div className="max-w-7xl mx-auto bg-white rounded-lg shadow p-4">
 				<div className="flex justify-between items-center mb-4">
 					<h1 className="text-xl font-bold text-gray-800">Quick Entry</h1>
-					<button
-						onClick={() => setPage('offer')}
-						className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-sm hover:bg-blue-700 transition-colors text-sm"
-					>
-						Generate Offer
-					</button>
 				</div>
 
 				<div className="space-y-6">
@@ -151,7 +151,7 @@ const QuickEntryPage = () => {
 							<label className={labelClass}>Reconditioning <NumberInput name="reconditioningCost" value={dealData.reconditioningCost} onChange={handleChange} className={inputClass} disabled={dealData.isNewVehicle} /></label>
 							<label className={labelClass}>Advertising <NumberInput name="advertisingCost" value={dealData.advertisingCost} onChange={handleChange} className={inputClass} /></label>
 							<label className={labelClass}>Flooring <NumberInput name="flooringCost" value={dealData.flooringCost} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Rebates <NumberInput name="rebates" value={dealData.rebates} onChange={handleChange} className={inputClass} /></label>
+							<label className={labelClass}>Rebates <NumberInput name="rebates" value={dealData.rebates} onChange={handleChange} className={inputClass} disabled={!dealData.isNewVehicle} /></label>
 						</div>
 					</div>
 
@@ -300,6 +300,17 @@ const QuickEntryPage = () => {
                             <Toggle label="Show Amount Financed" name="showAmountFinancedOnOfferSheet" isChecked={dealData.showAmountFinancedOnOfferSheet} onChange={handleChange} className="justify-between w-full" />
                         </div>
                     </div>
+				</div>
+
+				<div className="mt-8 pt-6 border-t border-gray-200">
+					<div className="flex justify-center">
+						<button
+							onClick={() => setPage('offer')}
+							className="w-full max-w-md bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 ease-in-out text-lg transform hover:scale-105"
+						>
+							Generate Offer Sheet
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>

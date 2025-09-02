@@ -4,16 +4,16 @@ import { BO_TAX_RATE } from './constants';
 export function calculateOffer(dealData, settings) {
 	const newDealData = { ...dealData };
 
-	const reconditioningCost = newDealData.isNewVehicle ? 0 : newDealData.reconditioningCost || 0;
+	const reconditioningCost = newDealData.isNewVehicle ? 0 : Number(newDealData.reconditioningCost) || 0;
 	const baseInvestment = roundToHundredth(
-		(newDealData.acquisitionCost || 0) +
+		(Number(newDealData.acquisitionCost) || 0) +
 			reconditioningCost +
-			(newDealData.advertisingCost || 0) +
-			(newDealData.flooringCost || 0)
+			(Number(newDealData.advertisingCost) || 0) +
+			(Number(newDealData.flooringCost) || 0)
 	);
 	newDealData.baseInvestment = baseInvestment;
 
-	const sellingPrice = newDealData.sellingPrice || 0;
+	const sellingPrice = Number(newDealData.sellingPrice) || 0;
 	const boTax = roundToHundredth(sellingPrice * BO_TAX_RATE);
 	newDealData.boTax = boTax;
 
@@ -25,21 +25,22 @@ export function calculateOffer(dealData, settings) {
 
 	const roiPercentage = baseInvestment > 0 ? roundToHundredth((profit / baseInvestment) * 100) : 0;
 	// Only update ROI if it's not the source of the change
-	if (newDealData.lastChanged !== 'roi') {
+	if (newDealData.lastChanged !== 'roiPercentage') {
 		newDealData.roiPercentage = roiPercentage;
 	}
 
 	// Trade Devalue
-	let totalTradeDevalue = 0;
-	if (newDealData.tradeDevalueSelected && settings && settings.tradeDevalueItems) {
-		totalTradeDevalue = newDealData.tradeDevalueSelected.reduce(
-			(sum, idx) => sum + (settings.tradeDevalueItems[idx]?.price || 0),
-			0
-		);
-	}
+	const defaultDevalueItems = settings?.tradeDevalueItems || [];
+	const selectedDefaultDevalueSum = (newDealData.tradeDevalueSelected || []).reduce((acc, index) => {
+		const item = defaultDevalueItems[index];
+		return acc + (item ? Number(item.price) || 0 : 0);
+	}, 0);
+	const customDevalueSum = (newDealData.tradeDevalueItems || []).reduce((acc, item) => acc + (Number(item.value) || 0), 0);
+	const totalTradeDevalue = selectedDefaultDevalueSum + customDevalueSum;
 	newDealData.totalTradeDevalue = totalTradeDevalue;
 
-	const netTrade = roundToHundredth((newDealData.tradeValue || 0) - (newDealData.tradePayOff || 0));
+
+	const netTrade = roundToHundredth((Number(newDealData.tradeValue) || 0) - (Number(newDealData.tradePayOff) || 0));
 	newDealData.netTrade = netTrade;
 
 	const getAddon = (key, fallback = 0) => {
@@ -60,12 +61,12 @@ export function calculateOffer(dealData, settings) {
 	if (newDealData.tradeIsLease) {
 		taxableAmount = sellingPrice + totalAddons;
 	} else {
-		taxableAmount = sellingPrice + totalAddons - (newDealData.tradeValue || 0);
+		taxableAmount = sellingPrice + totalAddons - (Number(newDealData.tradeValue) || 0);
 	}
 	newDealData.taxableAmount = taxableAmount;
 
 	const difference = roundToHundredth(taxableAmount);
-	const salesTax = difference > 0 ? roundToHundredth(difference * ((newDealData.taxRate || 0) / 100)) : 0;
+	const salesTax = difference > 0 ? roundToHundredth(difference * ((Number(newDealData.taxRate) || 0) / 100)) : 0;
 	newDealData.salesTax = salesTax;
 
 	const licenseEstimate = Number(newDealData.licenseEstimate) || 0;
@@ -73,8 +74,8 @@ export function calculateOffer(dealData, settings) {
 		Number(difference) +
 			(Number(newDealData.tradePayOff) || 0) +
 			(Number(newDealData.docFee) || 0) +
-			(Number(licenseEstimate) || 0) +
-			(Number(salesTax) || 0)
+			licenseEstimate +
+			salesTax
 	);
 	newDealData.totalAmountFinanced = totalAmountFinanced;
 
@@ -85,7 +86,7 @@ export function calculateOffer(dealData, settings) {
 	const selectedDowns = Array.isArray(newDealData.downPayment)
 		? newDealData.downPayment.filter((d) => !isNaN(Number(d))).map(Number)
 		: [Number(newDealData.downPayment)].filter((d) => !isNaN(d));
-	const financeRate = newDealData.interestRate || 6.99;
+	const financeRate = Number(newDealData.interestRate) || 6.99;
 	const financeTableRows = [];
 
 	const calculateMonthlyPayment = (amount, rate, termMonths) => {
@@ -116,8 +117,8 @@ export function calculateOffer(dealData, settings) {
 export function calculateSellingPriceFromROI(dealData) {
 	const { baseInvestment, roiPercentage } = dealData;
 	if (baseInvestment > 0) {
-		const newSellingPrice = roundToHundredth((baseInvestment * (1 + (roiPercentage || 0) / 100)) / (1 - BO_TAX_RATE));
-		return { ...dealData, sellingPrice: newSellingPrice, lastChanged: 'roi' };
+		const newSellingPrice = roundToHundredth((baseInvestment * (1 + (Number(roiPercentage) || 0) / 100)) / (1 - BO_TAX_RATE));
+		return { ...dealData, sellingPrice: newSellingPrice, lastChanged: 'roiPercentage' };
 	}
-	return { ...dealData, sellingPrice: 0, lastChanged: 'roi' };
+	return { ...dealData, sellingPrice: 0, lastChanged: 'roiPercentage' };
 }

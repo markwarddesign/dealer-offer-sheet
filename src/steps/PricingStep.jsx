@@ -67,7 +67,7 @@ const PricingStep = () => {
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
 						<label htmlFor="acquisitionCost" className="block text-sm font-medium text-gray-700 mb-1">
-							Acquisition Cost
+							Acquisition Cost {dealData.isNewVehicle ? '/ Invoice' : ''}
 						</label>
 						<NumberInput
 							name="acquisitionCost"
@@ -119,23 +119,25 @@ const PricingStep = () => {
 			</div>
 
 			{/* Rebates Section */}
-			<div className="col-span-full mt-6">
-				<h3 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Rebates & Incentives</h3>
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-					<div>
-						<label htmlFor="rebates" className="block text-sm font-medium text-gray-700 mb-1">
-							Rebates
-						</label>
-						<NumberInput
-							name="rebates"
-							id="rebates"
-							value={dealData.rebates}
-							onChange={handleChange}
-							className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
-						/>
+			{dealData.isNewVehicle && (
+				<div className="col-span-full mt-6">
+					<h3 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Rebates & Incentives</h3>
+					<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+						<div>
+							<label htmlFor="rebates" className="block text-sm font-medium text-gray-700 mb-1">
+								Rebates
+							</label>
+							<NumberInput
+								name="rebates"
+								id="rebates"
+								value={dealData.rebates}
+								onChange={handleChange}
+								className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
+							/>
+						</div>
 					</div>
 				</div>
-			</div>
+			)}
 		</FormSection>
 	);
 };
