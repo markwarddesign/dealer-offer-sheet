@@ -1,7 +1,7 @@
 import React from 'react';
 import { formatCurrency } from '../utils/formatCurrency';
 
-const NumberInput = ({ name, value, onChange, className, placeholder, disabled }) => {
+const NumberInput = ({ name, value, onChange, className, placeholder, disabled, isCurrency = true }) => {
   const handleChange = (e) => {
     const rawValue = e.target.value;
     // Allow only numbers and a single decimal point
@@ -22,7 +22,7 @@ const NumberInput = ({ name, value, onChange, className, placeholder, disabled }
     <input
       type="text"
       name={name}
-      value={value ? formatCurrency(value, true) : ''}
+      value={value ? (isCurrency ? formatCurrency(value, true) : value) : ''}
       onChange={handleChange}
       className={`${className} ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
       placeholder={placeholder}

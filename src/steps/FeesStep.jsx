@@ -88,6 +88,16 @@ const FeesStep = () => {
 								className="block w-full rounded-md border-gray-300 shadow-sm p-2"
 							/>
 						</div>
+						<div>
+							<label className="block text-sm font-medium text-gray-700">Interest Rate (%)</label>
+							<NumberInput
+								name="interestRate"
+								value={dealData.interestRate}
+								onChange={handleNumericChange}
+								className="block w-full rounded-md border-gray-300 shadow-sm p-2"
+								isCurrency={false}
+							/>
+						</div>
 					</div>
 				</div>
 

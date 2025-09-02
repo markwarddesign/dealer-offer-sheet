@@ -98,7 +98,7 @@ function TradeVsPrivateSale({ onBack }) {
     return null;
   }
   return (
-    <div className="bg-white border border-gray-300 rounded-xl shadow-lg p-4 sm:p-8 mb-12 trade-vs-private-print-main">
+    <div className="bg-white border border-gray-300 rounded-xl shadow-lg p-4 sm:p-8 mb-12 print:mb-0 trade-vs-private-print-main">
         <h2 className="text-3xl font-bold mb-6 print:mb-4 text-center flex items-center justify-center gap-2">
           <svg width="28" height="28" fill="none" viewBox="0 0 24 24" className="text-red-500 inline-block mr-1"><circle cx="12" cy="12" r="10" fill="#fee2e2"/><path d="M8 13.5l2.5 2.5L16 10" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
           Trade-In vs Private Sale Breakdown

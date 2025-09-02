@@ -119,14 +119,14 @@ const QuickEntryPage = () => {
 							<label className={labelClass}>Last Name <input type="text" name="buyerLastName" value={dealData.buyerLastName} onChange={handleChange} className={inputClass} /></label>
 							<label className={labelClass}>Phone <input type="text" name="buyerPhone" value={dealData.buyerPhone} onChange={handleChange} className={inputClass} /></label>
 							<label className={labelClass}>Email <input type="email" name="buyerEmail" value={dealData.buyerEmail} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Year <NumberInput name="vehicleYear" value={dealData.vehicleYear} onChange={handleChange} className={inputClass} /></label>
+							<label className={labelClass}>Year <NumberInput name="vehicleYear" value={dealData.vehicleYear} onChange={handleChange} className={inputClass} isCurrency={false} /></label>
 							<label className={labelClass}>Make <input type="text" name="vehicleMake" value={dealData.vehicleMake} onChange={handleChange} className={inputClass} /></label>
 							<label className={labelClass}>Model <input type="text" name="vehicleModel" value={dealData.vehicleModel} onChange={handleChange} className={inputClass} /></label>
 							<label className={labelClass}>VIN <input type="text" name="vehicleVin" value={dealData.vehicleVin} onChange={handleChange} className={inputClass} /></label>
 							<label className={labelClass}>Stock # <input type="text" name="vehicleStock" value={dealData.vehicleStock} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Mileage <NumberInput name="vehicleMileage" value={dealData.vehicleMileage} onChange={handleChange} className={inputClass} /></label>
+							<label className={labelClass}>Mileage <NumberInput name="vehicleMileage" value={dealData.vehicleMileage} onChange={handleChange} className={inputClass} isCurrency={false} /></label>
 							<label className={labelClass}>Color <input type="text" name="vehicleColor" value={dealData.vehicleColor} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>MPG <NumberInput name="vehicleMpg" value={dealData.vehicleMpg} onChange={handleChange} className={inputClass} /></label>
+							<label className={labelClass}>MPG <NumberInput name="vehicleMpg" value={dealData.vehicleMpg} onChange={handleChange} className={inputClass} isCurrency={false} /></label>
 							<label className={labelClass}>Is new vehicle?
 								<div className='py-2'><Toggle name="isNewVehicle" isChecked={dealData.isNewVehicle} onChange={handleChange} onText="New" offText="Used" /></div>
                             </label>
@@ -146,7 +146,7 @@ const QuickEntryPage = () => {
 						<div className={gridClass}>
 							<label className={labelClass}>Market Value <NumberInput name="marketValue" value={dealData.marketValue} onChange={handleChange} className={inputClass} /></label>
 							<label className={labelClass}>Selling Price <NumberInput name="sellingPrice" value={dealData.sellingPrice} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>ROI % <NumberInput name="roiPercentage" value={dealData.roiPercentage} onChange={handleChange} className={inputClass} /></label>
+							<label className={labelClass}>ROI (%) <NumberInput name="roiPercentage" value={dealData.roiPercentage} onChange={handleChange} className={inputClass} isCurrency={false} /></label>
 							<label className={labelClass}>Acquisition Cost {dealData.isNewVehicle ? '/ Invoice' : ' '} <NumberInput name="acquisitionCost" value={dealData.acquisitionCost} onChange={handleChange} className={inputClass} /></label>
 							<label className={labelClass}>Reconditioning <NumberInput name="reconditioningCost" value={dealData.reconditioningCost} onChange={handleChange} className={inputClass} disabled={dealData.isNewVehicle} /></label>
 							<label className={labelClass}>Advertising <NumberInput name="advertisingCost" value={dealData.advertisingCost} onChange={handleChange} className={inputClass} /></label>
@@ -164,10 +164,11 @@ const QuickEntryPage = () => {
 								<label className={labelClass}>Trade Value <NumberInput name="tradeValue" value={dealData.tradeValue} onChange={handleChange} className={inputClass} readOnly /></label>
 								<label className={labelClass}>Trade Payoff <NumberInput name="tradePayOff" value={dealData.tradePayOff} onChange={handleChange} className={inputClass} /></label>
 								<label className={labelClass}>VIN <input type="text" name="tradeVehicleVin" value={dealData.tradeVehicleVin} onChange={handleChange} className={inputClass} /></label>
-								<label className={labelClass}>Year <NumberInput name="tradeVehicleYear" value={dealData.tradeVehicleYear} onChange={handleChange} className={inputClass} /></label>
+								<label className={labelClass}>Year <NumberInput name="tradeVehicleYear" value={dealData.tradeVehicleYear} onChange={handleChange} className={inputClass} isCurrency={false} /></label>
 								<label className={labelClass}>Make <input type="text" name="tradeVehicleMake" value={dealData.tradeVehicleMake} onChange={handleChange} className={inputClass} /></label>
 								<label className={labelClass}>Model <input type="text" name="tradeVehicleModel" value={dealData.tradeVehicleModel} onChange={handleChange} className={inputClass} /></label>
-								<label className={labelClass}>Mileage <NumberInput name="tradeVehicleMileage" value={dealData.tradeVehicleMileage} onChange={handleChange} className={inputClass} /></label>
+								<label className={labelClass}>Mileage <NumberInput name="tradeVehicleMileage" value={dealData.tradeVehicleMileage} onChange={handleChange} className={inputClass} isCurrency={false} /></label>
+								<label className={labelClass}>MPG <NumberInput name="tradeVehicleMpg" value={dealData.tradeVehicleMpg} onChange={handleChange} className={inputClass} isCurrency={false} /></label>
 								<Toggle label="Is Trade a Lease?" name="tradeIsLease" isChecked={dealData.tradeIsLease} onChange={handleChange} />
 							</div>
 						)}
@@ -246,8 +247,8 @@ const QuickEntryPage = () => {
 							<label className={labelClass}>Title Fee <NumberInput name="titleFee" value={dealData.titleFee} onChange={handleChange} className={inputClass} /></label>
 							<label className={labelClass}>Tire Fee <NumberInput name="tireFee" value={dealData.tireFee} onChange={handleChange} className={inputClass} /></label>
 							<label className={labelClass}>License Est. <NumberInput name="licenseEstimate" value={dealData.licenseEstimate} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Tax Rate % <NumberInput name="taxRate" value={dealData.taxRate} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Interest Rate % <NumberInput name="interestRate" value={dealData.interestRate} onChange={handleChange} className={inputClass} /></label>
+							<label className={labelClass}>Tax Rate (%) <NumberInput name="taxRate" value={dealData.taxRate} onChange={handleChange} className={inputClass} isCurrency={false}  /></label>
+							<label className={labelClass}>Interest Rate (%) <NumberInput name="interestRate" value={dealData.interestRate} onChange={handleChange} className={inputClass} isCurrency={false}  /></label>
 						</div>
 						<div className="mt-4">
 							<label className="block text-sm font-medium text-gray-700 mb-2">Down Payment Options</label>

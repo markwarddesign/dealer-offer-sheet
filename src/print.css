@@ -33,8 +33,10 @@
 	.printable-section {
 		page-break-inside: avoid;
 		break-inside: avoid;
-		max-height: 95vh;
-		overflow: hidden;
+		/* max-height: 95vh; */
+		/* overflow: hidden; */
+		height: auto;
+		overflow: visible;
 		padding: 0 !important;
 		margin: 0 !important;
 		width: 100% !important;
@@ -152,7 +154,7 @@
   }
 
   .trade-vs-private-print-main {
-    page-break-before: always  !important;
+    page-break-after: avoid !important;
   }
 
   /* When printing, hide borders and backgrounds on input fields to make them look like plain text */

@@ -388,27 +388,28 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 						</div>
 					</div>
 				</div>
-			</div>
-			{/* Print-only signature box at the bottom of the offer sheet */}
-			<div className="print-only mt-16 flex flex-col items-center w-full">
-				<div className="w-full max-w-lg border-t-2 border-gray-400 pt-8 mt-8" style={{ minHeight: '80px' }}>
-					<div className="flex flex-row justify-between items-end w-full">
-						<div className="flex-1">
-							<div
-								className="border-b border-gray-400 w-full mb-2"
-								style={{ minWidth: '200px', minHeight: '2.5em' }}
-							></div>
-							<div className="text-xs text-gray-700 text-left">Customer Signature</div>
-						</div>
-						<div className="flex-1 ml-8">
-							<div
-								className="border-b border-gray-400 w-full mb-2"
-								style={{ minWidth: '120px', minHeight: '2.5em' }}
-							></div>
-							<div className="text-xs text-gray-700 text-left">Date</div>
+				{/* Print-only signature box at the bottom of the offer sheet */}
+				<div className="print-only mt-16 flex flex-col items-center w-full">
+					<div className="w-full max-w-lg border-t-2 border-gray-400 pt-4" style={{ minHeight: '80px' }}>
+						<div className="flex flex-row justify-between items-end w-full">
+							<div className="flex-1">
+								<div
+									className="border-b border-gray-400 w-full mb-2"
+									style={{ minWidth: '200px', minHeight: '2.5em' }}
+								></div>
+								<div className="text-xs text-gray-700 text-left">Customer Signature</div>
+							</div>
+							<div className="flex-1 ml-8">
+								<div
+									className="border-b border-gray-400 w-full mb-2"
+									style={{ minWidth: '120px', minHeight: '2.5em' }}
+								></div>
+								<div className="text-xs text-gray-700 text-left">Date</div>
+							</div>
 						</div>
 					</div>
 				</div>
+			
 			</div>
 
 			<div className="bg-blue-50 p-8 rounded-xl border border-blue-200 printable-section sunset-exclusives-section no-print">

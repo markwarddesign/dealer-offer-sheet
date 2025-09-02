@@ -57,7 +57,7 @@ const App = () => {
                             onShowTradeVsPrivate={() => setShowTradeVsPrivate(true)}
                         />
                         {showTradeVsPrivate && (
-                            <div className="mt-8">
+                            <div className="mt-8 print:mt-0 print-page-break">
                                 <TradeVsPrivateSale
                                     onBack={() => setShowTradeVsPrivate(false)}
                                 />
