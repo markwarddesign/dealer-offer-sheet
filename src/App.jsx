@@ -91,7 +91,7 @@ const AppContent = ({ onLogout }) => {
         <div className="flex min-h-dvh bg-gray-100">
             <Sidebar />
             <div className='w-full'>
-                <header className={`bg-black text-white p-4 shadow-lg sticky top-0 z-10 no-print transition-all duration-300 ${isSidebarExpanded ? 'ml-64' : 'ml-20'}`}>
+                <header className={`bg-black text-white p-4 shadow-lg sticky top-0 z-10 no-print transition-all duration-300 ${isSidebarExpanded ? 'ml-64' : 'ml-15'}`}>
                     <div className="container mx-auto flex justify-between items-center">
                         <div className="flex items-center">
                             <img src={logoUrl} alt="Sunset Chevrolet Logo" className="h-12" />
@@ -107,7 +107,7 @@ const AppContent = ({ onLogout }) => {
                         </div>
                     </div>
                 </header>
-                <main className={`p-4 md:p-8 transition-all duration-300 ${isSidebarExpanded ? 'ml-64' : 'ml-20'}`}>
+                <main className={`p-4 md:p-8 transition-all duration-300 ${isSidebarExpanded ? 'ml-64' : 'ml-15'}`}>
                     <Routes>
                         <Route path="/form/:step" element={
                             <SteppedForm
