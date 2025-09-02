@@ -1,26 +1,34 @@
 import React from 'react';
 
-const Toggle = ({ label, name, checked, onChange, helpText }) => {
+const Toggle = ({ label, name, isChecked, onChange, disabled = false, onText, offText, className = '' }) => {
+  const showCustomText = onText && offText;
+
   return (
-    <div className="flex items-center justify-between py-2 gap-2">
-      <div>
-        <label htmlFor={name} className="font-medium text-gray-700">
-          {label}
-        </label>
-        {helpText && <p className="text-xs text-gray-500">{helpText}</p>}
-      </div>
-      <label htmlFor={name} className="relative inline-flex items-center cursor-pointer">
+    <label htmlFor={name} className={`flex items-center cursor-pointer ${className}`}>
+      {label && !showCustomText && <div className="mr-3 text-gray-700 font-medium">{label}</div>}
+      <div className="relative">
         <input
-          type="checkbox"
           id={name}
           name={name}
-          checked={checked}
-          onChange={onChange}
+          type="checkbox"
           className="sr-only peer"
+          checked={isChecked}
+          onChange={onChange}
+          disabled={disabled}
         />
-        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-miles-light dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-miles-dark"></div>
-      </label>
-    </div>
+        <div className={`block bg-gray-200 ${showCustomText ? 'w-16' : 'w-12'} h-8 rounded-full transition-colors duration-300 ease-in-out peer-checked:bg-green-500`}></div>
+        <div
+          className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform duration-300 ease-in-out ${
+            isChecked ? (showCustomText ? 'transform translate-x-8' : 'transform translate-x-4') : ''
+          }`}
+        ></div>
+      </div>
+      {showCustomText && (
+        <div className="ml-3 text-gray-700 font-medium">
+          <span>{isChecked ? onText : offText}</span>
+        </div>
+      )}
+    </label>
   );
 };
 
