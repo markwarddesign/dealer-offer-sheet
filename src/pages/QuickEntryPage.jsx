@@ -23,8 +23,6 @@ const QuickEntryPage = () => {
 		updateDealData({ [name]: val });
 	};
 
-	const arrayToString = (arr) => (Array.isArray(arr) ? arr.join(', ') : '');
-
 	const inputClass = "mt-1 block w-full border-0 border-b-2 border-gray-200 bg-transparent py-2 px-1 text-sm focus:outline-none focus:ring-0 focus:border-indigo-500";
 	const labelClass = "block text-sm font-medium text-gray-700";
 	const sectionClass = "p-4 border border-gray-200 rounded-lg";
