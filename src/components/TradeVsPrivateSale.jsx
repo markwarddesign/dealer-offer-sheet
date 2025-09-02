@@ -216,7 +216,7 @@ function TradeVsPrivateSale({ onBack }) {
               <div className="font-semibold mb-1">Value Calculation:</div>
               <div className="flex items-center justify-center gap-2">
                 <label>Price per Service: <NumberInput min="0" value={ocflPrice} onChange={(e) => setOcflPrice(e.target.value)} className="w-20 p-1 border rounded" /></label>
-                <label>Services per Year: <NumberInput min="0" value={ocflServicesPerYear} onChange={(e) => setOcflServicesPerYear(e.target.value)} className="w-16 p-1 border rounded" /></label>
+                <label>Services per Year: <NumberInput min="0" value={ocflServicesPerYear} onChange={(e) => setOcflServicesPerYear(e.target.value)} className="w-16 p-1 border rounded" isCurrency={false} /></label>
               </div>
             </div>
           </div>

@@ -1,31 +1,30 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../store';
 import { formSteps } from '../formSteps'; // Assuming formSteps exports the steps array
-import { FileText, Settings as SettingsIcon, MenuSquareIcon, Zap } from 'lucide-react';
+import { FileText, Settings as SettingsIcon, Zap } from 'lucide-react';
 import milesLogo from '../assets/MILES_Logo.svg';
 import milesIcon from '../assets/MILES_Icon.svg';
+import { useNavigate } from 'react-router-dom';
 
 const Sidebar = () => {
-  const { page, setPage, activeStep, onStepChange } = useAppStore();
+  const { page, activeStep } = useAppStore();
   const [isHovered, setIsHovered] = useState(false);
+  const navigate = useNavigate();
 
-  const handleNavClick = (stepIndex) => {
-    if (page !== 'form') {
-      setPage('form');
-    }
-    onStepChange(stepIndex);
+  const handleNavClick = (path) => {
+    navigate(path);
   };
 
   const handleOfferSheetClick = () => {
-    setPage('offer');
+    navigate('/offer');
   };
 
   const handleSettingsClick = () => {
-    setPage('settings');
+    navigate('/settings');
   };
 
   const handleQuickEntryClick = () => {
-    setPage('quick-entry');
+    navigate('/quick-entry');
   };
 
   return (
@@ -49,7 +48,7 @@ const Sidebar = () => {
               {formSteps.map((step, index) => (
                 <button
                   key={index}
-                  onClick={() => handleNavClick(index)}
+                  onClick={() => handleNavClick(step.path)}
                   className={`flex items-center py-3 transition-colors duration-200 ${
                     page === 'form' && activeStep === index
                       ? 'bg-miles-dark text-white'

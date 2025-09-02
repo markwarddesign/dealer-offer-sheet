@@ -1,15 +1,25 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAppStore } from '../store';
 import { formSteps as steps } from '../formSteps.jsx';
 import stepComponents from '../stepComponents';
 import { getTotalTradeDevalue } from '../utils/getTotalTradeDevalue';
 import { roundToHundredth } from '../utils/roundToHundredth';
+import { useParams, useNavigate } from 'react-router-dom';
 
 export default function SteppedForm({ onGenerateOffer }) {
 	const { dealData, setDealData, settings, setSettings, activeStep, onStepChange } = useAppStore();
 	const totalSteps = steps.length;
+	const { step } = useParams();
+	const navigate = useNavigate();
 
-  const ActiveStepComponent = stepComponents[activeStep];
+	useEffect(() => {
+		const stepIndex = steps.findIndex(s => s.path.endsWith(step));
+		if (stepIndex !== -1 && stepIndex !== activeStep) {
+			onStepChange(stepIndex);
+		}
+	}, [step, activeStep, onStepChange]);
+
+	const ActiveStepComponent = stepComponents[activeStep];
 
 	// Unified handleChange for all fields
 	const handleChange = (e) => {
@@ -33,12 +43,20 @@ export default function SteppedForm({ onGenerateOffer }) {
 
 	const handleNext = (e) => {
 		e.preventDefault();
-		if (activeStep < totalSteps - 1) onStepChange(activeStep + 1);
-		else onGenerateOffer();
+		if (activeStep < totalSteps - 1) {
+			const nextStepPath = steps[activeStep + 1].path;
+			navigate(nextStepPath);
+		} else {
+			onGenerateOffer();
+		}
 	};
+
 	const handleBack = (e) => {
 		e.preventDefault();
-		if (activeStep > 0) onStepChange(activeStep - 1);
+		if (activeStep > 0) {
+			const prevStepPath = steps[activeStep - 1].path;
+			navigate(prevStepPath);
+		}
 	};
 
 	return (
@@ -51,15 +69,15 @@ export default function SteppedForm({ onGenerateOffer }) {
 			</div>
 			{/* Step Content */}
 			<div className="transition-all duration-500 ease-in-out transform" style={{ opacity: 1, translate: 'none' }}>
-				  {ActiveStepComponent && (
-          <ActiveStepComponent
-            dealData={dealData}
-            setDealData={setDealData}
-            handleChange={handleChange}
-            settings={settings}
-            setSettings={setSettings}
-          />
-        )}
+				{ActiveStepComponent && (
+					<ActiveStepComponent
+						dealData={dealData}
+						setDealData={setDealData}
+						handleChange={handleChange}
+						settings={settings}
+						setSettings={setSettings}
+					/>
+				)}
 			</div>
 			<div className="flex justify-between pt-8">
 				<button type="button" onClick={handleBack} disabled={activeStep === 0} className={`px-6 py-3 rounded-lg font-bold shadow transition-all duration-300 ${activeStep === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-600 text-white hover:bg-gray-700'}`}>Back</button>

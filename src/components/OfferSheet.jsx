@@ -127,6 +127,7 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 										onChange={handleRoiChange}
 										className="w-20 p-1 text-sm font-medium border rounded-md shadow-inner no-print"
 										placeholder="ROI %"
+										isCurrency={false}
 									/>
 									<span className="print-only">({(dealData.roiPercentage || 0).toFixed(2)})</span>
 									<p>%</p>

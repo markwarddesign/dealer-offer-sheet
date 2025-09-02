@@ -56,6 +56,7 @@ const PricingStep = () => {
 						onChange={handleChange}
 						className="block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-red-500"
 						placeholder="e.g., 15"
+						isCurrency={false}
 					/>
 					<p className="mt-1 text-xs text-gray-500">Used if Selling Price is 0.</p>
 				</div>

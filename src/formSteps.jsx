@@ -1,10 +1,13 @@
-import { User, Car, Calculator, ArrowRightLeft, Receipt, PlusCircle, Landmark, Handshake } from 'lucide-react';
+import { User, Calculator, Receipt, PlusCircle, Landmark, Handshake } from 'lucide-react';
+
+const createPath = (title) => `/form/${title.toLowerCase().replace(/ & /g, '-and-').replace(/ /g, '-')}`;
 
 export const formSteps = [
 	{
 		title: 'Buyer Information',
 		name: 'Buyer Info',
 		icon: User,
+		path: createPath('Buyer Information'),
 		fields: [
 			{ label: 'First Name', name: 'buyerFirstName', type: 'text' },
 			{ label: 'Last Name', name: 'buyerLastName', type: 'text' },
@@ -16,11 +19,13 @@ export const formSteps = [
 		title: 'Vehicle & Trade',
 		name: 'Vehicle & Trade',
 		icon: Handshake,
+		path: createPath('Vehicle & Trade'),
 	},
 	{
 		title: 'Pricing & Profitability',
 		name: 'Pricing',
 		icon: Calculator,
+		path: createPath('Pricing & Profitability'),
 		fields: [
 			{
 				label: 'Selling Price',
@@ -57,6 +62,7 @@ export const formSteps = [
 		title: 'Fees & Taxes',
 		name: 'Fees',
 		icon: Receipt,
+		path: createPath('Fees & Taxes'),
 		fields: [
 			{ label: 'Tax Rate (%)', name: 'taxRate', type: 'number' },
 			{ label: 'Doc Fee', name: 'docFee', type: 'number' },
@@ -69,6 +75,7 @@ export const formSteps = [
 		title: 'Add-ons',
 		name: 'Add-ons',
 		icon: PlusCircle,
+		path: createPath('Add-ons'),
 		fields: [
 			{
 				label: 'Down Payment',
@@ -108,6 +115,7 @@ export const formSteps = [
 		title: 'Finance Details',
 		name: 'Finance',
 		icon: Landmark,
+		path: createPath('Finance Details'),
 		fields: [
 			{ label: 'Term (months)', name: 'financeTerm', type: 'number' },
 			{

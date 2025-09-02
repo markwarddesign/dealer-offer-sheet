@@ -81,6 +81,14 @@ export default function VehicleDealStep() {
 	const netTradeEquity = netTradeValue - tradePayOff;
 
     useEffect(() => {
+        if (dealData.isNewVehicle) {
+            updateDealData({ reconditioningCost: 0 });
+        } else {
+            updateDealData({ reconditioningCost: initialDealData.reconditioningCost });
+        }
+    }, [dealData.isNewVehicle, updateDealData]);
+
+    useEffect(() => {
 		if (Number(dealData.tradeValue) !== netTradeValue && !isNaN(netTradeValue)) {
 			updateDealData({ tradeValue: netTradeValue });
 		}
@@ -216,7 +224,7 @@ export default function VehicleDealStep() {
 							</div>
 							<div>
 								<label className="block text-sm font-medium text-gray-700">Color</label>
-								<input type="text" name="vehicleColor" value={dealData.vehicleColor || ''} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
+								<input type="text" name="ifvehicleColor" value={dealData.vehicleColor || ''} onChange={handleFieldChange} className="block w-full rounded-md border-gray-300 shadow-sm p-2" />
 							</div>
 							<div>
 								<label className="block text-sm font-medium text-gray-700">Mileage</label>

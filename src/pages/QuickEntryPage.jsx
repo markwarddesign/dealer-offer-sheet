@@ -3,9 +3,11 @@ import { useAppStore } from '../store';
 import NumberInput from '../components/NumberInput';
 import Toggle from '../components/Toggle';
 import { formatCurrency } from '../utils/formatCurrency';
+import { useNavigate } from 'react-router-dom';
 
 const QuickEntryPage = () => {
-	const { dealData, updateDealData, updateRoi, setPage, settings } = useAppStore();
+	const { dealData, updateDealData, updateRoi, settings } = useAppStore();
+	const navigate = useNavigate();
 
 	const handleChange = (e) => {
 		const { name, value, type, checked } = e.target;
@@ -305,7 +307,7 @@ const QuickEntryPage = () => {
 				<div className="mt-8 pt-6 border-t border-gray-200">
 					<div className="flex justify-center">
 						<button
-							onClick={() => setPage('offer')}
+							onClick={() => navigate('/offer')}
 							className="w-full max-w-md bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 ease-in-out text-lg transform hover:scale-105"
 						>
 							Generate Offer Sheet
