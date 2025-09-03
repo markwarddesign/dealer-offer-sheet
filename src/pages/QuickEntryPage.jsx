@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppStore } from '../store';
 import { formatCurrency } from '../utils/formatCurrency';
 import { useNavigate } from 'react-router-dom';
-import { User, Car, Tag, Banknote, Trash2, ArrowRight, ChevronDown } from 'lucide-react';
+import { User, Car, Tag, Banknote, Trash2, ArrowRight, ChevronDown, Search } from 'lucide-react';
+import { lookupVin } from '../utils/vinLookup';
 
 import Card from '../components/Card';
 import CardHeader from '../components/CardHeader';
@@ -20,6 +21,60 @@ function calculateMonthlyPayment(amount, rate, termMonths) {
 const QuickEntryPage = () => {
 	const { dealData, updateDealData, updateRoi, settings } = useAppStore();
 	const navigate = useNavigate();
+	const [vinLoading, setVinLoading] = useState({ vehicle: false, trade: false });
+	const [vinFieldErrors, setVinFieldErrors] = useState({});
+
+	const handleVinLookup = async (vin, type) => {
+		if (!vin) return;
+		setVinLoading(prev => ({ ...prev, [type]: true }));
+		setVinFieldErrors({});
+
+		try {
+			const vehicleData = await lookupVin(vin);
+			const updates = {};
+			const fieldErrors = {};
+			
+			const fieldMapping = {
+				Year: 'year',
+				Make: 'make',
+				Model: 'model',
+				Mpg: 'mpg'
+			};
+
+			Object.keys(fieldMapping).forEach(field => {
+				const stateKey = `${type}Vehicle${field}`;
+				const dataKey = fieldMapping[field];
+				if (vehicleData[dataKey]) {
+					updates[stateKey] = vehicleData[dataKey];
+				} else {
+					updates[stateKey] = '';
+					fieldErrors[stateKey] = true;
+				}
+			});
+
+			if (type === 'vehicle') {
+				updates.vehicleVin = vin;
+			} else {
+				updates.tradeVehicleVin = vin;
+			}
+
+			updateDealData(updates);
+			setVinFieldErrors(fieldErrors);
+
+		} catch (error) {
+			console.error(`VIN lookup failed for ${type}:`, error);
+			// If the whole lookup fails, mark all fields as errored
+			const errors = {
+				[`${type}VehicleYear`]: true,
+				[`${type}VehicleMake`]: true,
+				[`${type}VehicleModel`]: true,
+				[`${type}VehicleMpg`]: true,
+			};
+			setVinFieldErrors(errors);
+		} finally {
+			setVinLoading(prev => ({ ...prev, [type]: false }));
+		}
+	};
 
 	const handleChange = (e) => {
 		const { name, value, type, checked } = e.target;
@@ -197,14 +252,24 @@ const QuickEntryPage = () => {
                         <InputField label="Last Name" name="buyerLastName" value={dealData.buyerLastName} onChange={handleChange} />
                         <InputField label="Phone" name="buyerPhone" value={dealData.buyerPhone} onChange={handleChange} />
                         <InputField label="Email" name="buyerEmail" value={dealData.buyerEmail} onChange={handleChange} />
-                        <NumberInputField label="Year" name="vehicleYear" value={dealData.vehicleYear} onChange={handleChange} isCurrency={false} />
-                        <InputField label="Make" name="vehicleMake" value={dealData.vehicleMake} onChange={handleChange} />
-                        <InputField label="Model" name="vehicleModel" value={dealData.vehicleModel} onChange={handleChange} />
-                        <InputField label="VIN" name="vehicleVin" value={dealData.vehicleVin} onChange={handleChange} />
+                        <NumberInputField label="Year" name="vehicleYear" value={dealData.vehicleYear} onChange={handleChange} isCurrency={false} className={vinFieldErrors.vehicleYear ? 'border-red-500' : ''} />
+                        <InputField label="Make" name="vehicleMake" value={dealData.vehicleMake} onChange={handleChange} className={vinFieldErrors.vehicleMake ? 'border-red-500' : ''} />
+                        <InputField label="Model" name="vehicleModel" value={dealData.vehicleModel} onChange={handleChange} className={vinFieldErrors.vehicleModel ? 'border-red-500' : ''} />
+                        <div className="relative">
+							<InputField label="VIN" name="vehicleVin" value={dealData.vehicleVin} onChange={handleChange} />
+							<button
+								onClick={() => handleVinLookup(dealData.vehicleVin, 'vehicle')}
+								disabled={vinLoading.vehicle}
+								className="absolute right-1 bottom-1 bg-indigo-500 text-white p-1.5 rounded-md hover:bg-indigo-600 disabled:bg-gray-400"
+								aria-label="Look up VIN"
+							>
+								{vinLoading.vehicle ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Search className="h-4 w-4" />}
+							</button>
+						</div>
                         <InputField label="Stock #" name="vehicleStock" value={dealData.vehicleStock} onChange={handleChange} />
                         <NumberInputField label="Mileage" name="vehicleMileage" value={dealData.vehicleMileage} onChange={handleChange} isCurrency={false} />
                         <InputField label="Color" name="vehicleColor" value={dealData.vehicleColor} onChange={handleChange} />
-                        <NumberInputField label="MPG" name="vehicleMpg" value={dealData.vehicleMpg} onChange={handleChange} isCurrency={false} />
+                        <NumberInputField label="MPG" name="vehicleMpg" value={dealData.vehicleMpg} onChange={handleChange} isCurrency={false} className={vinFieldErrors.vehicleMpg ? 'border-red-500' : ''} />
                         <div className="flex items-end pb-2">
                             <Toggle label="New Vehicle" name="isNewVehicle" checked={dealData.isNewVehicle} onChange={handleChange} />
                         </div>
@@ -244,12 +309,22 @@ const QuickEntryPage = () => {
                                 <NumberInputField label="Market Value" name="tradeMarketValue" value={dealData.tradeMarketValue} onChange={handleChange} />
                                 <NumberInputField label="Trade Value" name="tradeValue" value={dealData.tradeValue} onChange={handleChange} readOnly />
                                 <NumberInputField label="Trade Payoff" name="tradePayOff" value={dealData.tradePayOff} onChange={handleChange} />
-                                <InputField label="VIN" name="tradeVehicleVin" value={dealData.tradeVehicleVin} onChange={handleChange} />
-                                <NumberInputField label="Year" name="tradeVehicleYear" value={dealData.tradeVehicleYear} onChange={handleChange} isCurrency={false} />
-                                <InputField label="Make" name="tradeVehicleMake" value={dealData.tradeVehicleMake} onChange={handleChange} />
-                                <InputField label="Model" name="tradeVehicleModel" value={dealData.tradeVehicleModel} onChange={handleChange} />
-                                <NumberInputField label="Mileage" name="tradeVehicleMileage" value={dealData.tradeVehicleMileage} onChange={handleChange} isCurrency={false} />
-                                <NumberInputField label="MPG" name="tradeVehicleMpg" value={dealData.tradeVehicleMpg} onChange={handleChange} isCurrency={false} withIncrement step />
+                                <div className="relative">
+							<InputField label="VIN" name="tradeVehicleVin" value={dealData.tradeVehicleVin} onChange={handleChange} />
+							<button
+								onClick={() => handleVinLookup(dealData.tradeVehicleVin, 'trade')}
+								disabled={vinLoading.trade}
+								className="absolute right-1 bottom-1 bg-indigo-500 text-white p-1.5 rounded-md hover:bg-indigo-600 disabled:bg-gray-400"
+								aria-label="Look up trade-in VIN"
+							>
+								{vinLoading.trade ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Search className="h-4 w-4" />}
+							</button>
+						</div>
+                        <NumberInputField label="Year" name="tradeVehicleYear" value={dealData.tradeVehicleYear} onChange={handleChange} isCurrency={false} className={vinFieldErrors.tradeVehicleYear ? 'border-red-500' : ''} />
+                        <InputField label="Make" name="tradeVehicleMake" value={dealData.tradeVehicleMake} onChange={handleChange} className={vinFieldErrors.tradeVehicleMake ? 'border-red-500' : ''} />
+                        <InputField label="Model" name="tradeVehicleModel" value={dealData.tradeVehicleModel} onChange={handleChange} className={vinFieldErrors.tradeVehicleModel ? 'border-red-500' : ''} />
+                        <NumberInputField label="Mileage" name="tradeVehicleMileage" value={dealData.tradeVehicleMileage} onChange={handleChange} isCurrency={false} />
+                        <NumberInputField label="MPG" name="tradeVehicleMpg" value={dealData.tradeVehicleMpg} onChange={handleChange} isCurrency={false} withIncrement step className={vinFieldErrors.tradeVehicleMpg ? 'border-red-500' : ''} />
 								<NumberInputField label="# in Market" name="vehiclesInMarket" value={dealData.vehiclesInMarket} onChange={handleChange} isCurrency={false} withIncrement step />
                         		<NumberInputField label="Avg Days to Sell" name="avgDaysToSell" value={dealData.avgDaysToSell} onChange={handleChange} isCurrency={false} withIncrement step />
                                 <div className="flex items-end pb-2">
