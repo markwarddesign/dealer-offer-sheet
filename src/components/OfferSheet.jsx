@@ -37,7 +37,7 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 
 	return (
 		<div className="space-y-8 offer-sheet">
-			<div className="bg-white rounded-xl shadow-lg p-8 printable-section">
+			<div className="bg-white rounded-xl shadow-md p-8 printable-section">
 				<div className="flex flex-row flex-wrap justify-between items-start mb-8 gap-6 mx-4">
 					<div>
 						<div className="uppercase tracking-wide text-sm text-red-600 font-semibold">
@@ -415,10 +415,10 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 
 			<div className="bg-blue-50 p-8 rounded-xl border border-blue-200 printable-section sunset-exclusives-section no-print">
 				<h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">The Sunset Exclusives</h3>
-				<p className="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
+				<p className="text-center text-gray-600 mb-8 w-full mx-auto">
 					Buying at Sunset Chevrolet gets you more. A lot more.
 				</p>
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					{sunsetExclusives.map((benefit, index) => (
 						<div key={index} className="flex items-start space-x-4">
 							<div className="flex-shrink-0 bg-white p-3 rounded-full shadow-md">{benefit.icon}</div>
@@ -435,13 +435,13 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 				<div className="flex space-x-4">
 					<button
 						onClick={onGoBack}
-						className="bg-gray-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-gray-700 transition-colors duration-300 print-hide"
+						className="bg-gray-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-gray-700 transition-colors duration-300 print-hide"
 					>
 						Go Back & Edit
 					</button>
 					{dealData.hasTrade && (
 						<button
-							className="px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 font-semibold"
+							className="px-4 py-2 bg-blue-600 text-white rounded shadow-sm hover:bg-blue-700 font-semibold"
 							onClick={onShowTradeVsPrivate}
 						>
 							Show Trade vs Private Sale

@@ -28,7 +28,7 @@ export default function LoginPage({ onLogin }) {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300">
-      <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md flex flex-col items-center">
+      <div className="bg-white rounded-xl shadow-md p-8 w-full max-w-md flex flex-col items-center">
         <div className="mb-4">{logo}</div>
         <h1 className="text-2xl font-bold text-blue-900 mb-1 tracking-widest">M.I.L.E.S.</h1>
         <p className="text-blue-700 mb-6 text-center font-medium">Monthly Investment & Lifetime Expense Savings</p>

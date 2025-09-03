@@ -49,7 +49,7 @@
 	.printable-section table,
 	.printable-section .w-full,
 	.printable-section .max-w-4xl,
-	.printable-section .max-w-2xl {
+	.printable-section .w-full {
 		width: 100% !important;
 		max-width: 100% !important;
 		margin-left: 0 !important;
@@ -57,7 +57,7 @@
 		box-sizing: border-box !important;
 	}
 	/* Remove max-width and centering for print on common containers */
-	.max-w-2xl, .max-w-4xl, .mx-auto {
+	.w-full, .max-w-4xl, .mx-auto {
 		max-width: 100% !important;
 		margin-left: 0 !important;
 		margin-right: 0 !important;

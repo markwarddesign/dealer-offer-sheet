@@ -37,6 +37,7 @@ const AppContent = ({ onLogout }) => {
         isSidebarExpanded,
         page,
         setPage,
+        activeStep,
     } = useAppStore();
     const [showTradeVsPrivate, setShowTradeVsPrivate] = useState(false);
     const location = useLocation();
@@ -88,10 +89,10 @@ const AppContent = ({ onLogout }) => {
     };
 
     return (
-        <div className="flex min-h-dvh bg-gray-100">
+        <div className="flex min-h-dvh bg-white">
             <Sidebar />
             <div className='w-full'>
-                <header className={`bg-black text-white p-4 shadow-lg sticky top-0 z-10 no-print transition-all duration-300 ${isSidebarExpanded ? 'ml-64' : 'ml-15'}`}>
+                <header className={`bg-black text-white p-4 shadow-md sticky top-0 z-10 no-print transition-all duration-300 ${isSidebarExpanded ? 'ml-64' : 'ml-15'}`}>
                     <div className="container mx-auto flex justify-between items-center">
                         <div className="flex items-center">
                             <img src={logoUrl} alt="Sunset Chevrolet Logo" className="h-12" />
@@ -106,8 +107,18 @@ const AppContent = ({ onLogout }) => {
                             </button>
                         </div>
                     </div>
+                    {page === 'form' && (
+                        <div className='absolute -bottom-1 left-0 w-full '>
+                            <div className="flex items-center w-full">
+                                {formSteps.map((s, i) => (
+                                    <div key={i} className={`flex-1 h-2 transition-all duration-500 ${i <= activeStep ? 'bg-red-600' : 'bg-gray-200'}`}></div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </header>
-                <main className={`p-4 md:p-8 transition-all duration-300 ${isSidebarExpanded ? 'ml-64' : 'ml-15'}`}>
+                <main className={`relative p-4 md:p-6 md:pt-0 transition-all z-1 duration-300 ${isSidebarExpanded ? 'ml-64' : 'ml-15'}`}>
+                    
                     <Routes>
                         <Route path="/form/:step" element={
                             <SteppedForm
@@ -142,4 +153,3 @@ const AppContent = ({ onLogout }) => {
 };
 
 export default App;
-

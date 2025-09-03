@@ -1,35 +1,19 @@
 import React from 'react';
 
-const Toggle = ({ label, name, isChecked, onChange, disabled = false, onText, offText, className = '' }) => {
-  const showCustomText = onText && offText;
-
-  return (
-    <label htmlFor={name} className={`flex items-center cursor-pointer ${className}`}>
-      {label && !showCustomText && <div className="mr-3 text-gray-700 font-medium">{label}</div>}
-      <div className="relative">
-        <input
-          id={name}
-          name={name}
-          type="checkbox"
-          className="sr-only peer"
-          checked={isChecked}
-          onChange={onChange}
-          disabled={disabled}
-        />
-        <div className={`block bg-gray-200 ${showCustomText ? 'w-16' : 'w-12'} h-8 rounded-full transition-colors duration-300 ease-in-out peer-checked:bg-green-500`}></div>
-        <div
-          className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform duration-300 ease-in-out ${
-            isChecked ? (showCustomText ? 'transform translate-x-8' : 'transform translate-x-4') : ''
-          }`}
-        ></div>
-      </div>
-      {showCustomText && (
-        <div className="ml-3 text-gray-700 font-medium">
-          <span>{isChecked ? onText : offText}</span>
-        </div>
-      )}
-    </label>
-  );
-};
+const Toggle = ({ label, name, checked, onChange, primaryColor = 'indigo', className = '' }) => (
+    <div className={`flex items-center justify-between ${className}`}>
+        {label && <span className="font-semibold text-gray-700 text-sm mr-3">{label}</span>}
+        <label className="relative inline-flex items-center cursor-pointer">
+            <input 
+                type="checkbox" 
+                name={name} 
+                checked={checked} 
+                onChange={onChange} 
+                className="sr-only peer" 
+            />
+            <div className={`w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-${primaryColor}-200 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-${primaryColor}-600`}></div>
+        </label>
+    </div>
+);
 
 export default Toggle;

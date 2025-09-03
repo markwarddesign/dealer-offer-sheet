@@ -24,7 +24,7 @@ export default function SinglePageForm({ dealData, setDealData, onGenerateOffer,
     });
   };
   return (
-    <form className="relative max-w-2xl mx-auto" onSubmit={e => { e.preventDefault(); onGenerateOffer(); }}>
+    <form className="relative w-full mx-auto" onSubmit={e => { e.preventDefault(); onGenerateOffer(); }}>
       {stepComponents.map((StepComponent, idx) => (
         <div key={steps[idx].title} className="mb-8">
           {React.createElement(StepComponent, {

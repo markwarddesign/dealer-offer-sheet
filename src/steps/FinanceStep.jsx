@@ -1,250 +1,261 @@
-import React, { useState } from 'react';
-import FormSection from '../components/FormSection';
+import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../store';
 import { formatCurrency } from '../utils/formatCurrency';
 import NumberInput from '../components/NumberInput';
+import { Landmark, SlidersHorizontal, BarChart, Eye } from 'lucide-react';
+
+// --- Helper Functions ---
 
 function calculateMonthlyPayment(amount, rate, termMonths) {
-  if (!amount || !rate || !termMonths) return 0;
-  const monthlyRate = rate / 12 / 100;
-  return (amount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -termMonths));
+    if (!amount || !rate || !termMonths || amount <= 0 || rate <= 0 || termMonths <= 0) return 0;
+    const monthlyRate = rate / 12 / 100;
+    if (monthlyRate === 0) return amount / termMonths; // Simple division if rate is 0
+    return (amount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -termMonths));
 }
+
+// --- Constants ---
 
 const downPaymentOptions = [0, 1000, 2500, 5000, 7500, 10000];
 const financeTerms = [24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84];
 
-const FinanceStep = () => {
-  const { dealData, updateDealData } = useAppStore();
-  // Toggle for showing interest rate on offer sheet
-  const showInterestRateOnOfferSheet = dealData.showInterestRateOnOfferSheet ?? false;
-  const handleToggleShowInterestRate = () => {
-    updateDealData({ showInterestRateOnOfferSheet: !showInterestRateOnOfferSheet });
-  };
-  // Toggle for showing amount financed on offer sheet
-  const showAmountFinancedOnOfferSheet = dealData.showAmountFinancedOnOfferSheet ?? true;
-  const handleToggleShowAmountFinanced = () => {
-    updateDealData({ showAmountFinancedOnOfferSheet: !showAmountFinancedOnOfferSheet });
-  };
-  // Use interest rate from dealData, fallback to store default
-  const rate = dealData.interestRate !== undefined && dealData.interestRate !== '' ? Number(dealData.interestRate) : 6.99;
-  const initialTerms = Array.isArray(dealData.financeTerm)
-    ? dealData.financeTerm.map(Number).filter(t => !isNaN(t) && isFinite(t))
-    : [];
-  const [selectedTerms, setSelectedTerms] = useState(initialTerms.length ? initialTerms : []);
-  const initialDowns = Array.isArray(dealData.downPayment)
-    ? dealData.downPayment.map(Number).filter(d => !isNaN(d) && isFinite(d))
-    : [];
-  const [selectedDowns, setSelectedDowns] = useState(initialDowns.length ? initialDowns : []);
-  const [customDown, setCustomDown] = useState('');
+// --- Reusable UI Components ---
 
-  const sellingPrice = dealData.sellingPrice || 0;
-  const docFee = dealData.docFee || 0;
-  const otherFee = dealData.otherFee || 0;
-
-  // Update store when terms/downs change
-  const handleTermsChange = (newTerms) => {
-    setSelectedTerms(newTerms);
-    updateDealData({ financeTerm: newTerms });
-  };
-  const handleDownsChange = (newDowns) => {
-    setSelectedDowns(newDowns);
-    updateDealData({ downPayment: newDowns });
-  };
-
-  return (
-    <FormSection title="Finance Options" icon={null} noGrid={true}>
-      <div className='flex flex-col w-full'>
-        <div className="flex items-center gap-6 mb-6">
-          {/* Sleek Toggle for Interest Rate */}
-          <label htmlFor="toggleShowInterestRateOnOfferSheet" className="flex items-center cursor-pointer select-none">
-            <div className="relative">
-              <input
-                id="toggleShowInterestRateOnOfferSheet"
-                type="checkbox"
-                checked={showInterestRateOnOfferSheet}
-                onChange={handleToggleShowInterestRate}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-red-500 transition-colors"></div>
-              <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"></div>
-            </div>
-            <span className="ml-3 text-base font-medium text-gray-800">Display interest rate on offer sheet</span>
-          </label>
-          {/* Sleek Toggle for Amount Financed */}
-          <label htmlFor="toggleShowAmountFinancedOnOfferSheet" className="flex items-center cursor-pointer select-none">
-            <div className="relative">
-              <input
-                id="toggleShowAmountFinancedOnOfferSheet"
-                type="checkbox"
-                checked={showAmountFinancedOnOfferSheet}
-                onChange={handleToggleShowAmountFinanced}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-500 transition-colors"></div>
-              <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"></div>
-            </div>
-            <span className="ml-3 text-base font-medium text-gray-800">Display Amount Financed on offer sheet</span>
-          </label>
+const FormSection = ({ title, icon, children }) => (
+    <div className="space-y-8">
+        <div className="flex items-center gap-4">
+            {icon}
+            <h2 className="text-3xl font-bold tracking-tight text-gray-800">{title}</h2>
         </div>
-        <div className="mb-8 w-full">
-          <div className="w-full">
-            <label className="block text-base font-bold text-gray-800 mb-2">Finance Term (months)</label>
-            <div className="flex flex-wrap gap-2 w-full">
-              {financeTerms.map(opt => {
-                const isSelected = selectedTerms.includes(opt);
-                const disableAdd = !isSelected && selectedTerms.length >= 5;
-                return (
-                  <button
-                    key={opt}
-                    type="button"
-                    className={`px-2 py-1 rounded font-semibold border shadow-sm text-base transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-red-400 ${isSelected ? 'bg-red-600 text-white border-red-600 ring-2 ring-red-300' : 'bg-white text-gray-800 border-gray-300 hover:bg-red-50'} ${disableAdd ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={() => {
-                      let newTerms;
-                      if (isSelected) {
-                        newTerms = selectedTerms.filter(t => t !== opt);
-                      } else {
-                        if (selectedTerms.length >= 5) return;
-                        newTerms = [...selectedTerms, opt];
-                      }
-                      if (newTerms.length === 0) newTerms = [opt];
-                      handleTermsChange(newTerms);
-                    }}
-                    disabled={disableAdd}
-                  >
-                    {opt}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <div className="w-full mt-6">
-            <label className="block text-base font-bold text-gray-800 mb-2">Down Payment</label>
-            <div className="flex flex-wrap gap-2 w-full mb-3">
-              {downPaymentOptions.map(opt => {
-                const isSelected = selectedDowns.includes(opt);
-                const disableAdd = !isSelected && selectedDowns.length >= 4;
-                return (
-                  <button
-                    key={opt}
-                    type="button"
-                    className={`px-2 py-1 rounded font-semibold border shadow-sm text-base transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-red-400 ${isSelected ? 'bg-red-600 text-white border-red-600 ring-2 ring-red-300' : 'bg-white text-gray-800 border-gray-300 hover:bg-red-50'} ${disableAdd ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={() => {
-                      let newDowns;
-                      if (isSelected) {
-                          newDowns = selectedDowns.filter(d => d !== opt);
-                        } else {
-                          if (selectedDowns.length >= 4) return;
-                          newDowns = [...selectedDowns, opt];
-                        }
-                        if (newDowns.length === 0) newDowns = [0];
-                        handleDownsChange(newDowns);
-                      }}
-                      disabled={disableAdd}
-                    >
-                      ${opt.toLocaleString()}
-                    </button>
-                );
-              })}
-              </div>
-              <div className="flex items-center gap-2 mt-2 w-full">
-                <label htmlFor="customDownPayment" className="text-sm text-gray-700">Custom:</label>
-                <NumberInput
-                  id="customDownPayment"
-                  min="0"
-                  step="100"
-                  className="w-40 px-3 py-2 rounded border border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
-                  value={customDown}
-                  placeholder="Other..."
-                  onChange={e => {
-                    const val = e.target.value;
-                    setCustomDown(val === null ? '' : val);
-                    let newDowns = selectedDowns.filter(d => !downPaymentOptions.includes(d));
-                    if (val !== null && val > 0) {
-                      // Only add custom if not exceeding 4 total
-                      const baseDowns = downPaymentOptions.filter(d => selectedDowns.includes(d));
-                      if (baseDowns.length + 1 > 4) return;
-                      newDowns = [...baseDowns, val];
-                    } else {
-                      newDowns = downPaymentOptions.filter(d => selectedDowns.includes(d));
-                      if (newDowns.length === 0) newDowns = [0];
-                    }
-                    handleDownsChange(newDowns);
-                  }}
-                />
-              </div>
-            </div>
-          </div>
+        <div className="space-y-8">{children}</div>
+    </div>
+);
 
-          <div className="w-full mt-12">
-            <div className="flex flex-row justify-between">
-            {dealData.rebates != null && dealData.rebates !== '' && !isNaN(Number(dealData.rebates)) && Number(dealData.rebates) !== 0 && (
-              <div className="mb-2 text-left text-sm text-blue-700 font-semibold">
-                Rebates: <span className="text-blue-900">{formatCurrency(Number(dealData.rebates))}</span>
-              </div>
-            )}
-            {dealData.showInterestRateOnOfferSheet && (
-              <div className="mb-2 text-right text-sm text-gray-700 font-semibold">
-                Interest Rate: <span className="text-red-700">{(Number(dealData.interestRate) || 6.99).toFixed(2)}%</span>
-              </div>
-            )}
-          </div>
-            <div className="w-full">
-              <table className="w-full text-xs text-center rounded-xl shadow-lg border border-gray-200 bg-white">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="px-4 py-3 border-b border-gray-200 font-bold text-gray-700">Down Payment</th>
-                    <th className="px-4 py-3 border-b border-gray-200 font-bold text-gray-700">Term (mo)</th>
-                    <th className="px-4 py-3 border-b border-gray-200 font-bold text-gray-700">Amount Financed</th>
-                    <th className="px-4 py-3 border-b border-gray-200 font-bold text-gray-700">Payment</th>
-                  </tr>
+const Card = ({ children, className = '' }) => (
+    <div className={`bg-white p-6 rounded-2xl shadow-lg border border-gray-100 transition-all duration-300 ${className}`}>
+        {children}
+    </div>
+);
+
+const CardHeader = ({ title, icon }) => (
+    <div className="flex items-center gap-3 border-b border-gray-200 pb-4 mb-6">
+        {icon}
+        <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
+    </div>
+);
+
+const ToggleSwitch = ({ label, name, checked, onChange }) => (
+    <div className="flex items-center justify-between py-3">
+        <span className="text-sm font-medium text-gray-800">{label}</span>
+        <label className="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" name={name} checked={checked} onChange={onChange} className="sr-only peer" />
+            <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-indigo-200 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+        </label>
+    </div>
+);
+
+const OptionButton = ({ label, isSelected, onClick, disabled }) => (
+    <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        className={`px-3 py-1.5 rounded-lg font-semibold border text-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-400 ${
+            isSelected 
+                ? 'bg-indigo-600 text-white border-indigo-600' 
+                : 'bg-white text-gray-800 border-gray-300 hover:bg-indigo-50 hover:border-indigo-300'
+        } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+        {label}
+    </button>
+);
+
+
+// --- Main Component ---
+
+const FinanceStep = () => {
+    const { dealData, updateDealData } = useAppStore();
+    
+    const [customDown, setCustomDown] = useState('');
+
+    const rate = dealData.interestRate !== undefined && dealData.interestRate !== '' ? Number(dealData.interestRate) : 6.99;
+    const selectedTerms = dealData.financeTerm || [];
+    const selectedDowns = dealData.downPayment || [];
+
+    const sellingPrice = Number(dealData.sellingPrice) || 0;
+    const docFee = Number(dealData.docFee) || 0;
+    const otherFee = Number(dealData.otherFee) || 0;
+    const rebates = Number(dealData.rebates) || 0;
+
+    const handleToggle = (e) => {
+        const { name, checked } = e.target;
+        updateDealData({ [name]: checked });
+    };
+
+    const handleTermsChange = (term) => {
+        let newTerms;
+        if (selectedTerms.includes(term)) {
+            newTerms = selectedTerms.filter(t => t !== term);
+        } else {
+            if (selectedTerms.length >= 5) return; // Limit to 5 selections
+            newTerms = [...selectedTerms, term];
+        }
+        updateDealData({ financeTerm: newTerms.sort((a, b) => a - b) });
+    };
+
+    const handleDownsChange = (down) => {
+        let newDowns;
+        if (selectedDowns.includes(down)) {
+            newDowns = selectedDowns.filter(d => d !== down);
+        } else {
+            if (selectedDowns.length >= 4) return; // Limit to 4 selections
+            newDowns = [...selectedDowns, down];
+        }
+        updateDealData({ downPayment: newDowns.sort((a, b) => a - b) });
+    };
+
+    const handleCustomDownChange = (e) => {
+        const value = e.target.value;
+        setCustomDown(value);
+
+        // Remove old custom value
+        const nonCustomDowns = selectedDowns.filter(d => !downPaymentOptions.includes(d) && d !== parseFloat(customDown));
+        
+        let newDowns = [...nonCustomDowns, ...selectedDowns.filter(d => downPaymentOptions.includes(d))];
+
+        const numericValue = parseFloat(value);
+        if (!isNaN(numericValue) && numericValue > 0) {
+            if (newDowns.length < 4) {
+                newDowns.push(numericValue);
+            }
+        }
+        updateDealData({ downPayment: newDowns.sort((a, b) => a - b) });
+    };
+    
+    useEffect(() => {
+        // Find if there's a custom down payment in the store and set it to the input
+        const customValue = selectedDowns.find(d => !downPaymentOptions.includes(d));
+        setCustomDown(customValue ? String(customValue) : '');
+    }, [selectedDowns]);
+
+
+    const renderPaymentTable = () => {
+        const terms = selectedTerms.length ? selectedTerms : [72];
+        const downs = selectedDowns.length ? selectedDowns : [0];
+
+        return (
+            <table className="w-full text-sm text-center rounded-lg border-collapse">
+                <thead className="bg-gray-100">
+                    <tr>
+                        <th className="px-4 py-3 font-semibold text-gray-700 rounded-tl-lg">Down Payment</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Term</th>
+                        {dealData.showAmountFinancedOnOfferSheet && <th className="px-4 py-3 font-semibold text-gray-700">Amount Financed</th>}
+                        <th className="px-4 py-3 font-semibold text-gray-700 rounded-tr-lg">Monthly Payment</th>
+                    </tr>
                 </thead>
                 <tbody>
-                  {(() => {
-                    // If nothing selected, fallback to 72 months and $0 down
-                    const terms = selectedTerms.length ? selectedTerms : [72];
-                    const downs = selectedDowns.length ? selectedDowns : [0];
-                    // Sort for clarity
-                    const sortedTerms = [...terms]
-                      .map(t => Number(t))
-                      .filter(t => !isNaN(t) && isFinite(t))
-                      .sort((a, b) => a - b);
-                    const sortedDowns = [...downs].map(d => Number(d)).filter(d => !isNaN(d) && isFinite(d)).sort((a, b) => a - b);
-                    const rows = [];
-                    sortedDowns.forEach((down, dIdx) => {
-                      let amountFinanced;
-                      sortedTerms.forEach((term, tIdx) => {
-                        amountFinanced = sellingPrice - down + docFee + otherFee;
-                        const payment = calculateMonthlyPayment(amountFinanced, rate, term);
-                        rows.push(
-                          <tr
-                            key={down + '-' + term}
-                            className={
-                              'transition-all duration-150 ' +
-                              ((dIdx + tIdx) % 2 === 0 ? 'bg-white' : 'bg-gray-50')
-                            }
-                          >
-                            {/* Down payment cell only on first row of group, else empty cell for alignment */}
-                            {tIdx === 0 ? (
-                              <td rowSpan={sortedTerms.length} className="px-4 py-3 font-bold border-b border-gray-100 text-gray-700 align-middle whitespace-nowrap">{down === 0 ? 'Financed' : `$${down.toLocaleString()}`}</td>
-                            ) : (
-                              <td style={{ display: 'none' }}></td>
-                            )}
-                            <td className="px-4 py-3 align-top border-b border-gray-100 text-gray-600 whitespace-nowrap">{term}</td>
-                            <td className="px-4 py-3 align-top border-b border-gray-100 text-gray-600 whitespace-nowrap">${amountFinanced.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                            <td className={"px-4 py-3 align-top border-b border-gray-100 font-extrabold text-lg text-gray-900 whitespace-nowrap"}>{`$${payment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</td>
-                          </tr>
-                        );
-                      });
-                    });
-                    return rows;
-                  })()}
+                    {downs.map((down, dIdx) => {
+                        const amountToFinance = sellingPrice - down + docFee + otherFee - rebates;
+                        return terms.map((term, tIdx) => {
+                            const payment = calculateMonthlyPayment(amountToFinance, rate, term);
+                            const isFirstRowForDown = tIdx === 0;
+                            const isLastRowForDown = tIdx === terms.length - 1;
+
+                            return (
+                                <tr key={`${down}-${term}`} className="bg-white hover:bg-gray-50/50">
+                                    {isFirstRowForDown && (
+                                        <td rowSpan={terms.length} className={`px-4 py-3 font-bold text-gray-800 align-middle border-b ${isLastRowForDown ? '' : 'border-gray-200'}`}>
+                                            {formatCurrency(down)}
+                                        </td>
+                                    )}
+                                    <td className={`px-4 py-3 text-gray-600 align-middle border-b ${isLastRowForDown && dIdx === downs.length - 1 ? 'border-transparent' : 'border-gray-200'}`}>{term} mo</td>
+                                    {dealData.showAmountFinancedOnOfferSheet && <td className={`px-4 py-3 text-gray-600 align-middle border-b ${isLastRowForDown && dIdx === downs.length - 1 ? 'border-transparent' : 'border-gray-200'}`}>{formatCurrency(amountToFinance)}</td>}
+                                    <td className={`px-4 py-3 font-bold text-lg text-gray-900 align-middle border-b ${isLastRowForDown && dIdx === downs.length - 1 ? 'border-transparent' : 'border-gray-200'}`}>{formatCurrency(payment)}</td>
+                                </tr>
+                            );
+                        });
+                    })}
                 </tbody>
-              </table>
-            </div>
-          </div>
+            </table>
+        );
+    };
+
+    return (
+        <div className="bg-gray-50/50 p-4 sm:p-6 lg:p-8 font-sans">
+            <FormSection title="Finance Options" icon={<Landmark className="h-8 w-8 text-gray-600" />}>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* --- CONTROLS COLUMN --- */}
+                    <div className="lg:col-span-1 space-y-8">
+                        <Card>
+                            <CardHeader title="Finance Terms" icon={<SlidersHorizontal className="h-6 w-6 text-indigo-600" />} />
+                            <div className="flex flex-wrap gap-2">
+                                {financeTerms.map(term => (
+                                    <OptionButton
+                                        key={term}
+                                        label={`${term} mo`}
+                                        isSelected={selectedTerms.includes(term)}
+                                        onClick={() => handleTermsChange(term)}
+                                        disabled={!selectedTerms.includes(term) && selectedTerms.length >= 5}
+                                    />
+                                ))}
+                            </div>
+                        </Card>
+
+                        <Card>
+                            <CardHeader title="Down Payments" icon={<SlidersHorizontal className="h-6 w-6 text-indigo-600" />} />
+                            <div className="flex flex-wrap gap-2 mb-4">
+                                {downPaymentOptions.map(down => (
+                                    <OptionButton
+                                        key={down}
+                                        label={formatCurrency(down)}
+                                        isSelected={selectedDowns.includes(down)}
+                                        onClick={() => handleDownsChange(down)}
+                                        disabled={!selectedDowns.includes(down) && selectedDowns.length >= 4}
+                                    />
+                                ))}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">Custom Down</label>
+                                <NumberInput
+                                    value={customDown}
+                                    onChange={handleCustomDownChange}
+                                    placeholder="e.g. 1500"
+                                />
+                            </div>
+                        </Card>
+
+                        <Card>
+                            <CardHeader title="Display Options" icon={<Eye className="h-6 w-6 text-indigo-600" />} />
+                            <div className="divide-y divide-gray-200">
+                                <ToggleSwitch label="Show Interest Rate" name="showInterestRateOnOfferSheet" checked={dealData.showInterestRateOnOfferSheet} onChange={handleToggle} />
+                                <ToggleSwitch label="Show Amount Financed" name="showAmountFinancedOnOfferSheet" checked={dealData.showAmountFinancedOnOfferSheet ?? true} onChange={handleToggle} />
+                            </div>
+                        </Card>
+                    </div>
+
+                    {/* --- PAYMENT TABLE COLUMN --- */}
+                    <div className="lg:col-span-2">
+                        <Card>
+                            <CardHeader title="Payment Matrix" icon={<BarChart className="h-6 w-6 text-indigo-600" />} />
+                            <div className="flex justify-between items-center text-sm mb-4 px-1">
+                                <span className="font-semibold text-gray-700">
+                                    Interest Rate: <span className="text-indigo-600 font-bold">{rate.toFixed(2)}%</span>
+                                </span>
+                                {rebates > 0 && (
+                                    <span className="font-semibold text-gray-700">
+                                        Rebates Applied: <span className="text-green-600 font-bold">{formatCurrency(rebates)}</span>
+                                    </span>
+                                )}
+                            </div>
+                            <div className="overflow-x-auto">
+                                {renderPaymentTable()}
+                            </div>
+                        </Card>
+                    </div>
+                </div>
+
+            </FormSection>
         </div>
-    </FormSection>
-  );
+    );
 };
 
 export default FinanceStep;

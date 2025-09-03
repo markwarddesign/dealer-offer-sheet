@@ -49,17 +49,20 @@ const NumberInput = ({ name, value, onChange, className, placeholder, disabled, 
 	};
 
 	return (
-		<input
-			type="text"
-			name={name}
-			value={displayValue}
-			onChange={handleChange}
-			onFocus={handleFocus}
-			onBlur={handleBlur}
-			className={`${className} ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-			placeholder={placeholder}
-			disabled={disabled}
-		/>
+		<div className="relative">
+            {isCurrency && <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>}
+			<input
+				type="text"
+				name={name}
+				value={displayValue}
+				onChange={handleChange}
+				onFocus={handleFocus}
+				onBlur={handleBlur}
+				className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5 bg-gray-50 disabled:bg-gray-200 disabled:cursor-not-allowed ${isCurrency ? 'pl-7' : ''} ${className || ''}`}
+				placeholder={placeholder}
+				disabled={disabled}
+			/>
+		</div>
 	);
 };
 

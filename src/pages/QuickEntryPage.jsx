@@ -1,9 +1,14 @@
 import React from 'react';
 import { useAppStore } from '../store';
-import NumberInput from '../components/NumberInput';
-import Toggle from '../components/Toggle';
 import { formatCurrency } from '../utils/formatCurrency';
 import { useNavigate } from 'react-router-dom';
+import { User, Car, Tag, Banknote, Trash2, ArrowRight } from 'lucide-react';
+
+import Card from '../components/Card';
+import CardHeader from '../components/CardHeader';
+import InputField from '../components/InputField';
+import NumberInputField from '../components/NumberInputField';
+import Toggle from '../components/Toggle';
 
 const QuickEntryPage = () => {
 	const { dealData, updateDealData, updateRoi, settings } = useAppStore();
@@ -25,11 +30,6 @@ const QuickEntryPage = () => {
 		updateDealData({ [name]: val });
 	};
 
-	const inputClass = "mt-1 block w-full border-0 border-b-2 border-gray-200 bg-transparent py-2 px-1 text-sm focus:outline-none focus:ring-0 focus:border-indigo-500";
-	const labelClass = "block text-sm font-medium text-gray-700";
-	const sectionClass = "p-4 border border-gray-200 rounded-lg";
-	const gridClass = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3";
-
 	const adjustedPrice = (dealData.sellingPrice || 0) - (dealData.rebates || 0);
 
 	const defaultDevalueItems = settings?.tradeDevalueItems || [];
@@ -39,7 +39,10 @@ const QuickEntryPage = () => {
 	}, 0);
 	const customDevalueSum = (dealData.tradeDevalueItems || []).reduce((acc, item) => acc + (Number(item.value) || 0), 0);
 	const totalDevaluation = selectedDefaultDevalueSum + customDevalueSum;
-	const calculatedTradeValue = (dealData.marketValue || 0) - totalDevaluation;
+	const tradeMarketValue = dealData.tradeMarketValue || 0;
+	const calculatedTradeValue = tradeMarketValue - totalDevaluation;
+	const tradePayOff = dealData.tradePayOff || 0;
+	const netTradeEquity = calculatedTradeValue - tradePayOff;
 
 	const downPaymentOptions = [0, 1000, 2500, 5000, 7500, 10000];
 	const financeTermOptions = [24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84];
@@ -106,214 +109,196 @@ const QuickEntryPage = () => {
 	};
 
 	return (
-		<div className="min-h-screen">
-			<div className="max-w-7xl mx-auto bg-white rounded-lg shadow p-4">
-				<div className="flex justify-between items-center mb-4">
-					<h1 className="text-xl font-bold text-gray-800">Quick Entry</h1>
-				</div>
+		<div className="bg-gray-50/50 p-4 sm:p-6 lg:p-8 font-sans">
+            <div className="flex justify-between items-start mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-gray-800 flex items-center gap-4">
+                        Quick Entry
+                    </h1>
+                    <p className="mt-2 text-gray-500">A streamlined view for rapid deal configuration.</p>
+                </div>
+				<button
+					onClick={() => navigate('/offer')}
+					className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-300 flex items-center gap-2"
+				>
+					View Offer Sheet
+                    <ArrowRight className="h-5 w-5" />
+				</button>
+			</div>
 
-				<div className="space-y-6">
-					{/* Buyer & Vehicle */}
-					<div className={sectionClass}>
-						<h2 className="text-lg font-semibold mb-3">Buyer & Vehicle</h2>
-						<div className={gridClass}>
-							<label className={labelClass}>First Name <input type="text" name="buyerFirstName" value={dealData.buyerFirstName} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Last Name <input type="text" name="buyerLastName" value={dealData.buyerLastName} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Phone <input type="text" name="buyerPhone" value={dealData.buyerPhone} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Email <input type="email" name="buyerEmail" value={dealData.buyerEmail} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Year <NumberInput name="vehicleYear" value={dealData.vehicleYear} onChange={handleChange} className={inputClass} isCurrency={false} /></label>
-							<label className={labelClass}>Make <input type="text" name="vehicleMake" value={dealData.vehicleMake} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Model <input type="text" name="vehicleModel" value={dealData.vehicleModel} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>VIN <input type="text" name="vehicleVin" value={dealData.vehicleVin} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Stock # <input type="text" name="vehicleStock" value={dealData.vehicleStock} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Mileage <NumberInput name="vehicleMileage" value={dealData.vehicleMileage} onChange={handleChange} className={inputClass} isCurrency={false} /></label>
-							<label className={labelClass}>Color <input type="text" name="vehicleColor" value={dealData.vehicleColor} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>MPG <NumberInput name="vehicleMpg" value={dealData.vehicleMpg} onChange={handleChange} className={inputClass} isCurrency={false} /></label>
-							<label className={labelClass}>Is new vehicle?
-								<div className='py-2'><Toggle name="isNewVehicle" isChecked={dealData.isNewVehicle} onChange={handleChange} onText="New" offText="Used" /></div>
-                            </label>
-                            {dealData.isNewVehicle && <label className={labelClass}>MSRP <NumberInput name="msrp" value={dealData.msrp} onChange={handleChange} className={inputClass} /></label>}
+			<div className="space-y-8">
+				{/* Buyer & Vehicle */}
+				<Card>
+                    <CardHeader title="Buyer & Vehicle" icon={<User className="h-6 w-6 text-indigo-600" />} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4">
+                        <InputField label="First Name" name="buyerFirstName" value={dealData.buyerFirstName} onChange={handleChange} />
+                        <InputField label="Last Name" name="buyerLastName" value={dealData.buyerLastName} onChange={handleChange} />
+                        <InputField label="Phone" name="buyerPhone" value={dealData.buyerPhone} onChange={handleChange} />
+                        <InputField label="Email" name="buyerEmail" value={dealData.buyerEmail} onChange={handleChange} />
+                        <NumberInputField label="Year" name="vehicleYear" value={dealData.vehicleYear} onChange={handleChange} isCurrency={false} />
+                        <InputField label="Make" name="vehicleMake" value={dealData.vehicleMake} onChange={handleChange} />
+                        <InputField label="Model" name="vehicleModel" value={dealData.vehicleModel} onChange={handleChange} />
+                        <InputField label="VIN" name="vehicleVin" value={dealData.vehicleVin} onChange={handleChange} />
+                        <InputField label="Stock #" name="vehicleStock" value={dealData.vehicleStock} onChange={handleChange} />
+                        <NumberInputField label="Mileage" name="vehicleMileage" value={dealData.vehicleMileage} onChange={handleChange} isCurrency={false} />
+                        <InputField label="Color" name="vehicleColor" value={dealData.vehicleColor} onChange={handleChange} />
+                        <NumberInputField label="MPG" name="vehicleMpg" value={dealData.vehicleMpg} onChange={handleChange} isCurrency={false} />
+                        <div className="flex items-end pb-2">
+                            <Toggle label="New Vehicle" name="isNewVehicle" checked={dealData.isNewVehicle} onChange={handleChange} />
+                        </div>
+                        {dealData.isNewVehicle && <NumberInputField label="MSRP" name="msrp" value={dealData.msrp} onChange={handleChange} />}
+                        
+                    </div>
+                </Card>
+
+                {/* Pricing & Deal */}
+                <Card>
+                    <CardHeader title="Pricing & Deal" icon={<Tag className="h-6 w-6 text-indigo-600" />}>
+                        <div className="text-right">
+                            <span className="text-sm font-medium text-gray-500">Adjusted Price</span>
+                            <p className="text-lg font-bold text-green-600">{formatCurrency(adjustedPrice)}</p>
+                        </div>
+                    </CardHeader>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4">
+                        <NumberInputField label="Market Value" name="marketValue" value={dealData.marketValue} onChange={handleChange} />
+                        <NumberInputField label="Selling Price" name="sellingPrice" value={dealData.sellingPrice} onChange={handleChange} />
+                        <NumberInputField label="ROI (%)" name="roiPercentage" value={dealData.roiPercentage} onChange={handleChange} isCurrency={false} />
+                        <NumberInputField label={`Acquisition Cost ${dealData.isNewVehicle ? '/ Invoice' : ''}`} name="acquisitionCost" value={dealData.acquisitionCost} onChange={handleChange} />
+                        <NumberInputField label="Reconditioning" name="reconditioningCost" value={dealData.reconditioningCost} onChange={handleChange} disabled={dealData.isNewVehicle} />
+                        <NumberInputField label="Advertising" name="advertisingCost" value={dealData.advertisingCost} onChange={handleChange} />
+                        <NumberInputField label="Flooring" name="flooringCost" value={dealData.flooringCost} onChange={handleChange} />
+                        <NumberInputField label="Rebates" name="rebates" value={dealData.rebates} onChange={handleChange} disabled={!dealData.isNewVehicle} />
+                    </div>
+                </Card>
+
+                {/* Trade-In */}
+                <Card>
+                    <CardHeader title="Trade-In" icon={<Car className="h-6 w-6 text-indigo-600" />}>
+                        <Toggle label="Has Trade-In?" name="hasTrade" checked={dealData.hasTrade} onChange={handleChange} />
+                    </CardHeader>
+                    {dealData.hasTrade && (
+                        <div className="pt-4 space-y-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4">
+                                <NumberInputField label="Market Value" name="tradeMarketValue" value={dealData.tradeMarketValue} onChange={handleChange} />
+                                <NumberInputField label="Trade Value" name="tradeValue" value={dealData.tradeValue} onChange={handleChange} readOnly />
+                                <NumberInputField label="Trade Payoff" name="tradePayOff" value={dealData.tradePayOff} onChange={handleChange} />
+                                <InputField label="VIN" name="tradeVehicleVin" value={dealData.tradeVehicleVin} onChange={handleChange} />
+                                <NumberInputField label="Year" name="tradeVehicleYear" value={dealData.tradeVehicleYear} onChange={handleChange} isCurrency={false} />
+                                <InputField label="Make" name="tradeVehicleMake" value={dealData.tradeVehicleMake} onChange={handleChange} />
+                                <InputField label="Model" name="tradeVehicleModel" value={dealData.tradeVehicleModel} onChange={handleChange} />
+                                <NumberInputField label="Mileage" name="tradeVehicleMileage" value={dealData.tradeVehicleMileage} onChange={handleChange} isCurrency={false} />
+                                <NumberInputField label="MPG" name="tradeVehicleMpg" value={dealData.tradeVehicleMpg} onChange={handleChange} isCurrency={false} />
+								<NumberInputField label="# in Market" name="vehiclesInMarket" value={dealData.vehiclesInMarket} onChange={handleChange} isCurrency={false} />
+                        		<NumberInputField label="Avg Days to Sell" name="avgDaysToSell" value={dealData.avgDaysToSell} onChange={handleChange} isCurrency={false} />
+                                <div className="flex items-end pb-2">
+                                    <Toggle label="Is Trade a Lease?" name="tradeIsLease" checked={dealData.tradeIsLease} onChange={handleChange} />
+                                </div>
+                            </div>
+                            
+                            <div className="pt-6 border-t border-gray-200">
+                                <h4 className="text-lg font-semibold mb-4 text-gray-800">Devaluation</h4>
+                                {defaultDevalueItems.length > 0 && (
+                                    <div className="mb-4">
+                                        <h5 className="text-sm font-medium text-gray-600 mb-2">Default Items</h5>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                            {defaultDevalueItems.map((item, index) => (
+                                                <label key={index} className="flex items-center space-x-2 p-2.5 rounded-lg bg-gray-50 border border-gray-200 hover:bg-gray-100 has-[:checked]:bg-indigo-50 has-[:checked]:border-indigo-300 cursor-pointer transition-colors">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={(dealData.tradeDevalueSelected || []).includes(index)}
+                                                        onChange={() => handleDevalueSelection(index)}
+                                                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                    />
+                                                    <span className="text-sm text-gray-800">{item.label} ({formatCurrency(item.price)})</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <h5 className="text-sm font-medium text-gray-600 mb-2">Custom Items</h5>
+                                <div className="space-y-3">
+                                    {(dealData.tradeDevalueItems || []).map((item, index) => (
+                                        <div key={index} className="flex gap-2 items-end">
+                                            <div className="flex-grow">
+                                                <InputField label="Item" name="name" value={item.name} onChange={(e) => handleDevalueItemChange(index, e)} placeholder="e.g. Scratches"/>
+                                            </div>
+                                            <div className="w-32">
+                                                <NumberInputField label="Value" name="value" value={item.value} onChange={(e) => handleDevalueItemChange(index, e)} />
+                                            </div>
+                                            <button onClick={() => handleRemoveDevalueItem(index)} className="bg-white text-gray-500 p-2 rounded-md shadow-sm hover:bg-red-50 hover:text-red-600 border border-gray-300 transition-colors">
+                                                <Trash2 className="h-5 w-5"/>
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <button onClick={handleAddDevalueItem} className="mt-2 bg-gray-200 text-gray-700 font-semibold py-1.5 px-3 rounded-lg hover:bg-gray-300 transition-colors text-xs shadow-sm">
+                                        + Add Item
+                                    </button>
+                                </div>
+                                <div className="border-t-2 border-dashed border-gray-300 pt-4 mt-6 space-y-2.5">
+                                    <div className="flex justify-between items-center text-md font-bold">
+                                        <span className="text-gray-800">Net Trade Value (ACV):</span>
+                                        <span className="text-green-600">{formatCurrency(calculatedTradeValue)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm mt-2 bg-yellow-100/60 p-2 rounded-md">
+                                        <span className="font-semibold text-yellow-800">Below Market Value:</span>
+                                        <span className="font-bold text-yellow-900">{formatCurrency(totalDevaluation)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm bg-orange-100/60 p-2 rounded-md">
+                                        <span className="font-semibold text-orange-800">Payoff:</span>
+                                        <span className="font-bold text-orange-900">{formatCurrency(tradePayOff)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-lg font-bold pt-2">
+                                        <span className="text-gray-800">Net Equity:</span>
+                                        <span className={netTradeEquity >= 0 ? 'text-sky-600' : 'text-red-600'}>{formatCurrency(netTradeEquity)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </Card>
+
+                {/* Finance Options */}
+                <Card>
+                    <CardHeader title="Finance Options" icon={<Banknote className="h-6 w-6 text-indigo-600" />} />
+                    <div className="space-y-6">
+                        <div>
+                            <h4 className="text-lg font-semibold mb-3 text-gray-800">Down Payments</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {downPaymentOptions.map(dp => (
+                                    <button key={dp} onClick={() => handleDownPaymentChange(dp)} className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${ (dealData.downPayment || []).includes(dp) ? 'bg-indigo-600 text-white shadow' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }`}>
+                                        {formatCurrency(dp)}
+                                    </button>
+                                ))}
+                            </div>
+                            <InputField label="Custom Down Payments" name="downPayment" value={(dealData.downPayment || []).join(', ')} onChange={handleChange} className="mt-4" placeholder="e.g. 1500, 3000, 4500" />
+                        </div>
+                        <div>
+                            <h4 className="text-lg font-semibold mb-3 text-gray-800">Finance Terms (Months)</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {financeTermOptions.map(term => (
+                                    <button key={term} onClick={() => handleFinanceTermChange(term)} className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${ (dealData.financeTerm || []).includes(term) ? 'bg-indigo-600 text-white shadow' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }`}>
+                                        {term}
+                                    </button>
+                                ))}
+                            </div>
+                            <InputField label="Custom Terms" name="financeTerm" value={(dealData.financeTerm || []).join(', ')} onChange={handleChange} className="mt-4" placeholder="e.g. 39, 51, 63" />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <NumberInputField label="Default APR (%)" name="defaultApr" value={dealData.defaultApr} onChange={handleChange} isCurrency={false} />
+                            <NumberInputField label="Default Term (Months)" name="defaultTerm" value={dealData.defaultTerm} onChange={handleChange} isCurrency={false} />
                         </div>
                     </div>
-
-                    {/* Pricing & Deal */}
-                    <div className={sectionClass}>
-						<div className="flex justify-between items-center mb-3">
-							<h2 className="text-lg font-semibold">Pricing & Deal</h2>
-							<div className="text-right">
-								<span className="text-sm font-medium text-gray-500">Adjusted Price</span>
-								<p className="text-lg font-bold text-green-600">{formatCurrency(adjustedPrice)}</p>
-							</div>
-						</div>
-						<div className={gridClass}>
-							<label className={labelClass}>Market Value <NumberInput name="marketValue" value={dealData.marketValue} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Selling Price <NumberInput name="sellingPrice" value={dealData.sellingPrice} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>ROI (%) <NumberInput name="roiPercentage" value={dealData.roiPercentage} onChange={handleChange} className={inputClass} isCurrency={false} /></label>
-							<label className={labelClass}>Acquisition Cost {dealData.isNewVehicle ? '/ Invoice' : ' '} <NumberInput name="acquisitionCost" value={dealData.acquisitionCost} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Reconditioning <NumberInput name="reconditioningCost" value={dealData.reconditioningCost} onChange={handleChange} className={inputClass} disabled={dealData.isNewVehicle} /></label>
-							<label className={labelClass}>Advertising <NumberInput name="advertisingCost" value={dealData.advertisingCost} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Flooring <NumberInput name="flooringCost" value={dealData.flooringCost} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Rebates <NumberInput name="rebates" value={dealData.rebates} onChange={handleChange} className={inputClass} disabled={!dealData.isNewVehicle} /></label>
-						</div>
-					</div>
-
-					{/* Trade-In */}
-					<div className={sectionClass}>
-						<h2 className="text-lg font-semibold mb-3 flex items-center"><Toggle label="Has Trade-In?" name="hasTrade" isChecked={dealData.hasTrade} onChange={handleChange} /></h2>
-						{dealData.hasTrade && (
-							<div className={`${gridClass} mt-3`}>
-								<label className={labelClass}>Market Value <NumberInput name="tradeMarketValue" value={dealData.tradeMarketValue} onChange={handleChange} className={inputClass} /></label>
-								<label className={labelClass}>Trade Value <NumberInput name="tradeValue" value={dealData.tradeValue} onChange={handleChange} className={inputClass} readOnly /></label>
-								<label className={labelClass}>Trade Payoff <NumberInput name="tradePayOff" value={dealData.tradePayOff} onChange={handleChange} className={inputClass} /></label>
-								<label className={labelClass}>VIN <input type="text" name="tradeVehicleVin" value={dealData.tradeVehicleVin} onChange={handleChange} className={inputClass} /></label>
-								<label className={labelClass}>Year <NumberInput name="tradeVehicleYear" value={dealData.tradeVehicleYear} onChange={handleChange} className={inputClass} isCurrency={false} /></label>
-								<label className={labelClass}>Make <input type="text" name="tradeVehicleMake" value={dealData.tradeVehicleMake} onChange={handleChange} className={inputClass} /></label>
-								<label className={labelClass}>Model <input type="text" name="tradeVehicleModel" value={dealData.tradeVehicleModel} onChange={handleChange} className={inputClass} /></label>
-								<label className={labelClass}>Mileage <NumberInput name="tradeVehicleMileage" value={dealData.tradeVehicleMileage} onChange={handleChange} className={inputClass} isCurrency={false} /></label>
-								<label className={labelClass}>MPG <NumberInput name="tradeVehicleMpg" value={dealData.tradeVehicleMpg} onChange={handleChange} className={inputClass} isCurrency={false} /></label>
-								<Toggle label="Is Trade a Lease?" name="tradeIsLease" isChecked={dealData.tradeIsLease} onChange={handleChange} />
-							</div>
-						)}
-						{dealData.hasTrade && (
-							<div className="mt-6">
-								<h3 className="text-md font-semibold mb-3">Devaluation</h3>
-								{defaultDevalueItems.length > 0 && (
-									<div className="mb-4">
-										<h4 className="text-sm font-medium text-gray-600 mb-2">Default Items</h4>
-										<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-											{defaultDevalueItems.map((item, index) => (
-												<label key={index} className="flex items-center space-x-2 p-2 rounded-md bg-gray-50 border border-gray-200 hover:bg-gray-100 cursor-pointer">
-													<input
-														type="checkbox"
-														checked={(dealData.tradeDevalueSelected || []).includes(index)}
-														onChange={() => handleDevalueSelection(index)}
-														className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-													/>
-													<span className="text-sm text-gray-800">{item.label} ({formatCurrency(item.price)})</span>
-												</label>
-											))}
-										</div>
-									</div>
-								)}
-
-								<h4 className="text-sm font-medium text-gray-600 mb-2">Custom Items</h4>
-								<div className="space-y-3">
-									{(dealData.tradeDevalueItems || []).map((item, index) => (
-										<div key={index} className="grid grid-cols-1 sm:grid-cols-10 gap-3 items-end">
-											<div className="sm:col-span-5">
-												<label className={labelClass}>Item Name</label>
-												<input
-													type="text"
-													name="name"
-													value={item.name}
-													onChange={(e) => handleDevalueItemChange(index, e)}
-													className={inputClass}
-													placeholder="e.g. Scratches, Tire Wear"
-												/>
-											</div>
-											<div className="sm:col-span-4">
-												<label className={labelClass}>Value</label>
-												<NumberInput
-													name="value"
-													value={item.value}
-													onChange={(e) => handleDevalueItemChange(index, e)}
-													className={inputClass}
-												/>
-											</div>
-											<div className="sm:col-span-1">
-												<button
-													onClick={() => handleRemoveDevalueItem(index)}
-													className="w-full bg-red-500 text-white font-bold py-2 px-2 rounded-lg shadow-sm hover:bg-red-600 transition-colors text-sm"
-												>
-													Remove
-												</button>
-											</div>
-										</div>
-									))}
-								</div>
-								<button
-									onClick={handleAddDevalueItem}
-									className="mt-4 bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors text-sm"
-								>
-									+ Add Custom Devalue Item
-								</button>
-							</div>
-						)}
-					</div>
-
-					{/* Fees & Financing */}
-					<div className={sectionClass}>
-						<h2 className="text-lg font-semibold mb-3">Fees & Financing</h2>
-						<div className={gridClass}>
-							<label className={labelClass}>Doc Fee <NumberInput name="docFee" value={dealData.docFee} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Title Fee <NumberInput name="titleFee" value={dealData.titleFee} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Tire Fee <NumberInput name="tireFee" value={dealData.tireFee} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>License Est. <NumberInput name="licenseEstimate" value={dealData.licenseEstimate} onChange={handleChange} className={inputClass} /></label>
-							<label className={labelClass}>Tax Rate (%) <NumberInput name="taxRate" value={dealData.taxRate} onChange={handleChange} className={inputClass} isCurrency={false}  /></label>
-							<label className={labelClass}>Interest Rate (%) <NumberInput name="interestRate" value={dealData.interestRate} onChange={handleChange} className={inputClass} isCurrency={false}  /></label>
-						</div>
-						<div className="mt-4">
-							<label className="block text-sm font-medium text-gray-700 mb-2">Down Payment Options</label>
-							<div className="flex flex-wrap gap-2">
-								{downPaymentOptions.map(option => (
-									<button
-										key={option}
-										type="button"
-										onClick={() => handleDownPaymentChange(option)}
-										className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
-											(dealData.downPayment || []).includes(option)
-												? 'bg-blue-600 text-white border-blue-600'
-												: 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-										}`}
-									>
-										{formatCurrency(option)}
-									</button>
-								))}
-							</div>
-						</div>
-						<div className="mt-4">
-							<label className="block text-sm font-medium text-gray-700 mb-2">Finance Term Options (Months)</label>
-							<div className="flex flex-wrap gap-2">
-								{financeTermOptions.map(option => (
-									<button
-										key={option}
-										type="button"
-										onClick={() => handleFinanceTermChange(option)}
-										className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
-											(dealData.financeTerm || []).includes(option)
-												? 'bg-blue-600 text-white border-blue-600'
-												: 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-										}`}
-									>
-										{option}
-									</button>
-								))}
-							</div>
-						</div>
-					</div>
-
-					{/* Offer Sheet Options */}
-					<div className={sectionClass}>
-                        <h2 className="text-lg font-semibold mb-3">Offer Sheet Options</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                            <Toggle label="Show Interest Rate" name="showInterestRateOnOfferSheet" isChecked={dealData.showInterestRateOnOfferSheet} onChange={handleChange} className="justify-between w-full" />
-                            <Toggle label="Show License Fee" name="showLicenseFeeOnOfferSheet" isChecked={dealData.showLicenseFeeOnOfferSheet} onChange={handleChange} className="justify-between w-full" />
-                            <Toggle label="Show Tax Rate" name="showTaxRateOnOfferSheet" isChecked={dealData.showTaxRateOnOfferSheet} onChange={handleChange} className="justify-between w-full" />
-                            <Toggle label="Show Amount Financed" name="showAmountFinancedOnOfferSheet" isChecked={dealData.showAmountFinancedOnOfferSheet} onChange={handleChange} className="justify-between w-full" />
-                        </div>
-                    </div>
-				</div>
-
-				<div className="mt-8 pt-6 border-t border-gray-200">
-					<div className="flex justify-center">
-						<button
-							onClick={() => navigate('/offer')}
-							className="w-full max-w-md bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 ease-in-out text-lg transform hover:scale-105"
-						>
-							Generate Offer Sheet
-						</button>
-					</div>
-				</div>
+                </Card>
+			</div>
+			<div className="flex justify-end mt-8">
+				<button
+					onClick={() => navigate('/offer')}
+					className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-300 flex items-center gap-2"
+				>
+					View Offer Sheet
+					<ArrowRight className="h-5 w-5" />
+				</button>
 			</div>
 		</div>
 	);

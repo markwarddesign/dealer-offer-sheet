@@ -1,118 +1,151 @@
 import React from 'react';
-import FormSection from '../components/FormSection';
 import { useAppStore } from '../store';
 import NumberInput from '../components/NumberInput';
+import { Receipt, Eye } from 'lucide-react';
+
+// --- Reusable UI Components ---
+
+const FormSection = ({ title, icon, children }) => (
+    <div className="space-y-8">
+        <div className="flex items-center gap-4">
+            {icon}
+            <h2 className="text-3xl font-bold tracking-tight text-gray-800">{title}</h2>
+        </div>
+        <div className="space-y-8">{children}</div>
+    </div>
+);
+
+const Card = ({ children, className = '' }) => (
+    <div className={`bg-white p-6 rounded-2xl shadow-lg border border-gray-100 transition-all duration-300 ${className}`}>
+        {children}
+    </div>
+);
+
+const CardHeader = ({ title, icon, children }) => (
+    <div className="flex flex-wrap justify-between items-center border-b border-gray-200 pb-4 mb-6">
+        <div className="flex items-center gap-3">
+            {icon}
+            <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
+        </div>
+        {children && <div className="flex items-center gap-4">{children}</div>}
+    </div>
+);
+
+const NumberInputField = ({ label, ...props }) => (
+    <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
+        <NumberInput 
+            {...props}
+            className="bg-gray-50"
+        />
+    </div>
+);
+
+const ToggleSwitch = ({ label, name, checked, onChange }) => (
+    <div className="flex items-center justify-between py-3">
+        <span className="text-sm font-medium text-gray-800">{label}</span>
+        <label className="relative inline-flex items-center cursor-pointer">
+            <input 
+                type="checkbox" 
+                name={name} 
+                checked={checked} 
+                onChange={onChange} 
+                className="sr-only peer" 
+            />
+            <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-indigo-200 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+        </label>
+    </div>
+);
+
+
+// --- Main Component ---
 
 const FeesStep = () => {
 	const { dealData, updateDealData } = useAppStore();
 
 	const handleChange = (e) => {
-		const { name, value, type } = e.target;
-		// The custom toggle passes the value directly, not as `checked`
-		const val = type === 'checkbox' ? value : value;
+		const { name, value, type, checked } = e.target;
+		const val = type === 'checkbox' ? checked : value;
 		updateDealData({ [name]: val });
 	};
 
-	const handleNumericChange = (e) => {
-		const { name, value } = e.target;
-		updateDealData({ [name]: value });
-	};
-
-	const renderToggle = (label, name, checked) => (
-		<div className="flex items-center justify-between py-2">
-			<span className="text-sm font-medium text-gray-900">{label}</span>
-			<button
-				type="button"
-				onClick={() => handleChange({ target: { name, value: !checked, type: 'checkbox' } })}
-				className={`${
-					checked ? 'bg-indigo-600' : 'bg-gray-200'
-				} relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
-			>
-				<span
-					className={`${
-						checked ? 'translate-x-6' : 'translate-x-1'
-					} inline-block w-4 h-4 transform bg-white rounded-full transition-transform`}
-				/>
-			</button>
-		</div>
-	);
-
 	return (
-		<FormSection title="Fees & Taxes" noGrid={true}>
-			<div className="flex flex-col gap-6">
-				<div className="bg-gray-50 p-4 rounded-lg">
-					<h4 className="text-lg font-semibold text-gray-700 mb-3">Fees</h4>
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-						<div>
-							<label className="block text-sm font-medium text-gray-700">Doc Fee</label>
-							<NumberInput
-								name="docFee"
-								value={dealData.docFee}
-								onChange={handleNumericChange}
-								className="block w-full rounded-md border-gray-300 shadow-sm p-2"
-							/>
-						</div>
-						<div>
-							<label className="block text-sm font-medium text-gray-700">License Estimate</label>
-							<NumberInput
-								name="licenseEstimate"
-								value={dealData.licenseEstimate}
-								onChange={handleNumericChange}
-								className="block w-full rounded-md border-gray-300 shadow-sm p-2"
-							/>
-						</div>
-						<div>
-							<label className="block text-sm font-medium text-gray-700">Title Fee</label>
-							<NumberInput
-								name="titleFee"
-								value={dealData.titleFee}
-								onChange={handleNumericChange}
-								className="block w-full rounded-md border-gray-300 shadow-sm p-2"
-							/>
-						</div>
-						<div>
-							<label className="block text-sm font-medium text-gray-700">Other Fees</label>
-							<NumberInput
-								name="otherFee"
-								value={dealData.otherFee}
-								onChange={handleNumericChange}
-								className="block w-full rounded-md border-gray-300 shadow-sm p-2"
-							/>
-						</div>
-						<div>
-							<label className="block text-sm font-medium text-gray-700">Tax Rate (%)</label>
-							<NumberInput
-								name="taxRate"
-								value={dealData.taxRate}
-								onChange={handleNumericChange}
-								className="block w-full rounded-md border-gray-300 shadow-sm p-2"
-								isCurrency={false}
-							/>
-						</div>
-						<div>
-							<label className="block text-sm font-medium text-gray-700">Interest Rate (%)</label>
-							<NumberInput
-								name="interestRate"
-								value={dealData.interestRate}
-								onChange={handleNumericChange}
-								className="block w-full rounded-md border-gray-300 shadow-sm p-2"
-								isCurrency={false}
-							/>
-						</div>
-					</div>
-				</div>
+        <div className="bg-gray-50/50 p-4 sm:p-6 lg:p-8 font-sans">
+            <FormSection title="Fees & Taxes" icon={<Receipt className="h-8 w-8 text-gray-500" />}>
+                
+                {/* --- FEES & TAXES CARD --- */}
+                <Card>
+                    <CardHeader title="Standard Fees & Tax Rates" icon={<Receipt className="h-6 w-6 text-indigo-600" />} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
+                        <NumberInputField
+                            label="Doc Fee"
+                            name="docFee"
+                            value={dealData.docFee}
+                            onChange={handleChange}
+                        />
+                        <NumberInputField
+                            label="License Estimate"
+                            name="licenseEstimate"
+                            value={dealData.licenseEstimate}
+                            onChange={handleChange}
+                        />
+                        <NumberInputField
+                            label="Title Fee"
+                            name="titleFee"
+                            value={dealData.titleFee}
+                            onChange={handleChange}
+                        />
+                        <NumberInputField
+                            label="Other Fees"
+                            name="otherFee"
+                            value={dealData.otherFee}
+                            onChange={handleChange}
+                        />
+                        <NumberInputField
+                            label="Tax Rate (%)"
+                            name="taxRate"
+                            value={dealData.taxRate}
+                            onChange={handleChange}
+                            isCurrency={false}
+                        />
+                        <NumberInputField
+                            label="Interest Rate (%)"
+                            name="interestRate"
+                            value={dealData.interestRate}
+                            onChange={handleChange}
+                            isCurrency={false}
+                        />
+                    </div>
+                </Card>
 
-				<div className="bg-gray-50 p-4 rounded-lg">
-					<h4 className="text-lg font-semibold text-gray-700 mb-3">Offer Sheet Visibility</h4>
-					<div className="divide-y divide-gray-200">
-						{renderToggle('Show License Fee', 'showLicenseFeeOnOfferSheet', dealData.showLicenseFeeOnOfferSheet)}
-						{renderToggle('Show Tax Rate', 'showTaxRateOnOfferSheet', dealData.showTaxRateOnOfferSheet)}
-						{renderToggle('Show Interest Rate', 'showInterestRateOnOfferSheet', dealData.showInterestRateOnOfferSheet)}
-					</div>
-				</div>
-			</div>
-		</FormSection>
-	);
+                {/* --- VISIBILITY CARD --- */}
+                <Card>
+                    <CardHeader title="Visibility Options" icon={<Eye className="h-6 w-6 text-indigo-600" />} />
+                    <div className="divide-y divide-gray-200">
+                        <ToggleSwitch
+                            label="Show License Fee"
+                            name="showLicenseFeeOnOfferSheet"
+                            checked={dealData.showLicenseFeeOnOfferSheet}
+                            onChange={handleChange}
+                        />
+                        <ToggleSwitch
+                            label="Show Tax Rate"
+                            name="showTaxRateOnOfferSheet"
+                            checked={dealData.showTaxRateOnOfferSheet}
+                            onChange={handleChange}
+                        />
+                        <ToggleSwitch
+                            label="Show Interest Rate"
+                            name="showInterestRateOnOfferSheet"
+                            checked={dealData.showInterestRateOnOfferSheet}
+                            onChange={handleChange}
+                        />
+                    </div>
+                </Card>
+
+            </FormSection>
+        </div>
+    );
 };
 
 export default FeesStep;

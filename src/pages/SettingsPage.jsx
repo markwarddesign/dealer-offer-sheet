@@ -1,7 +1,23 @@
 import React from 'react';
 import { useAppStore } from '../store';
-import { ArrowLeft, Save, Plus, Trash2, Sun, Moon, ArrowRight } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, SlidersHorizontal, Droplet, TrendingDown, ShieldCheck, RotateCcw, Settings as SettingsIcon, ArrowUp, ArrowDown } from 'lucide-react';
 import NumberInput from '../components/NumberInput';
+import Card from '../components/Card';
+import CardHeader from '../components/CardHeader';
+import InputField from '../components/InputField';
+import NumberInputField from '../components/NumberInputField';
+
+// --- Reusable UI Components ---
+
+const FormSection = ({ title, icon, children }) => (
+    <div className="space-y-8">
+        <div className="flex items-center gap-4">
+            {icon}
+            <h2 className="text-3xl font-bold tracking-tight text-gray-800">{title}</h2>
+        </div>
+        <div className="space-y-8">{children}</div>
+    </div>
+);
 
 const SettingsPage = ({ onBack }) => {
 	const { settings, setSettings, resetSettings } = useAppStore();
@@ -47,210 +63,160 @@ const SettingsPage = ({ onBack }) => {
 	};
 
 	return (
-		<div className="space-y-8">
-			<div className="flex justify-between items-center">
-				<h1 className="text-3xl font-bold">Settings</h1>
+		<div className="bg-gray-50/50 p-4 sm:p-6 lg:p-8 font-sans">
+            <div className="flex justify-between items-start mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-gray-800 flex items-center gap-4">
+                        <SettingsIcon className="h-8 w-8 text-gray-600" />
+                        Application Settings
+                    </h1>
+                    <p className="mt-2 text-gray-500">Manage default values and application-wide settings.</p>
+                </div>
 				<button
 					onClick={onBack}
-					className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:bg-blue-700 transition-colors duration-300 flex items-center"
+					className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-300 flex items-center gap-2"
 				>
-					<ArrowLeft className="h-5 w-5 mr-2" />
+					<ArrowLeft className="h-5 w-5" />
 					Back to Form
 				</button>
 			</div>
 
-			{/* General Settings */}
-			<div className="bg-white p-6 rounded-lg shadow">
-				<h2 className="text-xl font-semibold mb-4">General</h2>
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-					<div>
-						<label htmlFor="roiPercentage" className="block text-sm font-medium text-gray-700">Default ROI (%)</label>
-						<NumberInput
-							id="roiPercentage"
-							name="roiPercentage"
-							value={settings.roiPercentage ?? 5}
-							onChange={handleChange}
-							className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
-						/>
-					</div>
-					<div>
-						<label htmlFor="wpflName" className="block text-sm font-medium text-gray-700">WPFL Name</label>
-						<input
-							type="text"
-							id="wpflName"
-							name="wpflName"
-							value={settings.wpflName ?? 'Warranty Protection for Life (WPFL)'}
-							onChange={handleChange}
-							className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
-						/>
-					</div>
-				</div>
-			</div>
+            <div className="space-y-8">
+                {/* General Settings */}
+                <Card>
+                    <CardHeader title="General" icon={<SlidersHorizontal className="h-6 w-6 text-indigo-600" />} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <NumberInputField
+                            label="Default ROI (%)"
+                            name="roiPercentage"
+                            value={settings.roiPercentage ?? 5}
+                            onChange={handleChange}
+                            isCurrency={false}
+                        />
+                        <InputField
+                            label="WPFL Name"
+                            name="wpflName"
+                            value={settings.wpflName ?? 'Warranty Protection for Life (WPFL)'}
+                            onChange={handleChange}
+                        />
+                    </div>
+                </Card>
 
-			{/* OCFL Settings */}
-			<div className="bg-white p-6 rounded-lg shadow">
-				<h2 className="text-xl font-semibold mb-4">Oil Change For Life (OCFL)</h2>
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-					<div>
-						<label htmlFor="ocflPrice" className="block text-sm font-medium text-gray-700">Price per Service</label>
-						<NumberInput
-							id="ocflPrice"
-							name="ocflPrice"
-							min={0}
-							value={settings.ocflPrice ?? 45}
-							onChange={handleChange}
-							className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
-						/>
-					</div>
-					<div>
-						<label htmlFor="ocflServicesPerYear" className="block text-sm font-medium text-gray-700">Services per Year</label>
-						<NumberInput
-							id="ocflServicesPerYear"
-							name="ocflServicesPerYear"
-							value={settings.ocflServicesPerYear ?? 3}
-							onChange={handleChange}
-							className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
-						/>
-					</div>
-				</div>
-			</div>
+                {/* OCFL Settings */}
+                <Card>
+                    <CardHeader title="Oil Change For Life (OCFL)" icon={<Droplet className="h-6 w-6 text-indigo-600" />} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <NumberInputField
+                            label="Price per Service"
+                            name="ocflPrice"
+                            min={0}
+                            value={settings.ocflPrice ?? 45}
+                            onChange={handleChange}
+                        />
+                        <NumberInputField
+                            label="Services per Year"
+                            name="ocflServicesPerYear"
+                            value={settings.ocflServicesPerYear ?? 3}
+                            onChange={handleChange}
+                            isCurrency={false}
+                        />
+                    </div>
+                </Card>
 
-			{/* Trade Devalue Items */}
-			<div className="bg-white p-6 rounded-lg shadow">
-				<h2 className="text-xl font-semibold mb-4">Trade Devalue Items</h2>
-				<div className="space-y-2">
-					{(settings.tradeDevalueItems || []).map((item, index) => (
-						<div key={index} className="flex items-center gap-2 p-2 border rounded-md">
-							<input
-								type="text"
-								value={item.label}
-								onChange={(e) => handleListChange(e, 'tradeDevalueItems', index, 'label')}
-								className="flex-grow rounded-md border-gray-300 shadow-sm p-2"
-								placeholder="Label"
-							/>
-							<NumberInput
-								name="price"
-								value={item.price}
-								onChange={(e) => handleListChange(e, 'tradeDevalueItems', index, 'price')}
-								className="w-24 rounded-md border-gray-300 shadow-sm p-2"
-								placeholder="Price"
-							/>
-							<button onClick={() => removeListItem('tradeDevalueItems', index)} className="text-red-500 hover:text-red-700 p-2">
-								<Trash2 className="h-5 w-5" />
-							</button>
-						</div>
-					))}
-				</div>
-				<button
-					onClick={() => addListItem('tradeDevalueItems', { label: '', price: 0 })}
-					className="mt-4 bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow hover:bg-blue-700 transition-colors duration-300 flex items-center"
-				>
-					<Plus className="h-5 w-5 mr-2" />
-					Add Devalue Item
-				</button>
-			</div>
+                {/* Trade Devalue Items */}
+                <Card>
+                    <CardHeader title="Trade Devalue Items" icon={<TrendingDown className="h-6 w-6 text-indigo-600" />} />
+                    <div className="space-y-3">
+                        {(settings.tradeDevalueItems || []).map((item, index) => (
+                            <div key={index} className="flex items-center gap-3 p-2 border rounded-lg bg-gray-50/50">
+                                <InputField
+                                    value={item.label}
+                                    onChange={(e) => handleListChange(e, 'tradeDevalueItems', index, 'label')}
+                                    placeholder="Label"
+                                />
+                                <div className="w-40">
+                                    <NumberInput
+                                        name="price"
+                                        value={item.price}
+                                        onChange={(e) => handleListChange(e, 'tradeDevalueItems', index, 'price')}
+                                        placeholder="Price"
+                                    />
+                                 </div>
+                                <button onClick={() => removeListItem('tradeDevalueItems', index)} className="text-gray-400 hover:text-red-600 p-2 rounded-md hover:bg-red-50 transition-colors">
+                                    <Trash2 className="h-5 w-5" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                    <button
+                        onClick={() => addListItem('tradeDevalueItems', { label: '', price: 0 })}
+                        className="mt-4 bg-indigo-100 text-indigo-700 font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-indigo-200 transition-colors duration-300 flex items-center gap-2 text-sm"
+                    >
+                        <Plus className="h-5 w-5" />
+                        Add Devalue Item
+                    </button>
+                </Card>
 
-			{/* WPFL Options */}
-			<div className="bg-white p-6 rounded-lg shadow">
-				<h2 className="text-xl font-semibold mb-4">Warranty Protection for Life (WPFL) Options</h2>
-				<div className="space-y-2">
-					{(settings.wpflOptions || []).map((option, index) => (
-						<div key={index} className="flex items-center gap-2 p-2 border rounded-md">
-							<input
-								type="text"
-								value={option.label}
-								onChange={(e) => handleListChange(e, 'wpflOptions', index, 'label')}
-								className="flex-grow rounded-md border-gray-300 shadow-sm p-2"
-								placeholder="Label"
-							/>
-							<NumberInput
-								name="price"
-								value={option.price}
-								onChange={(e) => handleListChange(e, 'wpflOptions', index, 'price')}
-								className="w-24 rounded-md border-gray-300 shadow-sm p-2"
-								placeholder="Price"
-							/>
-							<input
-								type="radio"
-								name="defaultWPFL"
-								checked={settings.defaultWPFLIndex === index}
-								onChange={() => setSettings({ ...settings, defaultWPFLIndex: index })}
-								className="h-5 w-5 text-blue-600 focus:ring-blue-500"
-							/>
-							<span className="text-sm">Default</span>
-							<button onClick={() => moveListItem('wpflOptions', index, -1)} disabled={index === 0} className="p-2 text-gray-500 hover:text-gray-800 disabled:opacity-50">
-								<ArrowLeft className="h-5 w-5" />
-							</button>
-							<button onClick={() => moveListItem('wpflOptions', index, 1)} disabled={index === (settings.wpflOptions || []).length - 1} className="p-2 text-gray-500 hover:text-gray-800 disabled:opacity-50">
-								<ArrowRight className="h-5 w-5" />
-							</button>
-							<button onClick={() => removeListItem('wpflOptions', index)} className="text-red-500 hover:text-red-700 p-2">
-								<Trash2 className="h-5 w-5" />
-							</button>
-						</div>
-					))}
-				</div>
-				<button
-					onClick={() => addListItem('wpflOptions', { label: '', price: 0 })}
-					className="mt-4 bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow hover:bg-blue-700 transition-colors duration-300 flex items-center"
-				>
-					<Plus className="h-5 w-5 mr-2" />
-					Add WPFL Option
-				</button>
-			</div>
+                {/* WPFL Options */}
+                <Card>
+                    <CardHeader title="Warranty Protection for Life (WPFL) Options" icon={<ShieldCheck className="h-6 w-6 text-indigo-600" />} />
+                    <div className="space-y-3">
+                        {(settings.wpflOptions || []).map((option, index) => (
+                            <div key={index} className="flex items-center gap-3 p-2 border rounded-lg bg-gray-50/50">
+                                <InputField
+                                    value={option.label}
+                                    onChange={(e) => handleListChange(e, 'wpflOptions', index, 'label')}
+                                    placeholder="Label"
+                                />
+                                <div className="w-40">
+                                    <NumberInput
+                                        name="price"
+                                        value={option.price}
+                                        onChange={(e) => handleListChange(e, 'wpflOptions', index, 'price')}
+                                        placeholder="Price"
+                                    />
+                                </div>
+                                <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-600 hover:text-indigo-600">
+                                    <input
+                                        type="radio"
+                                        name="defaultWPFL"
+                                        checked={settings.defaultWPFLIndex === index}
+                                        onChange={() => setSettings({ ...settings, defaultWPFLIndex: index })}
+                                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                                    />
+                                    Default
+                                </label>
+                                <button onClick={() => moveListItem('wpflOptions', index, -1)} disabled={index === 0} className="p-2 text-gray-400 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed">
+                                    <ArrowUp className="h-5 w-5" />
+                                </button>
+                                <button onClick={() => moveListItem('wpflOptions', index, 1)} disabled={index === (settings.wpflOptions || []).length - 1} className="p-2 text-gray-400 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed">
+                                    <ArrowDown className="h-5 w-5" />
+                                </button>
+                                <button onClick={() => removeListItem('wpflOptions', index)} className="text-gray-400 hover:text-red-600 p-2 rounded-md hover:bg-red-50 transition-colors">
+                                    <Trash2 className="h-5 w-5" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                    <button
+                        onClick={() => addListItem('wpflOptions', { label: '', price: 0 })}
+                        className="mt-4 bg-indigo-100 text-indigo-700 font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-indigo-200 transition-colors duration-300 flex items-center gap-2 text-sm"
+                    >
+                        <Plus className="h-5 w-5" />
+                        Add WPFL Option
+                    </button>
+                </Card>
 
-			{/* Add-on Visibility */}
-			<div className="bg-white p-6 rounded-lg shadow">
-				<h2 className="text-xl font-semibold mb-4">Add-on Visibility</h2>
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-					<label className="flex items-center justify-between bg-gray-50 p-3 rounded-md border">
-						<span className="text-sm font-medium text-gray-700">Protection Package</span>
-						<input type="checkbox" name="showProtectionPackage" checked={settings.showProtectionPackage ?? true} onChange={handleChange} className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-					</label>
-					<label className="flex items-center justify-between bg-gray-50 p-3 rounded-md border">
-						<span className="text-sm font-medium text-gray-700">GAP Insurance</span>
-						<input type="checkbox" name="showGapInsurance" checked={settings.showGapInsurance ?? true} onChange={handleChange} className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-					</label>
-					<label className="flex items-center justify-between bg-gray-50 p-3 rounded-md border">
-						<span className="text-sm font-medium text-gray-700">Service Contract</span>
-						<input type="checkbox" name="showServiceContract" checked={settings.showServiceContract ?? true} onChange={handleChange} className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-					</label>
-				</div>
-			</div>
-
-			{/* Theme Settings */}
-			<div className="bg-white p-6 rounded-lg shadow">
-				<h2 className="text-xl font-semibold mb-4">Theme</h2>
-				<div className="flex items-center justify-between">
-					<span className="text-gray-600">Theme Mode</span>
-					<div className="flex items-center space-x-2 p-1 rounded-full bg-gray-200">
-						<button className="p-2 rounded-full bg-white shadow">
-							<Sun className="h-5 w-5 text-yellow-500" />
-						</button>
-						<button className="p-2 rounded-full">
-							<Moon className="h-5 w-5 text-gray-500" />
-						</button>
-					</div>
-				</div>
-			</div>
-
-			{/* Action Buttons */}
-			<div className="mt-8 flex justify-end space-x-4">
-				<button
-					onClick={resetSettings}
-					className="bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-300 flex items-center"
-				>
-					<Trash2 className="h-5 w-5 mr-2" />
-					Reset Settings
-				</button>
-				<button
-					onClick={() => alert('Settings saved!')}
-					className="bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:bg-green-700 transition-colors duration-300 flex items-center"
-				>
-					<Save className="h-5 w-5 mr-2" />
-					Save Settings
-				</button>
-			</div>
+                <div className="flex justify-end gap-4 pt-4">
+                    <button
+                        onClick={resetSettings}
+                        className="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg shadow-sm hover:bg-gray-300 transition-colors duration-300 flex items-center gap-2"
+                    >
+                        <RotateCcw className="h-5 w-5" />
+                        Reset to Defaults
+                    </button>
+                </div>
+            </div>
 		</div>
 	);
 };

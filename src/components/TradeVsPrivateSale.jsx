@@ -98,7 +98,7 @@ function TradeVsPrivateSale({ onBack }) {
     return null;
   }
   return (
-    <div className="bg-white border border-gray-300 rounded-xl shadow-lg p-4 sm:p-8 mb-12 print:mb-0 trade-vs-private-print-main">
+    <div className="bg-white border border-gray-300 rounded-xl shadow-md p-4 sm:p-8 mb-12 print:mb-0 trade-vs-private-print-main">
         <h2 className="text-3xl font-bold mb-6 print:mb-4 text-center flex items-center justify-center gap-2">
           <svg width="28" height="28" fill="none" viewBox="0 0 24 24" className="text-red-500 inline-block mr-1"><circle cx="12" cy="12" r="10" fill="#fee2e2"/><path d="M8 13.5l2.5 2.5L16 10" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
           Trade-In vs Private Sale Breakdown
@@ -110,7 +110,7 @@ function TradeVsPrivateSale({ onBack }) {
         {/* --- Combined Trade & Sale Comparison Section --- */}
   <div className="mb-10 flex flex-col md:flex-row gap-6 md:gap-8 the-options print:mb-5">
           {/* Trade Option (Top) */}
-          <div className="bg-blue-50 border-2 border-blue-400 rounded-lg p-4 sm:p-6 flex flex-col items-center shadow-md min-w-0 w-full">
+          <div className="bg-blue-50 border-2 border-blue-400 rounded-lg p-4 sm:p-6 flex flex-col items-center shadow min-w-0 w-full">
             <div className="text-lg font-bold mb-2 text-blue-700 flex items-center gap-2">
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24" className="text-blue-500"><circle cx="12" cy="12" r="10" fill="#dbeafe"/><path d="M8 13.5l2.5 2.5L16 10" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               Trade Option <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-semibold badge">Recommended</span>
@@ -183,11 +183,11 @@ function TradeVsPrivateSale({ onBack }) {
                       ))}
                     </div>
                     <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full">
-                      <div className="bg-gray-100 border border-gray-200 rounded-lg px-6 py-2 shadow font-semibold text-gray-800 flex flex-col items-center">
+                      <div className="bg-gray-100 border border-gray-200 rounded-lg px-6 py-2 shadow-sm font-semibold text-gray-800 flex flex-col items-center">
                         <span className="text-xs font-bold uppercase tracking-wide"># in Market</span>
                         <span className="text-lg">{vehiclesInMarket}</span>
                       </div>
-                      <div className="bg-gray-100 border border-gray-200 rounded-lg px-6 py-2 shadow font-semibold text-gray-800 flex flex-col items-center">
+                      <div className="bg-gray-100 border border-gray-200 rounded-lg px-6 py-2 shadow-sm font-semibold text-gray-800 flex flex-col items-center">
                         <span className="text-xs font-bold uppercase tracking-wide">Avg Days to Sell</span>
                         <span className="text-lg">{avgDaysToSell}</span>
                       </div>
@@ -298,7 +298,7 @@ function TradeVsPrivateSale({ onBack }) {
 
         {/* Cost of Ownership Adjustment - Modern Card Layout */}
         <section className="mb-12 mt-12 print:mt-0 print:mb-0">
-          <div className="max-w-2xl mx-auto rounded-2xl shadow-lg border border-gray-200 bg-white print:border-gray-400 print:bg-white p-0 overflow-hidden">
+          <div className="w-full mx-auto rounded-2xl shadow-md border border-gray-200 bg-white print:border-gray-400 print:bg-white p-0 overflow-hidden">
             <div className="bg-gradient-to-r from-gray-100 via-blue-50 to-gray-100 px-8 py-6 border-b border-gray-200 print:bg-white print:border-b-gray-300 flex items-center gap-3">
               <svg width="32" height="32" fill="none" viewBox="0 0 24 24" className="text-blue-500"><circle cx="12" cy="12" r="10" fill="#e0e7ef"/><path d="M8 13.5l2.5 2.5L16 10" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               <div>
@@ -341,14 +341,14 @@ function TradeVsPrivateSale({ onBack }) {
         <div className="flex justify-end mt-8 gap-4 no-print">
           {onBack && (
             <button
-              className="px-4 py-2 bg-gray-600 text-white rounded shadow hover:bg-gray-700 font-semibold"
+              className="px-4 py-2 bg-gray-600 text-white rounded shadow-sm hover:bg-gray-700 font-semibold"
               onClick={onBack}
             >
               Back to Offer
             </button>
           )}
           <button
-            className="px-4 py-2 bg-red-600 text-white rounded shadow hover:bg-red-700 font-semibold flex items-center no-print print-hide"
+            className="px-4 py-2 bg-red-600 text-white rounded shadow-sm hover:bg-red-700 font-semibold flex items-center no-print print-hide"
             onClick={() => window.print()}
           >
             Print Offer
