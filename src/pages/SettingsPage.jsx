@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppStore } from '../store';
-import { ArrowLeft, Plus, Trash2, SlidersHorizontal, Droplet, TrendingDown, ShieldCheck, RotateCcw, Settings as SettingsIcon, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, SlidersHorizontal, Droplet, TrendingDown, ShieldCheck, RotateCcw, Settings as SettingsIcon, ArrowUp, ArrowDown, Landmark } from 'lucide-react';
 import NumberInput from '../components/NumberInput';
 import Card from '../components/Card';
 import CardHeader from '../components/CardHeader';
@@ -18,6 +18,24 @@ const FormSection = ({ title, icon, children }) => (
         <div className="space-y-8">{children}</div>
     </div>
 );
+
+const OptionButton = ({ label, isSelected, onClick, disabled }) => (
+    <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        className={`px-3 py-1.5 rounded-lg font-semibold border text-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-400 ${
+            isSelected 
+                ? 'bg-indigo-600 text-white border-indigo-600' 
+                : 'bg-white text-gray-800 border-gray-300 hover:bg-indigo-50 hover:border-indigo-300'
+        } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+        {label}
+    </button>
+);
+
+const downPaymentOptions = [0, 1000, 2500, 5000, 7500, 10000];
+const financeTermOptions = [24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84];
 
 const SettingsPage = ({ onBack }) => {
 	const { settings, setSettings, resetSettings } = useAppStore();
@@ -62,6 +80,30 @@ const SettingsPage = ({ onBack }) => {
 		setSettings({ ...settings, [listName]: newList });
 	};
 
+	const handleDefaultTermsChange = (term) => {
+		const currentTerms = settings.financeTerm || [];
+		let newTerms;
+		if (currentTerms.includes(term)) {
+			newTerms = currentTerms.filter(t => t !== term);
+		} else {
+			if (currentTerms.length >= 5) return; // Limit to 5 selections
+			newTerms = [...currentTerms, term];
+		}
+		setSettings({ ...settings, financeTerm: newTerms.sort((a, b) => a - b) });
+	};
+	
+	const handleDefaultDownsChange = (down) => {
+		const currentDowns = settings.downPayment || [];
+		let newDowns;
+		if (currentDowns.includes(down)) {
+			newDowns = currentDowns.filter(d => d !== down);
+		} else {
+			if (currentDowns.length >= 3) return; // Limit to 3 selections
+			newDowns = [...currentDowns, down];
+		}
+		setSettings({ ...settings, downPayment: newDowns.sort((a, b) => a - b) });
+	};
+
 	return (
 		<div className="bg-gray-50/50 p-4 sm:p-6 lg:p-8 font-sans">
             <div className="flex justify-between items-start mb-8">
@@ -92,6 +134,8 @@ const SettingsPage = ({ onBack }) => {
                             value={settings.roiPercentage ?? 5}
                             onChange={handleChange}
                             isCurrency={false}
+							withIncrement
+							step
                         />
                         <InputField
                             label="WPFL Name"
@@ -112,6 +156,8 @@ const SettingsPage = ({ onBack }) => {
                             min={0}
                             value={settings.ocflPrice ?? 45}
                             onChange={handleChange}
+                            withIncrement
+                            step
                         />
                         <NumberInputField
                             label="Services per Year"
@@ -119,6 +165,7 @@ const SettingsPage = ({ onBack }) => {
                             value={settings.ocflServicesPerYear ?? 3}
                             onChange={handleChange}
                             isCurrency={false}
+							withIncrement
                         />
                     </div>
                 </Card>
@@ -205,6 +252,51 @@ const SettingsPage = ({ onBack }) => {
                         <Plus className="h-5 w-5" />
                         Add WPFL Option
                     </button>
+                </Card>
+
+                {/* Finance Defaults */}
+				<Card>
+                    <CardHeader title="Finance Defaults" icon={<Landmark className="h-6 w-6 text-indigo-600" />} />
+                    <div className="space-y-6">
+                        <NumberInputField
+                            label="Default Interest Rate (%)"
+                            name="interestRate"
+                            value={settings.interestRate ?? 6.99}
+                            onChange={handleChange}
+                            isCurrency={false}
+                            withIncrement
+                            step={0.1}
+                            roundToHundredth
+                        />
+                        <div>
+                            <h4 className="text-sm font-medium text-gray-700 mb-2">Default Down Payments (Max 3)</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {downPaymentOptions.map(down => (
+                                    <OptionButton
+                                        key={down}
+                                        label={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(down)}
+                                        isSelected={(settings.downPayment || []).includes(down)}
+                                        onClick={() => handleDefaultDownsChange(down)}
+                                        disabled={!(settings.downPayment || []).includes(down) && (settings.downPayment || []).length >= 3}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-medium text-gray-700 mb-2">Default Finance Terms (Max 5)</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {financeTermOptions.map(term => (
+                                    <OptionButton
+                                        key={term}
+                                        label={`${term} mo`}
+                                        isSelected={(settings.financeTerm || []).includes(term)}
+                                        onClick={() => handleDefaultTermsChange(term)}
+                                        disabled={!(settings.financeTerm || []).includes(term) && (settings.financeTerm || []).length >= 5}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
                 </Card>
 
                 <div className="flex justify-end gap-4 pt-4">

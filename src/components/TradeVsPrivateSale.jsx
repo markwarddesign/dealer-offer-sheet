@@ -215,8 +215,8 @@ function TradeVsPrivateSale({ onBack }) {
             <div className="mt-2 text-xs text-gray-700 text-center bg-blue-50 rounded p-2 w-full">
               <div className="font-semibold mb-1">Value Calculation:</div>
               <div className="flex items-center justify-center gap-2">
-                <label>Price per Service: <NumberInput min="0" value={ocflPrice} onChange={(e) => setOcflPrice(e.target.value)} className="w-20 p-1 border rounded" /></label>
-                <label>Services per Year: <NumberInput min="0" value={ocflServicesPerYear} onChange={(e) => setOcflServicesPerYear(e.target.value)} className="w-16 p-1 border rounded" isCurrency={false} /></label>
+                <label>Price per Service: <NumberInput min="0" value={ocflPrice} onChange={(e) => setOcflPrice(e.target.value)} className="w-20 p-1 border rounded text-center" withIncrement /></label>
+                <label>Services / per yr: <NumberInput min="0" value={ocflServicesPerYear} onChange={(e) => setOcflServicesPerYear(e.target.value)} className="w-16 p-1 border rounded text-center" isCurrency={false} withIncrement /></label>
               </div>
             </div>
           </div>
@@ -231,7 +231,7 @@ function TradeVsPrivateSale({ onBack }) {
             {settings.wpflOptions && WPFL_OPTIONS.length > 1 && (
               <div className="w-full mt-2">
                 <div className="text-xs text-gray-600 mb-1 font-semibold text-center">Select WPFL Option:</div>
-                <div className="flex flex-wrap gap-2 justify-center other-options">
+                <div className="flex flex-wrap gap-2 justify-center other-options bg-blue-50 rounded p-2 w-full">
                   {WPFL_OPTIONS.map((opt, idx) => (
                     <button
                       key={idx}
@@ -255,7 +255,7 @@ function TradeVsPrivateSale({ onBack }) {
               <div className="text-2xl font-extrabold text-blue-700 mb-1">{formatCurrency(FUEL_SAVINGS)}</div>
               <div className="text-xs text-gray-700 mb-2">per month</div>
               <div className="text-sm text-gray-800">MPG: {NET_MPG > 0 ? '+' : ''}{NET_MPG} | Gallons: {(NET_GALLONS || 0).toFixed(1)}</div>
-              <div className="mt-2 text-xs text-gray-700 text-center bg-blue-50 rounded p-2 w-full">
+              <div className="mt-2 text-xs text-gray-700 text-center bg-blue-50 rounded p-2 w-full calculation">
                 <div className="font-semibold mb-1">How it's calculated:</div>
                 <div>(Trade MPG vs New MPG) × Miles ÷ MPG × Gas Price</div>
                 <div>({TRADE_MPG} vs {NEW_MPG}) × {MILES_PER_MONTH} ÷ MPG × {formatCurrency(GAS_PRICE)}</div>

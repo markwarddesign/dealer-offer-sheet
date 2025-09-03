@@ -128,6 +128,9 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 										className="w-20 p-1 text-sm font-medium border rounded-md shadow-inner no-print"
 										placeholder="ROI %"
 										isCurrency={false}
+										withIncrement={true}
+										step={1}
+										roundToHundredth={false}
 									/>
 									<span className="print-only">({(dealData.roiPercentage || 0).toFixed(2)})</span>
 									<p>%</p>
@@ -139,7 +142,7 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 							<div className="flex justify-between items-center bg-white p-2 rounded-lg shadow-inner mt-2">
 								<p className="text-base font-bold text-gray-900">Adjusted Price</p>
 								<p>
-									$ <NumberInput
+									<NumberInput
 										name="sellingPrice"
 										value={dealData.sellingPrice}
 										onChange={handleSellingPriceChange}
@@ -255,23 +258,29 @@ const OfferSheet = ({ onGoBack, onShowTradeVsPrivate }) => {
 										<div>
 											<span>Reconditioning</span>
 											<br />
-											{dealData.tradeDevalueSelected &&
-												settings &&
-												settings.tradeDevalueItems &&
-												dealData.tradeDevalueSelected.length > 0 && (
-													<ul className="ml-4 mt-1 text-xs text-gray-600 list-disc">
-														{dealData.tradeDevalueSelected.map((idx) => {
-															const item = settings.tradeDevalueItems[idx];
-															if (!item) return null;
-															return (
-																<li key={idx} className="flex justify-between">
-																	<span>{item.label}</span>
-																	<span className="ml-2">{formatCurrency(item.price)}</span>
-																</li>
-															);
-														})}
-													</ul>
-												)}
+											{(dealData.tradeDevalueSelected?.length > 0 || dealData.tradeDevalueItems?.length > 0) && (
+												<ul className="ml-4 mt-1 text-xs text-gray-600 list-disc">
+													{dealData.tradeDevalueSelected?.map((idx) => {
+														const item = settings.tradeDevalueItems?.[idx];
+														if (!item) return null;
+														return (
+															<li key={`default-${idx}`} className="flex justify-between">
+																<span>{item.label}</span>
+																<span className="ml-2">{formatCurrency(item.price)}</span>
+															</li>
+														);
+													})}
+													{dealData.tradeDevalueItems?.map((item, index) => {
+														if (!item.name || !item.value) return null;
+														return (
+															<li key={`custom-${index}`} className="flex justify-between">
+																<span>{item.name}</span>
+																<span className="ml-2">{formatCurrency(item.value)}</span>
+															</li>
+														);
+													})}
+												</ul>
+											)}
 										</div>
 										<span>({formatCurrency(dealData.totalTradeDevalue)})</span>
 									</div>

@@ -115,6 +115,8 @@ const defaultSettings = {
 	],
 	defaultWPFLIndex: 2,
 	interestRate: 6.99,
+	downPayment: [0, 1000, 2000],
+	financeTerm: [72, 84],
 };
 
 export const useAppStore = create(

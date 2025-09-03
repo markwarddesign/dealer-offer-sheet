@@ -2,13 +2,20 @@ import React from 'react';
 import { useAppStore } from '../store';
 import { formatCurrency } from '../utils/formatCurrency';
 import { useNavigate } from 'react-router-dom';
-import { User, Car, Tag, Banknote, Trash2, ArrowRight } from 'lucide-react';
+import { User, Car, Tag, Banknote, Trash2, ArrowRight, ChevronDown } from 'lucide-react';
 
 import Card from '../components/Card';
 import CardHeader from '../components/CardHeader';
 import InputField from '../components/InputField';
 import NumberInputField from '../components/NumberInputField';
 import Toggle from '../components/Toggle';
+
+function calculateMonthlyPayment(amount, rate, termMonths) {
+    if (!amount || !rate || !termMonths || amount <= 0 || rate <= 0 || termMonths <= 0) return 0;
+    const monthlyRate = rate / 12 / 100;
+    if (monthlyRate === 0) return amount / termMonths; // Simple division if rate is 0
+    return (amount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -termMonths));
+}
 
 const QuickEntryPage = () => {
 	const { dealData, updateDealData, updateRoi, settings } = useAppStore();
@@ -108,6 +115,61 @@ const QuickEntryPage = () => {
 		updateDealData({ financeTerm: newFinanceTerms });
 	};
 
+	const renderPaymentTable = () => {
+        const rate = dealData.interestRate !== undefined && dealData.interestRate !== '' ? Number(dealData.interestRate) : 0;
+        
+        const selectedDowns = [...(dealData.downPayment || [])];
+        const customDown = parseFloat(dealData.customDownPayment);
+        if (!isNaN(customDown) && customDown > 0 && !selectedDowns.includes(customDown)) {
+            selectedDowns.push(customDown);
+        }
+        selectedDowns.sort((a, b) => a - b);
+
+        const terms = (dealData.financeTerm || []).length ? dealData.financeTerm : [dealData.defaultTerm || 72];
+        const downs = selectedDowns.length ? selectedDowns : [0];
+
+        const sellingPrice = Number(dealData.sellingPrice) || 0;
+        const docFee = Number(dealData.docFee) || 0;
+        const otherFee = Number(dealData.otherFee) || 0;
+        const rebates = Number(dealData.rebates) || 0;
+
+        return (
+            <table className="w-full text-sm text-center rounded-lg border-collapse">
+                <thead className="bg-gray-100">
+                    <tr>
+                        <th className="px-4 py-3 font-semibold text-gray-700 rounded-tl-lg">Down Payment</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Term</th>
+                        {dealData.showAmountFinancedOnOfferSheet && <th className="px-4 py-3 font-semibold text-gray-700">Amount Financed</th>}
+                        <th className="px-4 py-3 font-semibold text-gray-700 rounded-tr-lg">Monthly Payment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {downs.map((down, dIdx) => {
+                        const amountToFinance = sellingPrice - down + docFee + otherFee - rebates;
+                        return terms.map((term, tIdx) => {
+                            const payment = calculateMonthlyPayment(amountToFinance, rate, term);
+                            const isFirstRowForDown = tIdx === 0;
+                            const isLastRowForDown = tIdx === terms.length - 1;
+
+                            return (
+                                <tr key={`${down}-${term}`} className="bg-white hover:bg-gray-50/50">
+                                    {isFirstRowForDown && (
+                                        <td rowSpan={terms.length} className={`px-4 py-3 font-bold text-gray-800 align-middle border-b ${isLastRowForDown ? '' : 'border-gray-200'}`}>
+                                            {formatCurrency(down)}
+                                        </td>
+                                    )}
+                                    <td className={`px-4 py-3 text-gray-600 align-middle border-b ${isLastRowForDown && dIdx === downs.length - 1 ? 'border-transparent' : 'border-gray-200'}`}>{term} mo</td>
+                                    {dealData.showAmountFinancedOnOfferSheet && <td className={`px-4 py-3 text-gray-600 align-middle border-b ${isLastRowForDown && dIdx === downs.length - 1 ? 'border-transparent' : 'border-gray-200'}`}>{formatCurrency(amountToFinance)}</td>}
+                                    <td className={`px-4 py-3 font-bold text-lg text-gray-900 align-middle border-b ${isLastRowForDown && dIdx === downs.length - 1 ? 'border-transparent' : 'border-gray-200'}`}>{formatCurrency(payment)}</td>
+                                </tr>
+                            );
+                        });
+                    })}
+                </tbody>
+            </table>
+        );
+    };
+
 	return (
 		<div className="bg-gray-50/50 p-4 sm:p-6 lg:p-8 font-sans">
             <div className="flex justify-between items-start mb-8">
@@ -162,7 +224,7 @@ const QuickEntryPage = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4">
                         <NumberInputField label="Market Value" name="marketValue" value={dealData.marketValue} onChange={handleChange} />
                         <NumberInputField label="Selling Price" name="sellingPrice" value={dealData.sellingPrice} onChange={handleChange} />
-                        <NumberInputField label="ROI (%)" name="roiPercentage" value={dealData.roiPercentage} onChange={handleChange} isCurrency={false} />
+                        <NumberInputField label="ROI (%)" name="roiPercentage" value={dealData.roiPercentage} onChange={handleChange} isCurrency={false} withIncrement step={1} />
                         <NumberInputField label={`Acquisition Cost ${dealData.isNewVehicle ? '/ Invoice' : ''}`} name="acquisitionCost" value={dealData.acquisitionCost} onChange={handleChange} />
                         <NumberInputField label="Reconditioning" name="reconditioningCost" value={dealData.reconditioningCost} onChange={handleChange} disabled={dealData.isNewVehicle} />
                         <NumberInputField label="Advertising" name="advertisingCost" value={dealData.advertisingCost} onChange={handleChange} />
@@ -187,9 +249,9 @@ const QuickEntryPage = () => {
                                 <InputField label="Make" name="tradeVehicleMake" value={dealData.tradeVehicleMake} onChange={handleChange} />
                                 <InputField label="Model" name="tradeVehicleModel" value={dealData.tradeVehicleModel} onChange={handleChange} />
                                 <NumberInputField label="Mileage" name="tradeVehicleMileage" value={dealData.tradeVehicleMileage} onChange={handleChange} isCurrency={false} />
-                                <NumberInputField label="MPG" name="tradeVehicleMpg" value={dealData.tradeVehicleMpg} onChange={handleChange} isCurrency={false} />
-								<NumberInputField label="# in Market" name="vehiclesInMarket" value={dealData.vehiclesInMarket} onChange={handleChange} isCurrency={false} />
-                        		<NumberInputField label="Avg Days to Sell" name="avgDaysToSell" value={dealData.avgDaysToSell} onChange={handleChange} isCurrency={false} />
+                                <NumberInputField label="MPG" name="tradeVehicleMpg" value={dealData.tradeVehicleMpg} onChange={handleChange} isCurrency={false} withIncrement step />
+								<NumberInputField label="# in Market" name="vehiclesInMarket" value={dealData.vehiclesInMarket} onChange={handleChange} isCurrency={false} withIncrement step />
+                        		<NumberInputField label="Avg Days to Sell" name="avgDaysToSell" value={dealData.avgDaysToSell} onChange={handleChange} isCurrency={false} withIncrement step />
                                 <div className="flex items-end pb-2">
                                     <Toggle label="Is Trade a Lease?" name="tradeIsLease" checked={dealData.tradeIsLease} onChange={handleChange} />
                                 </div>
@@ -241,7 +303,7 @@ const QuickEntryPage = () => {
                                         <span className="text-green-600">{formatCurrency(calculatedTradeValue)}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm mt-2 bg-yellow-100/60 p-2 rounded-md">
-                                        <span className="font-semibold text-yellow-800">Below Market Value:</span>
+                                        <span className="font-semibold text-yellow-800">Reconditioning:</span>
                                         <span className="font-bold text-yellow-900">{formatCurrency(totalDevaluation)}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm bg-orange-100/60 p-2 rounded-md">
@@ -258,12 +320,26 @@ const QuickEntryPage = () => {
                     )}
                 </Card>
 
+                {/* Fees & Taxes */}
+                <Card>
+                    <CardHeader title="Fees & Taxes" icon={<Banknote className="h-6 w-6 text-indigo-600" />} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4">
+                        <NumberInputField label="Doc Fee" name="docFee" value={dealData.docFee} onChange={handleChange} />
+                        <NumberInputField label="License Estimate" name="licenseEstimate" value={dealData.licenseEstimate} onChange={handleChange} />
+                        <NumberInputField label="Title Fee" name="titleFee" value={dealData.titleFee} onChange={handleChange} />
+                        <NumberInputField label="Other Fees" name="otherFee" value={dealData.otherFee} onChange={handleChange} />
+                        <NumberInputField label="Tire Fee" name="tireFee" value={dealData.tireFee} onChange={handleChange} />
+                        <NumberInputField label="Tax Rate (%)" name="taxRate" value={dealData.taxRate} onChange={handleChange} isCurrency={false} withIncrement={true} step={0.1} roundToHundredth={true} />
+                    </div>
+                </Card>
+
                 {/* Finance Options */}
                 <Card>
                     <CardHeader title="Finance Options" icon={<Banknote className="h-6 w-6 text-indigo-600" />} />
-                    <div className="space-y-6">
-                        <div>
-                            <h4 className="text-lg font-semibold mb-3 text-gray-800">Down Payments</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+                        {/* Down Payments Column */}
+                        <div className="space-y-4">
+                            <h4 className="text-lg font-semibold text-gray-800">Down Payments</h4>
                             <div className="flex flex-wrap gap-2">
                                 {downPaymentOptions.map(dp => (
                                     <button key={dp} onClick={() => handleDownPaymentChange(dp)} className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${ (dealData.downPayment || []).includes(dp) ? 'bg-indigo-600 text-white shadow' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }`}>
@@ -271,10 +347,11 @@ const QuickEntryPage = () => {
                                     </button>
                                 ))}
                             </div>
-                            <InputField label="Custom Down Payments" name="downPayment" value={(dealData.downPayment || []).join(', ')} onChange={handleChange} className="mt-4" placeholder="e.g. 1500, 3000, 4500" />
+                            <NumberInputField label="Custom Down Payment" name="customDownPayment" value={dealData.customDownPayment} onChange={handleChange} />
                         </div>
-                        <div>
-                            <h4 className="text-lg font-semibold mb-3 text-gray-800">Finance Terms (Months)</h4>
+                        {/* Finance Terms Column */}
+                        <div className="space-y-4">
+                            <h4 className="text-lg font-semibold text-gray-800">Finance Terms (Months)</h4>
                             <div className="flex flex-wrap gap-2">
                                 {financeTermOptions.map(term => (
                                     <button key={term} onClick={() => handleFinanceTermChange(term)} className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${ (dealData.financeTerm || []).includes(term) ? 'bg-indigo-600 text-white shadow' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }`}>
@@ -282,15 +359,39 @@ const QuickEntryPage = () => {
                                     </button>
                                 ))}
                             </div>
-                            <InputField label="Custom Terms" name="financeTerm" value={(dealData.financeTerm || []).join(', ')} onChange={handleChange} className="mt-4" placeholder="e.g. 39, 51, 63" />
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <NumberInputField label="Default APR (%)" name="defaultApr" value={dealData.defaultApr} onChange={handleChange} isCurrency={false} />
-                            <NumberInputField label="Default Term (Months)" name="defaultTerm" value={dealData.defaultTerm} onChange={handleChange} isCurrency={false} />
+							<NumberInputField label="Default APR (%)" name="interestRate" value={dealData.interestRate} onChange={handleChange} isCurrency={false} withIncrement={true} step={0.1} roundToHundredth={true} />
                         </div>
                     </div>
+					{/* Payment Matrix */}
+								
+                    <details className="group pt-6 border-t border-gray-200">
+                        <summary className="flex justify-between items-center cursor-pointer list-none">
+                                <h4 className="text-lg font-semibold mb-4 text-gray-800">Payment Matrix</h4>
+                            <div className="mr-2">
+                                <ChevronDown className="h-6 w-6 text-gray-500 transition-transform duration-300 group-open:rotate-180" />
+                            </div>
+                        </summary>
+                        <div className="pt-4">
+                            {renderPaymentTable()}
+                        </div>
+                    </details>
+           
                 </Card>
+
+				{/* Offer Sheet Display Options */}
+				<Card>
+					<CardHeader title="Offer Sheet Display Options" icon={<Banknote className="h-6 w-6 text-indigo-600" />} />
+					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+						<Toggle label="Show Interest Rate" name="showInterestRateOnOfferSheet" checked={dealData.showInterestRateOnOfferSheet} onChange={handleChange} withWrapper={true} />
+						<Toggle label="Show License Fee" name="showLicenseFeeOnOfferSheet" checked={dealData.showLicenseFeeOnOfferSheet} onChange={handleChange} withWrapper={true} />
+						<Toggle label="Show Tax Rate" name="showTaxRateOnOfferSheet" checked={dealData.showTaxRateOnOfferSheet} onChange={handleChange} withWrapper={true} />
+						<Toggle label="Show Amount Financed" name="showAmountFinancedOnOfferSheet" checked={dealData.showAmountFinancedOnOfferSheet} onChange={handleChange} withWrapper={true} />
+					</div>
+				</Card>
 			</div>
+
+			
+
 			<div className="flex justify-end mt-8">
 				<button
 					onClick={() => navigate('/offer')}

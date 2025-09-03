@@ -107,6 +107,9 @@ const FeesStep = () => {
                             value={dealData.taxRate}
                             onChange={handleChange}
                             isCurrency={false}
+							withIncrement={true}
+							step={0.1}
+							roundToHundredth={true}
                         />
                         <NumberInputField
                             label="Interest Rate (%)"
@@ -114,6 +117,9 @@ const FeesStep = () => {
                             value={dealData.interestRate}
                             onChange={handleChange}
                             isCurrency={false}
+							withIncrement={true}
+							step={0.1}
+							roundToHundredth={true}
                         />
                     </div>
                 </Card>

@@ -13,7 +13,7 @@
   @page {
     size: auto;
 	margin-right: .5in;
-	margin-left: 0;
+	margin-left: .5in;
   }
 
   .offer-sheet{
@@ -136,8 +136,9 @@
  
 
 .trade-vs-private-print-main .other-options{
-    font-size: 9px !important;
+    font-size: 7px !important;
     display: flex !important;
+	flex-direction: row !important;
   }
 
   .trade-vs-private-print-main .the-cards .text-2xl{

@@ -87,6 +87,8 @@ const PricingStep = () => {
                             placeholder="e.g., 15"
                             isCurrency={false}
                             helpText="Used if Selling Price is 0."
+							withIncrement 
+							step
                         />
                     </div>
                 </Card>

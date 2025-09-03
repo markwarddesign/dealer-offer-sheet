@@ -139,8 +139,8 @@ export default function VehicleDealStep() {
     const netTradeEquity = netTradeValue - tradePayOff;
     
     useEffect(() => {
-        updateDealData({ tradeValue: netTradeValue });
-    }, [netTradeValue, updateDealData]);
+        updateDealData({ tradeValue: netTradeValue, totalTradeDevalue: totalDevaluation });
+    }, [netTradeValue, totalDevaluation, updateDealData]);
     
 
     // --- VIN Lookup Handler ---
@@ -280,7 +280,7 @@ export default function VehicleDealStep() {
                         </div>
                          <div>
                              <label className="block text-sm font-medium text-gray-700 mb-1.5">MPG (Combined)</label>
-                             <NumberInput name="vehicleMpg" value={dealData.vehicleMpg} onChange={handleFieldChange} isCurrency={false} placeholder="e.g. 28" />
+                             <NumberInput name="vehicleMpg" value={dealData.vehicleMpg} onChange={handleFieldChange} isCurrency={false} placeholder="e.g. 28" withIncrement step />
                         </div>
                         
                     </div>
@@ -339,7 +339,7 @@ export default function VehicleDealStep() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1.5">MPG</label>
-                                            <NumberInput name="tradeVehicleMpg" value={dealData.tradeVehicleMpg} onChange={handleFieldChange} isCurrency={false} />
+                                            <NumberInput name="tradeVehicleMpg" value={dealData.tradeVehicleMpg} onChange={handleFieldChange} isCurrency={false} withIncrement step />
                                         </div>
                                     </div>
                                      <div className="border-t border-gray-200 pt-6">
@@ -354,11 +354,11 @@ export default function VehicleDealStep() {
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1.5"># in Market</label>
-                                                <NumberInput name="vehiclesInMarket" value={dealData.vehiclesInMarket} onChange={handleFieldChange} isCurrency={false} />
+                                                <NumberInput name="vehiclesInMarket" value={dealData.vehiclesInMarket} onChange={handleFieldChange} isCurrency={false} withIncrement step />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Avg Days to Sell</label>
-                                                <NumberInput name="avgDaysToSell" value={dealData.avgDaysToSell} onChange={handleFieldChange} isCurrency={false} />
+                                                <NumberInput name="avgDaysToSell" value={dealData.avgDaysToSell} onChange={handleFieldChange} isCurrency={false} withIncrement step />
                                             </div>
                                         </div>
                                     </div>
@@ -374,7 +374,7 @@ export default function VehicleDealStep() {
                                                 {settings.tradeDevalueItems.map((item, index) => (
                                                     <label key={index} className="flex items-center space-x-3 p-2.5 rounded-lg bg-white border border-gray-200 hover:bg-gray-100 has-[:checked]:bg-sky-50 has-[:checked]:border-sky-300 cursor-pointer transition-colors">
                                                         <input type="checkbox" checked={(dealData.tradeDevalueSelected || []).includes(index)} onChange={() => handleDevalueSelection(index)} className="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"/>
-                                                        <span className="text-sm text-gray-800">{item.label}</span>
+                                                        <span className="text-sm text-gray-800">{item.label} ({formatCurrency(item.price)})</span>
                                                     </label>
                                                 ))}
                                             </div>
