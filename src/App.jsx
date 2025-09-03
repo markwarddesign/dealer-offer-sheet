@@ -116,7 +116,7 @@ const AppContent = ({ onLogout }) => {
                         </div>
                     )}
                 </header>
-                <main className={`relative p-4 md:p-6 md:pt-0 transition-all z-1 duration-300`}>
+                <main className={`relative p-4 pb-20 md:p-6 md:pt-0 transition-all z-1 duration-300`}>
 
                     <Routes>
                         <Route path="/form/:step" element={
