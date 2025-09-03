@@ -29,7 +29,7 @@ const Sidebar = () => {
 
   return (
     <div
-      className="sidebar no-print sticky top-0 left-0 h-[100vh] overflow-y-auto text-white transition-all duration-300 ease-in-out z-20 bg-gradient-to-br from-dark-gradient-1 via-dark-gradient-2 to-dark-gradient-3"
+      className="sidebar no-print sticky top-0 left-0 h-[100dvh] overflow-y-auto text-white transition-all duration-300 ease-in-out z-20 bg-gradient-to-br from-dark-gradient-1 via-dark-gradient-2 to-dark-gradient-3"
       style={{ width: isHovered ? '280px' : '60px' }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
