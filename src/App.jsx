@@ -91,8 +91,8 @@ const AppContent = ({ onLogout }) => {
         <div className="flex min-h-dvh bg-white">
             <Sidebar />
             <div className='w-full'>
-                <header className={`bg-black text-white p-4 shadow-md sticky top-0 z-10 no-print transition-all duration-300`}>
-                    <div className="container mx-auto flex justify-between items-center">
+                <header className={`bg-black text-white px-6 md:px-12 py-4 shadow-md sticky top-0 z-10 no-print transition-all duration-300`}>
+                    <div className="mx-auto flex justify-between items-center">
                         <div className="flex items-center">
                             <img src={logoUrl} alt="Sunset Chevrolet Logo" className="h-12" />
                         </div>
