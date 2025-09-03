@@ -34,7 +34,6 @@ const AppContent = ({ onLogout }) => {
     const {
         settings,
         resetDeal,
-        isSidebarExpanded,
         page,
         setPage,
         activeStep,
@@ -92,7 +91,7 @@ const AppContent = ({ onLogout }) => {
         <div className="flex min-h-dvh bg-white">
             <Sidebar />
             <div className='w-full'>
-                <header className={`bg-black text-white p-4 shadow-md sticky top-0 z-10 no-print transition-all duration-300 ${isSidebarExpanded ? 'ml-64' : 'ml-15'}`}>
+                <header className={`bg-black text-white p-4 shadow-md sticky top-0 z-10 no-print transition-all duration-300`}>
                     <div className="container mx-auto flex justify-between items-center">
                         <div className="flex items-center">
                             <img src={logoUrl} alt="Sunset Chevrolet Logo" className="h-12" />
@@ -117,8 +116,8 @@ const AppContent = ({ onLogout }) => {
                         </div>
                     )}
                 </header>
-                <main className={`relative p-4 md:p-6 md:pt-0 transition-all z-1 duration-300 ${isSidebarExpanded ? 'ml-64' : 'ml-15'}`}>
-                    
+                <main className={`relative p-4 md:p-6 md:pt-0 transition-all z-1 duration-300`}>
+
                     <Routes>
                         <Route path="/form/:step" element={
                             <SteppedForm
